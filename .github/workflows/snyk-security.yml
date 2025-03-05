@@ -1,12 +1,25 @@
 name: Example workflow for Maven using Snyk
 on: push
+
 jobs:
   security:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17' # Change this to match your project requirements
+
+      - name: Install Snyk CLI
+        run: npm install -g snyk
+
       - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/maven@master
+        run: snyk test --maven
+        working-directory: Elite2Common
         continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
