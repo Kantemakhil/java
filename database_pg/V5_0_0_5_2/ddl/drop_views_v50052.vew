@@ -1,0 +1,8 @@
+drop view if exists v_trip_agy; 
+drop view if exists v_route_flow;
+drop view if exists v_assign_offender_trips;
+drop view if exists v_local_trip_offenders;
+drop view if exists v_route_occupancy;
+drop view if exists v_local_trip_occupancy;
+drop view if exists v_route_locations;
+drop view if exists v_trip_segments;

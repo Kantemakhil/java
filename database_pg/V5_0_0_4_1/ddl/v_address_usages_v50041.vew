@@ -1,0 +1,109 @@
+CREATE OR REPLACE VIEW oms_owner.v_address_usages
+AS SELECT a.address_id,
+    a.address_type,
+    au.address_usage,
+    a.owner_class,
+    a.owner_id,
+    a.owner_seq,
+    a.owner_code,
+    a.start_date,
+    a.end_date,
+        CASE
+            WHEN COALESCE(a.end_date::text, ''::text) = ''::text THEN 'Y'::text
+            ELSE
+            CASE
+                WHEN LEAST(a.end_date, round(LOCALTIMESTAMP)) = round(LOCALTIMESTAMP) THEN 'Y'::text
+                ELSE 'N'::text
+            END
+        END AS address_active_flag,
+        CASE
+            WHEN au.active_flag::text = 'N'::text THEN 'N'::text
+            ELSE 'Y'::text
+        END AS usage_active_flag,
+        CASE
+            WHEN au.active_flag::text = 'N'::text THEN 'N'::text
+            ELSE
+            CASE
+                WHEN COALESCE(a.end_date::text, ''::text) = ''::text THEN 'Y'::text
+                ELSE
+                CASE
+                    WHEN LEAST(a.end_date, round(LOCALTIMESTAMP)) = round(LOCALTIMESTAMP) THEN 'Y'::text
+                    ELSE 'N'::text
+                END
+            END
+        END AS active_flag,
+    substr(((((
+        CASE
+            WHEN COALESCE(a.suite_number::text, ''::text) = ''::text THEN NULL::text
+            ELSE a.suite_number::text || ', '::text
+        END ||
+        CASE
+            WHEN COALESCE(a.street_number::text, ''::text) = ''::text THEN NULL::text
+            ELSE a.street_number::text || ', '::text
+        END) ||
+        CASE
+            WHEN COALESCE(a.street::text, ''::text) = ''::text THEN NULL::text
+            ELSE a.street::text || ', '::text
+        END) ||
+        CASE
+            WHEN COALESCE(a.street_direction::text, ''::text) = ''::text THEN NULL::text
+            ELSE a.street_direction::text || ', '::text
+        END) ||
+        CASE
+            WHEN COALESCE(a.city_code::text, ''::text) = ''::text THEN NULL::text
+            ELSE oms_miscellaneous_getdesccode('CITY'::character varying, a.city_code)::text || ', '::text
+        END) ||
+        CASE
+            WHEN COALESCE(a.prov_state_code::text, ''::text) = ''::text THEN NULL::text
+            ELSE oms_miscellaneous_getdesccode('STATE'::character varying, a.prov_state_code)::text || ', '::text
+        END, 1, 1000) AS full_address,
+        CASE
+            WHEN COALESCE(a.suite_number::text, ''::text) = ''::text THEN NULL::text
+            ELSE a.suite_number::text || '  '::text
+        END || a.street_number::text AS house,
+    a.street,
+    substr((
+        CASE
+            WHEN COALESCE(a.street_direction::text, ''::text) = ''::text THEN NULL::text
+            ELSE a.street_direction::text || '  '::text
+        END ||
+        CASE
+            WHEN COALESCE(a.city_code::text, ''::text) = ''::text THEN NULL::text
+            ELSE oms_miscellaneous_getdesccode('CITY'::character varying, a.city_code)::text || '  '::text
+        END) ||
+        CASE
+            WHEN COALESCE(a.prov_state_code::text, ''::text) = ''::text THEN NULL::character varying
+            ELSE oms_miscellaneous_getdesccode('STATE'::character varying, a.prov_state_code)
+        END::text, 1, 1000) AS area,
+    substr(
+        CASE
+            WHEN COALESCE(a.country_code::text, ''::text) = ''::text THEN NULL::character varying
+            ELSE oms_miscellaneous_getdesccode('COUNTRY'::character varying, a.country_code)
+        END::text, 1, 40) AS country,
+    a.suite_number,
+    a.street_number,
+    a.street_direction,
+    substr((((a.street_number::text || ' '::text) || a.street::text) || ' '::text) || oms_miscellaneous_getdesccode('STREET_DIR'::character varying, a.street_direction)::text, 1, 254) AS street_information,
+    a.city_code,
+    substr(
+        CASE
+            WHEN COALESCE(a.city_name::text, ''::text) = ''::text THEN oms_miscellaneous_getdesccode('CITY'::character varying, a.city_code)
+            ELSE a.city_name
+        END::text, 1, 40) AS city_name,
+    a.prov_state_code,
+    substr(oms_miscellaneous_getdesccode('PROV_STATE'::character varying, a.prov_state_code)::text, 1, 40) AS prov_state_desc,
+    a.zip_postal_code,
+    a.country_code,
+    a.capacity,
+    a.comment_text,
+    a.primary_flag,
+    a.mail_flag,
+    a.validated_paf_flag AS validated_flag,
+    a.create_datetime,
+    a.create_user_id,
+    a.modify_datetime,
+    a.modify_user_id,
+	a.address_line1,
+	a.is_address_valid
+   FROM addresses a
+     LEFT JOIN address_usages au ON a.address_id = au.address_id;

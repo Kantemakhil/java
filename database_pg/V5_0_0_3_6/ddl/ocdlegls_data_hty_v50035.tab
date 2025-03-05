@@ -1,0 +1,12 @@
+CREATE TABLE oms_owner.ocdlegls_data_hty (
+	id bigserial not null,
+	form_info_json bytea NULL,
+	form_identifier varchar(1000) NOT NULL,
+	action_type varchar(10) NOT NULL,
+	create_datetime   timestamp(6) default current_timestamp not null,
+	create_user_id varchar(32) NOT NULL,
+	modify_datetime timestamp(6) NULL,
+	modify_user_id varchar(32) NULL,
+	seal_flag varchar(1) NULL
+)
+TABLESPACE tag_data;

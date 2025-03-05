@@ -1,0 +1,6 @@
+
+export JAVA_HOME=$(/usr/local/bin/docker-java-home)
+
+alias ls='ls --color'
+alias ll='ls -la'
+

@@ -1,0 +1,1 @@
+update oms_module_parameters set parameter_lov_select = 'SELECT to_char(bank_statement_date, ''MM/DD/YYYY'') DESCRIPTION FROM bank_recon_audits WHERE caseload_id = :global.caseload_id AND account_code = :global.account_code ORDER BY bank_statement_date DESC' , modify_datetime = current_timestamp where module_name = 'OTRBNRCN' and parameter_seq = 2;

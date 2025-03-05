@@ -1,0 +1,48 @@
+CREATE TABLE oms_owner.allowance_types (
+    allowance_type varchar(12) NOT NULL,
+	version_no int8 NOT null,
+	version_start_date timestamp NOT NULL,
+	unit varchar(12) NOT NULL,
+	max_unit int8 NOT NULL,
+	rate int8  NOT NULL,
+	sunday_flag varchar(1) NOT NULL DEFAULT 'N'::character varying,
+	monday_flag varchar(1) NOT NULL DEFAULT 'N'::character varying,
+	tuesday_flag varchar(1) NOT NULL DEFAULT 'N'::character varying,
+	wednesday_flag varchar(1) NOT NULL DEFAULT 'N'::character varying,
+	thursday_flag varchar(1) NOT NULL DEFAULT 'N'::character varying,
+	friday_flag varchar(1) NOT NULL DEFAULT 'N'::character varying,
+	saturday_flag varchar(1) NOT NULL DEFAULT 'N'::character varying,
+	active_flag varchar(1) NOT NULL DEFAULT 'Y'::character varying,
+	expiry_date timestamp NULL,
+	create_datetime timestamp NOT NULL,
+	create_user_id varchar(32) NOT NULL,
+	modify_datetime timestamp NULL,
+	modify_user_id varchar(32) NULL,
+	seal_flag varchar(1) NULL
+) TABLESPACE tag_data;
+
+ALTER TABLE oms_owner.allowance_types ADD CONSTRAINT allowance_types_pk PRIMARY KEY (allowance_type, version_no);
+
+CREATE UNIQUE INDEX allowance_types_uk1 ON oms_owner.allowance_types (allowance_type) WHERE active_flag = 'Y';
+
+CREATE UNIQUE INDEX allowance_types_uk2 ON oms_owner.allowance_types (allowance_type, version_start_date);
+
+comment on table allowance_types is 'Maintains the allowances configuration and the history of configuration when max unit or rate or days flags change';
+
+comment on column allowance_types.allowance_type is 'Allowance type [domain=ALLOWANCE]';
+comment on column allowance_types.version_no is 'Version number for a given allowance type';
+comment on column allowance_types.version_start_date is 'The first day the allowance version is in effect (time is information only)';
+comment on column allowance_types.unit is 'Allowance unit type [domain=UNIT]';
+comment on column allowance_types.max_unit is 'Allowance max unit value';
+comment on column allowance_types.rate is 'Allowance rate amount';
+comment on column allowance_types.sunday_flag is 'Indicates if the allowance is to be paid for this day(Y/N)';
+comment on column allowance_types.monday_flag is 'Indicates if the allowance is to be paid for this day(Y/N)';
+comment on column allowance_types.tuesday_flag is 'Indicates if the allowance is to be paid for this day(Y/N)';
+comment on column allowance_types.wednesday_flag is 'Indicates if the allowance is to be paid for this day(Y/N)';
+comment on column allowance_types.thursday_flag is 'Indicates if the allowance is to be paid for this day(Y/N)';
+comment on column allowance_types.friday_flag is 'Indicates if the allowance is to be paid for this day(Y/N)';
+comment on column allowance_types.saturday_flag is 'Indicates if the allowance is to be paid for this day(Y/N)';
+comment on column allowance_types.active_flag is 'Indicates if the allowance is active(Y/N)';
+comment on column allowance_types.expiry_date is 'Expired date of allowance';
+
+

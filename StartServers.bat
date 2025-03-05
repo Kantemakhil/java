@@ -1,0 +1,9 @@
+ECHO Stoping the the tomcat server...
+call %CATALINA_HOME%\bin\shutdown.bat
+timeout 10 > NUL
+ECHO Starting the tomcat server...
+call %CATALINA_HOME%\bin\startup.bat
+ECHO Starting the NodeJS server...
+cd Elite2Angular
+call npm start
+pause

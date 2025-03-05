@@ -1,0 +1,35 @@
+CREATE OR REPLACE VIEW oms_owner.v_offender_all_visitors
+AS SELECT off_vis_vis.person_id::character varying AS visitor_id,
+    'PERSON'::text AS visitor_type,
+    per.last_name,
+    per.first_name,
+    per.middle_name,
+    ref_code1.description AS relationship,
+    off_vis.offender_visit_id
+   FROM persons per,
+    offender_visit_visitors off_vis_vis,
+    offender_visits off_vis,
+    offender_contact_persons ocp
+     LEFT JOIN ( SELECT reference_codes.code,
+            reference_codes.description
+           FROM reference_codes
+          WHERE reference_codes.domain::text = 'RELATIONSHIP'::text) ref_code1 ON ocp.relationship_type::text = ref_code1.code::text
+  WHERE per.person_id = off_vis_vis.person_id AND off_vis_vis.person_id IS NOT NULL AND off_vis_vis.person_id::text <> ''::text AND off_vis_vis.person_id = ocp.person_id AND off_vis.offender_book_id = ocp.offender_book_id AND off_vis.offender_visit_id = off_vis_vis.offender_visit_id
+UNION ALL
+ SELECT vns.offender_id_display AS visitor_id,
+    'OFFENDER'::text AS visitor_type,
+    vns.last_name,
+    vns.first_name,
+    vns.middle_name,
+    ref_code1.description AS relationship,
+    off_vis.offender_visit_id
+   FROM v_name_search2 vns,
+    offender_visit_visitors off_vis_vis,
+    offender_visits off_vis,
+    offender_bookings ob,
+    offender_contact_persons ocp
+     LEFT JOIN ( SELECT reference_codes.code,
+            reference_codes.description
+           FROM reference_codes
+          WHERE reference_codes.domain::text = 'RELATIONSHIP'::text) ref_code1 ON ocp.relationship_type::text = ref_code1.code::text
+  WHERE off_vis.offender_visit_id = off_vis_vis.offender_visit_id AND off_vis_vis.offender_book_id IS NOT NULL AND off_vis_vis.offender_book_id::text <> ''::text AND ob.offender_book_id = off_vis_vis.offender_book_id AND ocp.contact_root_offender_id = ob.root_offender_id AND ocp.offender_book_id = off_vis.offender_book_id AND vns.root_offender_id = ocp.contact_root_offender_id;

@@ -1,0 +1,28 @@
+create table agency_incident_charges_ext_inv_detls (
+    agency_incident_id bigint NOT NULL,
+    charge_seq bigint NOT NULL,
+    eid_seq bigint NOT NULL,
+    external_id varchar(32) NULL,
+    contact_datetime timestamp NULL,
+    ext_inv_status varchar(12) NULL,
+    ext_inv_comment  varchar(240) NULL,
+    create_datetime timestamp NOT NULL DEFAULT systimestamp(),
+    create_user_id varchar(32) NOT NULL DEFAULT USER,
+    modify_datetime timestamp NULL DEFAULT systimestamp(),
+    modify_user_id varchar(32) NULL,
+    seal_flag varchar(1) NULL,
+    CONSTRAINT agency_incident_charges_ext_inv_detls_pk PRIMARY KEY (agency_incident_id, charge_seq, eid_seq),
+    CONSTRAINT agency_incident_charges_ext_inv_detls_fk1 FOREIGN KEY (agency_incident_id, charge_seq) REFERENCES oms_owner.agency_incident_charges(agency_incident_id, charge_seq)
+    ) tablespace TAG_DATA;
+
+ 
+
+comment on table agency_incident_charges_ext_inv_detls is 'This table holds the data of External Investigations done one Agency Indicent Charges';
+
+comment on column agency_incident_charges_ext_inv_detls.agency_incident_id is 'FK to Agency Incident Charges';
+comment on column agency_incident_charges_ext_inv_detls.charge_seq is 'FK to Agency Incident Charges';
+comment on column agency_incident_charges_ext_inv_detls.eid_seq is 'External Investigation Details seq as part of the PK';
+comment on column agency_incident_charges_ext_inv_detls.external_id is 'To capture the External Id';
+comment on column agency_incident_charges_ext_inv_detls.contact_datetime is 'To capture the date and time of contact with the external agency';
+comment on column agency_incident_charges_ext_inv_detls.ext_inv_status is 'To capture the status of the external investigation at the time of contact [domain=EXT_INV_STAT]';
+comment on column agency_incident_charges_ext_inv_detls.ext_inv_comment is 'To capture the the communication with the external investigating agency';

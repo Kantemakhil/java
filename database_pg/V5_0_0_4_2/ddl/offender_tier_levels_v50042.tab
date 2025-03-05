@@ -1,0 +1,39 @@
+CREATE TABLE offender_tier_levels (
+offender_tier_level_id BIGSERIAL NOT null,
+offender_book_id int8 NOT NULL,
+tier_level_code varchar(12) NOT NULL ,
+record_creation_datetime timestamp(6) NOT NULL DEFAULT systimestamp(),
+assignment_date DATE NOT NULL,
+assignment_reason varchar(12) NOT NULL,
+assigned_by_staff_id int8 NOT NULL,
+active_flag varchar(1) NOT NULL DEFAULT 'N',
+approve_flag varchar(1) NOT NULL DEFAULT 'N',
+approved_by_staff_id int8 null,
+next_review_date timestamp NULL,
+comment varchar(240) NULL,
+create_datetime timestamp(6) NOT NULL DEFAULT systimestamp(),
+create_user_id varchar(32) NOT NULL ,
+modify_datetime timestamp(6) NULL ,
+modify_user_id varchar(32) NULL,
+seal_flag varchar(1) NULL,
+CONSTRAINT offender_tier_levels_pk PRIMARY KEY (offender_tier_level_id),
+CONSTRAINT offender_tier_levels_fk1 FOREIGN KEY (offender_book_id) REFERENCES oms_owner.offender_bookings(offender_book_id),
+CONSTRAINT offender_tier_levels_fk2 FOREIGN KEY (tier_level_code) REFERENCES oms_owner.maintain_tier_levels(tier_level_code),
+CONSTRAINT offender_tier_level_fk3 FOREIGN KEY (assigned_by_staff_id) REFERENCES oms_owner.staff_members(staff_id),
+CONSTRAINT offender_tier_level_fk4 FOREIGN KEY (approved_by_staff_id) REFERENCES oms_owner.staff_members(staff_id)
+) tablespace tag_data;
+
+comment on table offender_tier_levels is 'Maintains offenders community tier levels (effort levels)';
+
+comment on column offender_tier_levels.offender_tier_level_id is 'Unique record identifier (generated)';
+comment on column offender_tier_levels.offender_book_id is 'Unique identifier for offender booking';
+comment on column offender_tier_levels.tier_level_code is 'Offender community tier level code';
+comment on column offender_tier_levels.assignment_reason is 'The assignment reason [domain= TIER_REA]';
+comment on column offender_tier_levels.record_creation_datetime is 'The datetime when the offender tier level was entered in the system';
+comment on column offender_tier_levels.assignment_date is 'The date when the offender tier level takes effect';
+comment on column offender_tier_levels.assigned_by_staff_id is 'The staff who assigned the offender tier level';
+comment on column offender_tier_levels.active_flag is 'Indicates if the offender tier level is active (N, Y value). Only one offender tier level can be active at a time';
+comment on column offender_tier_levels.approve_flag is 'Indicates if the offender tier level is approved (N, Y value)';
+comment on column offender_tier_levels.approved_by_staff_id is 'The staff who approved the offender tier level.';
+comment on column offender_tier_levels.next_review_date is 'Next review date';
+comment on column offender_tier_levels.comment is 'Comments';

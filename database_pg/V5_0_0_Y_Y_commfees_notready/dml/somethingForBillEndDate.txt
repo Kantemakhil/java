@@ -1,0 +1,35 @@
+--moved here from v50061
+insert
+	into
+	SYSTEM_PROFILES(PROFILE_TYPE ,
+	PROFILE_CODE ,
+	DESCRIPTION ,
+	PROFILE_VALUE ,
+	PROFILE_VALUE_2,
+	OLD_TABLE_NAME,
+	CREATE_DATETIME ,
+	CREATE_USER_ID ,
+    modify_datetime,	
+	modify_user_id, 
+	SEAL_FLAG)
+	select
+	'CLIENT',
+	'BILL_END_DAY' ,
+	'Configure the Fee Account Billing End Day and Fee Account Statement End Day' ,
+	null ,
+	null ,
+	null ,
+	current_timestamp ,
+	'OMS_OWNER',
+	current_timestamp ,
+	'OMS_OWNER',	
+	null
+where
+	not exists (
+	select
+		1
+	from
+		SYSTEM_PROFILES
+	where
+		PROFILE_TYPE = 'CLIENT'
+		and PROFILE_CODE = 'BILL_END_DAY');

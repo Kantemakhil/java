@@ -1,0 +1,2 @@
+INSERT INTO oms_owner.oms_modules  (module_name, description, module_type, print_format_code, preview_flag, default_copy, appln_code, help_directory, create_datetime, create_user_id, modify_datetime, modify_user_id, seal_flag, output_type, dynamic_form)
+   VALUES ('OIIOBALX', 'External Account Balance', 'SCREEN', NULL, NULL, NULL, 'OMS4', NULL, current_timestamp, 'OMS_OWNER', current_timestamp, NULL, NULL, NULL, 'N');

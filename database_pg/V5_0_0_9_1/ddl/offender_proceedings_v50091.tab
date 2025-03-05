@@ -1,0 +1,1 @@
+ALTER TABLE offender_proceedings ALTER COLUMN comment_text TYPE varchar(1500);

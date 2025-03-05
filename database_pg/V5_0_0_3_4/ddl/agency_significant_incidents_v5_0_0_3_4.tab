@@ -1,0 +1,30 @@
+create table oms_owner.agency_significant_incidents (
+	agency_incident_id int8 NOT NULL,
+	significance_type varchar(12) NOT NULL,
+	entry_date timestamp NOT NULL,
+	recorded_by_staff_id  int4  NOT NULL, 
+	create_datetime timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	create_user_id varchar(32) NOT NULL,
+	modify_datetime timestamp,
+    modify_user_id varchar(32),
+	seal_flag varchar(1) 
+) tablespace tag_data;
+
+alter table oms_owner.agency_significant_incidents
+  add constraint agency_sig_incidents_pk primary key (agency_incident_id, significance_type) 
+  using index tablespace tag_indx;
+  
+alter table oms_owner.agency_significant_incidents 
+  add constraint agency_sig_incidents_fk1 foreign key (agency_incident_id)
+  references oms_owner.agency_incidents (agency_incident_id) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE;  
+  
+alter table oms_owner.agency_significant_incidents 
+  add constraint agency_sig_incidents_fk2 foreign key (recorded_by_staff_id)
+  references oms_owner.staff_members (staff_id) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE;    
+  
+comment on table oms_owner.agency_significant_incidents is 'Agency incidents significance types';
+
+comment on column oms_owner.agency_significant_incidents.agency_incident_id is 'Unique identifier of the agency incident';
+comment on column oms_owner.agency_significant_incidents.significance_type is 'Incident significance type [domain=SIG_INC_TYPE]';
+comment on column oms_owner.agency_significant_incidents.entry_date is 'Entry timestamp'; 
+comment on column oms_owner.agency_significant_incidents.recorded_by_staff_id is 'The staff who recorded the information';   

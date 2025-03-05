@@ -1,0 +1,6 @@
+ALTER TABLE offender_ind_schedules ADD COLUMN offender_tier_level_id  int8 NULL;
+comment on column offender_ind_schedules.offender_tier_level_id is 'Unique identifier for offender tier level id';
+
+ALTER TABLE offender_ind_schedules  
+  ADD CONSTRAINT offender_ind_schedules_fk3 FOREIGN KEY (offender_tier_level_id) 
+   REFERENCES offender_tier_levels (offender_tier_level_id)  ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE; 

@@ -1,0 +1,1 @@
+create sequence schedule_series_rule_series_id start with 1 minvalue 1 increment by 1;

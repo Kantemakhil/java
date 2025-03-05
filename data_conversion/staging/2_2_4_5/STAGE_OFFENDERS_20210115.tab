@@ -1,0 +1,50 @@
+ALTER TABLE stage_offenders
+  ADD CONSTRAINT stage_offenders_uk UNIQUE(offender_id_display, last_name, first_name, birth_date, middle_name, suffix)
+      USING index tablespace TAG_INDX;
+
+ALTER TABLE stage_offenders
+ MODIFY ( invalid_reason default NULL,
+          invalid_flag default 'N'
+        );
+
+
+COMMENT ON COLUMN stage_offenders.invalid_reason IS 'The reason the record has been marked as invalid. Used for feedback purposes prior to conversion. Not used by the conversion logic.';
+COMMENT ON COLUMN stage_offenders.invalid_flag IS 'A flag to indicate whether the record is considered invalid. Marked N by default. Updated to ''Y'' to flag possible problem records. Not used by conversion logic. Its purpose is to allow feedback on problem records during pre-conversion validation checking. Conversion logic will not attempt to sidestep these records, so faulty records should be reviewed and issues resolved prior to execution of conversion.';
+COMMENT ON TABLE stage_offenders IS 'Master offender names table, holding one record for every name associated with an offender. A person''s names are the set of records that share the same OFFENDER_ID_DISPLAY. For each person, exactly one name should have a name type of ''WORKING'' (i.e., one and only one--no more, no less), indicating that it is the legal name that will display in the header.';
+
+-- allow only one working name per offender
+CREATE UNIQUE INDEX stage_offenders_ni2 
+    ON stage_offenders( CASE WHEN name_type = 'WORKING' THEN offender_id_display END )
+       TABLESPACE TAG_INDX;
+
+
+CREATE OR REPLACE TRIGGER stage_offenders_t1
+BEFORE INSERT OR UPDATE ON stage_offenders
+REFERENCING NEW AS NEW OLD AS OLD FOR EACH ROW
+
+BEGIN
+/* 
+============================================================
+   Version Number = 1.1  Date Modified 26-JAN-2021  
+============================================================
+  MODIFICATION HISTORY                                      
+   Person       Date      version      Comments             
+-----------  ---------    -----------  -------------------------------
+   D. Roy    26/01/2021   1.1          Corrected new reference
+   D. Roy    15/01/2021   1.0          Created   
+*/
+
+   :NEW.offender_id_display := UPPER(:NEW.offender_id_display);
+   :NEW.last_name := UPPER(:NEW.last_name);
+   :NEW.first_name := UPPER(:NEW.first_name);
+   :NEW.middle_name := UPPER(:NEW.middle_name);
+   :NEW.gender := UPPER(:NEW.gender);
+   :NEW.suffix := UPPER(:NEW.suffix);
+   :NEW.country := UPPER(:NEW.country);
+   :NEW.caseload_type := UPPER(:NEW.caseload_type);
+   :NEW.name_type := UPPER(:NEW.name_type);
+   :NEW.ethnicity := UPPER(:NEW.ethnicity);
+   :NEW.birth_state := UPPER(:NEW.birth_state);
+END;
+/
+

@@ -1,0 +1,30 @@
+CREATE TABLE oms_owner.offender_proceeding_conditions (
+off_proceeding_cond_id        int8 NOT NULL,
+offender_proceeding_id        int8 NOT NULL,
+offender_sent_condition_id    int8 NOT NULL,
+create_datetime               timestamp(6) NOT NULL,
+create_user_id                varchar(32) NOT NULL,
+modify_datetime               timestamp(6) NULL,
+modify_user_id                varchar(32) NULL,
+seal_flag                     varchar(1) NULL
+)
+TABLESPACE tag_data;
+
+ALTER TABLE oms_owner.offender_proceeding_conditions 	
+   ADD CONSTRAINT offender_proceeding_conditions_pk PRIMARY KEY (off_proceeding_cond_id)  
+USING INDEX TABLESPACE tag_indx;
+
+ALTER TABLE oms_owner.offender_proceeding_conditions 	
+   ADD CONSTRAINT offender_proceeding_conditions_fk1 FOREIGN KEY (offender_proceeding_id)
+   REFERENCES oms_owner.offender_proceedings(offender_proceeding_id) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE; 
+
+ALTER TABLE oms_owner.offender_proceeding_conditions 	
+   ADD CONSTRAINT offender_proceeding_conditions_fk2 FOREIGN KEY (offender_sent_condition_id)
+   REFERENCES oms_owner.offender_sent_conditions(offender_sent_condition_id) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE;    
+
+COMMENT ON TABLE oms_owner.offender_proceeding_conditions IS 'Linked Conditions to the particular Court action';
+
+COMMENT ON COLUMN oms_owner.offender_proceeding_conditions.off_proceeding_cond_id IS 'Unique identifier for the court action Conditions detail record [db sequence=off_proceeding_cond_id]';
+COMMENT ON COLUMN oms_owner.offender_proceeding_conditions.offender_proceeding_id IS 'The unique id of the proceeding';
+COMMENT ON COLUMN oms_owner.offender_proceeding_conditions.offender_sent_condition_id IS 'The unique id of the associated offender sentence condition';
+

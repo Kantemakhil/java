@@ -1,0 +1,9 @@
+DO
+$body$
+DECLARE 
+   seq_value int;
+begin
+   seq_value := (select MAX(staff_id )+1 from staff_members);
+   execute 'alter sequence staff_id  restart with '|| seq_value;
+END;
+$body$ 

@@ -1,0 +1,2 @@
+ALTER TABLE oms_owner.oms_modules ADD COLUMN view_audit_flag VARCHAR(1) DEFAULT 'N' NOT NULL CHECK (view_audit_flag IN ('Y', 'N')) ;
+COMMENT ON COLUMN oms_owner.oms_modules.view_audit_flag is 'Indicates if the module (screen) logs when a user selects/views offender records (Y= Enabled, N= Disabled)';

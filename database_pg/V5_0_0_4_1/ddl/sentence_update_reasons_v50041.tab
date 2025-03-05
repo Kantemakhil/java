@@ -1,0 +1,4 @@
+alter table sentence_update_reasons drop constraint sent_upd_rsn_lgl_upd_usg_fk;
+delete from legal_update_usages;
+delete from legal_update_reasons;
+alter table legal_update_reasons alter column reason_category drop not null;

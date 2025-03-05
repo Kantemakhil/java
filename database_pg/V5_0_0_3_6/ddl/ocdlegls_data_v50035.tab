@@ -1,0 +1,1 @@
+ALTER TABLE ocdlegls_data ADD action_type varchar(32);

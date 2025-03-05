@@ -1,0 +1,4 @@
+
+INSERT_TRANSACTION_TYPES_JN_TABLE {
+insert into TRANSACTION_TYPES_JN( jn_operation, jn_oracle_user, jn_datetime, jn_session,TXN_TYPE , DESCRIPTION , ACTIVE_FLAG , TXN_USAGE , ALL_CASELOAD_FLAG , EXPIRY_DATE , UPDATE_ALLOWED_FLAG , MANUAL_INVOICE_FLAG , CREDIT_OBLIGATION_TYPE , MODIFY_DATE ,MODIFY_USER_ID, LIST_SEQ , GROSS_NET_FLAG , SEAL_FLAG , CREATE_DATETIME , CREATE_USER_ID , MODIFY_DATETIME ) values( :jnOperation, :createUserId, current_timestamp, 0,:txnType , :description , :activeFlag , :txnUsage , :allCaseloadFlag , :expiryDate , :updateAllowedFlag , :manualInvoiceFlag , :creditObligationType , :modifyDate ,:modifyUserId, :listSeq , :grossNetFlag , :sealFlag , current_timestamp , :createUserId , current_timestamp )
+        }

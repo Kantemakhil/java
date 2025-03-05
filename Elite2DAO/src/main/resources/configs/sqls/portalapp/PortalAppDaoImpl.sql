@@ -1,0 +1,38 @@
+GET_ALL_INPUT_PAYLOAD {
+ 	SELECT INPUT_REQUEST_ID, INPUT_PAYLOAD FROM INTEGRATION_INPUT WHERE ACTION = :action_code AND STATUS = :status ORDER BY INPUT_REQUEST_ID desc
+}
+
+GET_ALL_NON_PENDING_INPUT_PAYLOAD {
+ 	SELECT * FROM INTEGRATION_INPUT WHERE ACTION = :action_code AND STATUS != :status ORDER BY MODIFY_DATE desc
+}
+NUMBER_OF_EXACT_MATCH {
+	SELECT  COUNT(*) FROM offenders WHERE  offender_id_display = :personId
+}
+NUMBER_OF_MAY_BE_MATCHES {
+	SELECT  COUNT(*) FROM  offenders WHERE LAST_NAME = :lastName and FIRST_NAME = :firstName
+}
+NUMBER_OF_EXACT_MATCH_OFFENDER {
+	SELECT  OFFENDER_ID FROM offenders WHERE  offender_id_display = :personId
+}
+NUMBER_OF_MAY_BE_MATCHES_OFFENDER {
+	SELECT  OFFENDER_ID FROM  offenders WHERE LAST_NAME = :lastName and FIRST_NAME = :firstName
+}
+REJECT_INPUT_PAYLOAD {
+	UPDATE INTEGRATION_INPUT SET STATUS = 'FAILED', OUTPUT_PAYLOAD = :outputPayload, MODIFY_DATE = systimestamp where INPUT_REQUEST_ID = :requetId
+}
+ACCEPT_INPUT_PAYLOAD {
+	UPDATE INTEGRATION_INPUT SET STATUS = 'SUCCESS', OUTPUT_PAYLOAD = :outputPayload, MODIFY_DATE = systimestamp where INPUT_REQUEST_ID = :requetId
+}
+
+SCHEDULE_UPDATE_OUTPUT_PAYLOAD {
+	UPDATE INTEGRATION_INPUT SET STATUS = :status, OUTPUT_PAYLOAD = :outputPayload, MODIFY_DATE = systimestamp where INPUT_REQUEST_ID = :requetId
+}
+
+GET_ROOT_OFFENDER_ID {
+	SELECT ROOT_OFFENDER_ID from OFFENDERS where OFFENDER_ID = :offenderId
+}
+
+OFFENDER_BOOKING_EXIST {
+	select DISTINCT OFFENDER_BOOK_ID, OFFENDER_ID_DISPLAY from offender_bookings obs inner join Offenders ofs on obs.root_offender_id = ofs.root_offender_id  
+	where offender_id_display in (:offedner_display_ids) and ACTIVE_FLAG = 'Y'
+}

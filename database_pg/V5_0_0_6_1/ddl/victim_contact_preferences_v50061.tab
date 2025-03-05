@@ -1,0 +1,5 @@
+UPDATE victim_contact_preferences 
+  SET comment = SUBSTR(comment, 1, 240) 
+ WHERE length(comment)>240;
+
+ALTER TABLE victim_contact_preferences ALTER COLUMN comment TYPE varchar(240);

@@ -1,0 +1,72 @@
+--echo everything (this eliminates the need to call psql -a)
+\set ECHO all
+
+--set the message level sent to client
+SET client_min_messages = warning;
+
+--print connection information
+\echo 'Database Information:'
+\conninfo
+
+--set client session behaviour
+\set AUTOCOMMIT on
+\timing on
+\set footer on
+\x auto
+\pset null <NULL>
+\set VERBOSITY verbose
+\pset pager off
+
+show search_path;
+
+select current_timestamp;
+
+--record scripts version
+call log_db_version_control('5', 'initial PostgreSql Elite db version ');
+call log_db_version_control_patches('5', '5_0_0_0_8', 'ddl set 1_0 of patch 5_0_0_0_8', '1_0_batch_oms_owner_ddl_5_0_0_0_8.run');
+
+--execute sql scripts
+--
+\i get_comm_staff_cur_type.typ
+--
+\i court_evnt_appoint_outcome_id.seq
+\i ocdleglo_sanction_hty_id.seq
+\i servicebus_queue_id.seq
+--
+\i court_events_v50008.tab
+\i court_evnt_appointment_outcome.tab
+\i dynamic_grid_config.tab
+\i event_measures_v50008.tab
+\i ocdleglo_sanction_hty.tab
+\i offender_sentence_hty_v50008.tab
+\i offenders_external_search_v50008.tab
+\i offenders_v50008.tab
+\i offenders_jn_v50008.tab
+\i oms_module_ins_dashboard.tab
+\i oms_modules_v50008.tab
+\i or_audit_v50008.tab
+\i schedule_series_rule.tab
+\i sentence_calc_types_v50008.tab
+\i servicebus_failed_msg_queue.tab
+--
+\i functions_v50008_1.fun
+\i functions_v50008_2.fun
+\i v_header_block_fn.fun
+\i drop_views_v50008.sql
+\i v_header_block.vew
+\i v_off_observation_periods_res.vew
+\i v_gang_affiliations.vew
+\i v_offender_cip_inquiry.vew
+\i v_trust_header.vew
+ 
+select current_timestamp;
+
+show search_path;
+
+ 
+ 
+
+
+
+
+

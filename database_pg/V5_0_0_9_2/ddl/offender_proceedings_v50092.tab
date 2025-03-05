@@ -1,0 +1,24 @@
+ALTER TABLE oms_owner.offender_proceedings ADD COLUMN proceeding_pursuant_act varchar(12);
+COMMENT ON COLUMN oms_owner.offender_proceedings.proceeding_pursuant_act IS 'Proceeding Pursuant Act [reference_domain= CRT_ACT_PUR]';
+
+ALTER TABLE oms_owner.offender_proceedings ADD COLUMN crt_action_recommendation varchar(12);
+COMMENT ON COLUMN oms_owner.offender_proceedings.crt_action_recommendation IS 'Court Action Recommendation [reference_domain= CRT_ACT_REC]';
+
+
+ALTER TABLE oms_owner.offender_proceedings ALTER COLUMN sentence_seq TYPE integer USING (NULLIF(sentence_seq, '')::integer);
+ALTER TABLE oms_owner.offender_proceedings ALTER COLUMN team_responsible TYPE integer USING (NULLIF(team_responsible, '')::integer);
+ALTER TABLE oms_owner.offender_proceedings ALTER COLUMN staff_responsible TYPE integer USING (NULLIF(staff_responsible, '')::integer);
+
+ALTER TABLE offender_proceedings RENAME COLUMN team_responsible TO team_id;
+
+
+ALTER TABLE offender_proceedings 	
+   ADD CONSTRAINT offender_proceedings_fk1 FOREIGN KEY (team_id)
+   REFERENCES automation_teams(team_id) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE; 
+
+  
+COMMENT ON COLUMN oms_owner.offender_proceedings.order_type IS 'The parent sentence/order type';
+COMMENT ON COLUMN oms_owner.offender_proceedings.sentence_seq IS 'The parent sentence/order number';
+COMMENT ON COLUMN oms_owner.offender_proceedings.team_id IS 'The unique id of the team';  
+COMMENT ON COLUMN oms_owner.offender_proceedings.staff_responsible IS 'The unique id of the team member when team is provided or the unique staff id otherwise';
+

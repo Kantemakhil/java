@@ -1,0 +1,61 @@
+--echo everything (this eliminates the need to call psql -a)
+\set ECHO all
+
+--set the message level sent to client
+SET client_min_messages = warning;
+
+--print connection information
+\echo 'Database Information:'
+\conninfo
+
+--set client session behaviour
+\set AUTOCOMMIT on
+\timing on
+\set footer on
+\x auto
+\pset null <NULL>
+\set VERBOSITY verbose
+\pset pager off
+
+show search_path;
+
+select current_timestamp;
+
+--record scripts version
+call log_db_version_control('5', 'initial PostgreSql Elite db version ');
+call log_db_version_control_patches('5', '5_0_0_4_3', 'ddl set 1_0 of patch 5_0_0_4_3', '1_0_batch_oms_owner_ddl_5_0_0_4_3.run');
+
+--execute sql scripts
+
+\i legal_settings_v50043.tab
+\i offender_order_adjust_id_seq_v50043.seq
+\i offender_legal_adjustments_v50043.tab
+\i offender_tier_levels_v50043.tab
+\i offender_visits_v50043.tab
+\i offenders_external_search_v50043.tab
+\i offenders_v50043.tab
+\i persons_v50043.tab
+\i staff_loc_role_id_seq_v50043.seq
+\i staff_location_roles_v50043.tab
+\i v_om_team_members_v50043.vew
+\i wl_default_staff_units_v50043.tab
+\i wl_non_off_specific_tasks_v50043.tab
+\i wl_officer_non_off_specific_tasks_v50043.tab
+\i dynamic_grid_config_v50043.tab
+\i offender_parole_events_v50043.tab
+\i iwp_bookmark_parameters_v50043.tab
+\i offender_ind_schedules_v50043.tab
+
+\i reset_staff_id_v50043.seq
+
+select current_timestamp;
+
+show search_path;
+
+ 
+ 
+
+
+
+
+

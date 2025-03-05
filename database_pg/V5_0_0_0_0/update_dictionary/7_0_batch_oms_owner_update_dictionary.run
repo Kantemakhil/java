@@ -1,0 +1,61 @@
+--echo everything (this eliminates the need to call psql -a)
+\set ECHO all
+
+--set the message level sent to client
+SET client_min_messages = warning;
+
+--print connection information
+\echo 'Database Information:'
+\conninfo
+
+--set psql session behaviour
+\set AUTOCOMMIT on
+\timing on
+\set footer on
+\x auto
+\pset null <NULL>
+\set VERBOSITY verbose
+\pset pager off
+
+show search_path;
+
+select current_timestamp;
+
+--record scripts version
+call log_db_version_control('5', 'initial PostgreSql Elite db version ');
+call log_db_version_control_patches('5', '5_0_0_0_0', 'ddl set 7_0 of patch 5_0_0_0_0', '7_0_batch_oms_owner_update_dictionary_5_0_0_0_0.run');
+
+--execute sql scripts
+\i assessments-dictionary.sql 
+\i biometrics-and-imaging-dictionary.sql 
+\i care-in-placement-dictionary.sql 
+\i case-management-dictionary.sql 
+\i central-case-file-dictionary.sql 
+\i commissary-dictionary.sql 
+\i demographics-dictionary.sql 
+\i grievances-dictionary.sql 
+\i incidents-dictionary.sql 
+\i institutional-counts-dictionary.sql 
+\i iwp-dictionary.sql 
+\i legal-orders-admin-dictionary.sql 
+\i legal-orders-dictionary.sql 
+\i menu-and-navigation-dictionary.sql 
+\i offences-in-custody-dictionary.sql 
+\i offender-queue-manager-dictionary.sql 
+\i people-places-contacts-dictionary.sql 
+\i programs-and-services-dictionary.sql 
+\i property-dictionary.sql 
+\i schedules-and-movements-dictionary.sql 
+\i security-threat-groups-dictionary.sql 
+\i system-and-global-administration-dictionary.sql 
+\i system-configuration-dictionary.sql 
+\i system-security-dictionary.sql 
+\i teams-and-workflow-dictionary.sql 
+\i trust-accounting-dictionary.sql 
+\i victims-and-notifications-dictionary.sql 
+\i visits-dictionary.sql 
+
+select current_timestamp;
+
+show search_path;
+

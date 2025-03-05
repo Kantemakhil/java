@@ -1,0 +1,362 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.13.0.final using JasperReports Library version 6.13.0-46ada4d1be8f3c5985fd0b6146f3ed44caed6f05  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="OTRBALAN" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="57ad8ae9-e37d-4337-bf76-80998b9e1265">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Table_CH" mode="Opaque" backcolor="#BFE1FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Table_TD" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+			<topPen lineWidth="0.5" lineColor="#000000"/>
+			<leftPen lineWidth="0.5" lineColor="#000000"/>
+			<bottomPen lineWidth="0.5" lineColor="#000000"/>
+			<rightPen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<parameter name="proffBal" class="java.math.BigDecimal"/>
+	<parameter name="recpless" class="java.math.BigDecimal"/>
+	<queryString>
+		<![CDATA[]]>
+	</queryString>
+	<field name="parentName" class="java.lang.String"/>
+	<field name="childName" class="java.lang.String"/>
+	<field name="subChildName" class="java.lang.String"/>
+	<field name="amount" class="java.math.BigDecimal"/>
+	<field name="fReportHeaderLabelName" class="java.lang.String"/>
+	<field name="fCaseloadNameOne" class="java.lang.String"/>
+	<field name="userDate" class="java.lang.String"/>
+	<field name="userName" class="java.lang.String"/>
+	<variable name="subChildTotal" class="java.math.BigDecimal" resetType="Group" resetGroup="DataSubGroup" calculation="Sum">
+		<variableExpression><![CDATA[$F{amount}]]></variableExpression>
+	</variable>
+	<variable name="parentTotal" class="java.math.BigDecimal" resetType="Group" resetGroup="dataGroup" calculation="Sum">
+		<variableExpression><![CDATA[$F{amount}]]></variableExpression>
+	</variable>
+	<group name="dataGroup" isStartNewPage="true">
+		<groupExpression><![CDATA[$F{parentName}]]></groupExpression>
+		<groupHeader>
+			<band height="19">
+				<textField>
+					<reportElement mode="Opaque" x="0" y="-2" width="555" height="20" forecolor="#010080" backcolor="#BDE0FF" uuid="f67a87eb-4d6f-4d55-95fe-a12fe1c3064f"/>
+					<textElement verticalAlignment="Middle">
+						<font isBold="true"/>
+						<paragraph leftIndent="5"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{parentName}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement x="0" y="18" width="554" height="1" uuid="f79a8d1f-0a2d-4fab-a9d9-0588435c704c"/>
+				</line>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="47">
+				<textField isBlankWhenNull="true">
+					<reportElement isPrintRepeatedValues="false" mode="Opaque" x="0" y="0" width="285" height="20" isRemoveLineWhenBlank="true" forecolor="#3391DB" backcolor="#EBEBEB" uuid="5126c891-45d4-4b74-a993-19fdc0d28356"/>
+					<box>
+						<pen lineColor="#F4F4F4"/>
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement verticalAlignment="Middle">
+						<font isBold="true"/>
+						<paragraph leftIndent="5"/>
+					</textElement>
+					<textFieldExpression><![CDATA["TOTAL " + $F{parentName}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="dataGroup" pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement positionType="Float" stretchType="ContainerHeight" mode="Opaque" x="281" y="0" width="273" height="20" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#EBEBEB" uuid="c372ad92-cbf5-4d48-a2fd-34458015424a"/>
+					<box>
+						<pen lineColor="#F4F4F4"/>
+						<topPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font isBold="false"/>
+						<paragraph rightIndent="5"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{parentTotal} == null ?  "0.00" : $V{parentTotal}.compareTo( java.math.BigDecimal.ZERO) >= 0  ?$V{parentTotal}.setScale( 2, java.math.BigDecimal.ROUND_HALF_UP ) :
+"<"+ $V{parentTotal}.abs().setScale( 2, java.math.BigDecimal.ROUND_HALF_UP )+ ">"]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement positionType="Float" stretchType="ContainerHeight" mode="Opaque" x="0" y="21" width="285" height="20" isRemoveLineWhenBlank="true" forecolor="#3391DB" backcolor="#EBEBEB" uuid="e92268ff-9109-467e-9c74-5a2983593034">
+						<printWhenExpression><![CDATA["LIABILITIES".equals(  $F{parentName} ) || "DISBURSEMENTS".equals(  $F{parentName} )]]></printWhenExpression>
+					</reportElement>
+					<box>
+						<pen lineColor="#F4F4F4"/>
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement verticalAlignment="Middle">
+						<font isBold="true"/>
+						<paragraph leftIndent="5"/>
+					</textElement>
+					<textFieldExpression><![CDATA["LIABILITIES".equals(  $F{parentName} ) ?  "PROOF BALANCE" : "DISBURSEMENTS".equals(  $F{parentName} )  ? "RECEIPTS LESS DISBURSMENTS" : null]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="dataGroup" pattern="#,##0.00;(-#,##0.00)">
+					<reportElement positionType="Float" stretchType="ContainerHeight" mode="Opaque" x="281" y="21" width="273" height="20" printWhenGroupChanges="dataGroup" forecolor="#000000" backcolor="#EBEBEB" uuid="e25cbfa7-949d-4632-bbf3-1dd88f7123ef">
+						<printWhenExpression><![CDATA["LIABILITIES".equals(  $F{parentName} ) || "DISBURSEMENTS".equals(  $F{parentName} )]]></printWhenExpression>
+					</reportElement>
+					<box>
+						<pen lineColor="#F4F4F4"/>
+						<topPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font isBold="false"/>
+						<paragraph rightIndent="5"/>
+					</textElement>
+					<textFieldExpression><![CDATA["LIABILITIES".equals(  $F{parentName} ) ? 
+$P{proffBal} == null ?  "0.00" : $P{proffBal}.compareTo( java.math.BigDecimal.ZERO) >= 0  ?$P{proffBal}.setScale( 2, java.math.BigDecimal.ROUND_HALF_UP ) :
+     "<"+
+     java.text.NumberFormat.getCurrencyInstance(new java.util.Locale("en", "US")).format($P{proffBal}.abs().setScale( 2, java.math.BigDecimal.ROUND_HALF_UP )).replace("$", "")
+     + ">"
+:
+"DISBURSEMENTS".equals(  $F{parentName} ) ?
+$P{recpless} == null ? "0.00" : $P{proffBal}.compareTo( java.math.BigDecimal.ZERO) < 0  && $P{recpless}.compareTo( java.math.BigDecimal.ZERO) == 0 ? "<"+ java.text.NumberFormat.getCurrencyInstance(new java.util.Locale("en", "US")).format($P{proffBal}.abs().setScale( 2, java.math.BigDecimal.ROUND_HALF_UP )).replace("$", "")+ ">": 
+
+
+$P{recpless}.compareTo( java.math.BigDecimal.ZERO) == 0  ? 
+$P{proffBal}.setScale( 2, java.math.BigDecimal.ROUND_HALF_UP ) :  $P{recpless}.compareTo( java.math.BigDecimal.ZERO) > 0  ? $P{recpless}.setScale( 2, java.math.BigDecimal.ROUND_HALF_UP ) :
+    "<"+
+     java.text.NumberFormat.getCurrencyInstance(new java.util.Locale("en", "US")).format($P{recpless}.abs().setScale( 2, java.math.BigDecimal.ROUND_HALF_UP )).replace("$", "")
+     + ">"
+: null]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="50">
+				<printWhenExpression><![CDATA["DISBURSEMENTS".equals(  $F{parentName} )]]></printWhenExpression>
+				<staticText>
+					<reportElement x="24" y="5" width="100" height="20" isPrintInFirstWholeBand="true" uuid="f321b405-c3c7-4ee1-a1e2-f45acea0414a"/>
+					<textElement verticalAlignment="Middle"/>
+					<text><![CDATA[PREPARED BY  ]]></text>
+				</staticText>
+				<line>
+					<reportElement x="135" y="18" width="150" height="1" uuid="416df275-afdb-482f-9f9e-f8dbf398e453"/>
+				</line>
+				<staticText>
+					<reportElement x="24" y="30" width="100" height="17" uuid="39b54698-d42a-4abd-b488-46f3bd2900db"/>
+					<textElement verticalAlignment="Middle"/>
+					<text><![CDATA[AUTHORIZED BY]]></text>
+				</staticText>
+				<line>
+					<reportElement x="135" y="43" width="150" height="1" uuid="e03ea834-a5dc-4cc4-b6c4-5d9b4a83003b"/>
+				</line>
+				<staticText>
+					<reportElement x="324" y="5" width="100" height="20" uuid="3cbe88a5-ca3b-4d3b-b30f-f009a1ba5c42"/>
+					<textElement verticalAlignment="Middle"/>
+					<text><![CDATA[DATE]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="323" y="30" width="100" height="17" uuid="b9a57a8f-27c7-46c5-a53e-b0b2dbac6488"/>
+					<textElement verticalAlignment="Middle"/>
+					<text><![CDATA[DATE]]></text>
+				</staticText>
+				<line>
+					<reportElement x="450" y="43" width="102" height="1" uuid="98e64c85-e49a-46d2-99c9-7bbd78007148"/>
+				</line>
+				<line>
+					<reportElement x="450" y="18" width="102" height="1" uuid="4aa63ba6-d0a2-4b06-b9ba-e54fedc1999d"/>
+				</line>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="DataSubGroup">
+		<groupExpression><![CDATA[$F{childName}]]></groupExpression>
+		<groupHeader>
+			<band height="24">
+				<textField isBlankWhenNull="true">
+					<reportElement positionType="Float" stretchType="ContainerHeight" mode="Opaque" x="0" y="0" width="555" height="20" isRemoveLineWhenBlank="true" forecolor="#010080" backcolor="#EBEBEB" uuid="e0309c28-f425-4299-8865-fc593fa4387b">
+						<printWhenExpression><![CDATA[$F{childName} != null]]></printWhenExpression>
+					</reportElement>
+					<box>
+						<pen lineColor="#F4F4F4"/>
+						<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#F4F4F4"/>
+						<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#F4F4F4"/>
+						<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#F4F4F4"/>
+						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#F4F4F4"/>
+					</box>
+					<textElement verticalAlignment="Middle">
+						<font isBold="true"/>
+						<paragraph leftIndent="5"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{childName}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="16">
+				<printWhenExpression><![CDATA[$F{childName} != null]]></printWhenExpression>
+				<textField isBlankWhenNull="true">
+					<reportElement stretchType="ElementGroupBottom" mode="Opaque" x="0" y="-4" width="285" height="20" isRemoveLineWhenBlank="true" forecolor="#3391DB" backcolor="#EBEBEB" uuid="83775d3c-b3a6-43ce-aa48-6a539df2a65d">
+						<printWhenExpression><![CDATA[$F{childName} != null]]></printWhenExpression>
+					</reportElement>
+					<box>
+						<pen lineColor="#F4F4F4"/>
+						<topPen lineWidth="1.0"/>
+						<leftPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement verticalAlignment="Middle">
+						<font isBold="true"/>
+						<paragraph leftIndent="5"/>
+					</textElement>
+					<textFieldExpression><![CDATA["TOTAL " + $F{childName}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00">
+					<reportElement mode="Opaque" x="281" y="-4" width="273" height="20" forecolor="#000000" backcolor="#EBEBEB" uuid="4cbb7600-c373-4f6a-984a-3dc5b657ee25">
+						<printWhenExpression><![CDATA[$F{childName} != null]]></printWhenExpression>
+					</reportElement>
+					<box>
+						<pen lineColor="#F4F4F4"/>
+						<topPen lineWidth="1.0"/>
+						<bottomPen lineWidth="1.0"/>
+						<rightPen lineWidth="1.0"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font isBold="false"/>
+						<paragraph rightIndent="5"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{subChildTotal} == null ?  "0.00" : $V{subChildTotal}.compareTo( java.math.BigDecimal.ZERO) >= 0  ?$V{subChildTotal}.setScale( 2, java.math.BigDecimal.ROUND_HALF_UP ) :
+"<"+ $V{subChildTotal}.abs().setScale( 2, java.math.BigDecimal.ROUND_HALF_UP )+ ">"]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<pageHeader>
+		<band height="127">
+			<frame>
+				<reportElement mode="Opaque" x="0" y="4" width="555" height="80" backcolor="#BFDFFF" uuid="49f334d9-3994-4a1c-9808-11f8c35e0e36"/>
+				<box>
+					<pen lineWidth="1.0" lineStyle="Double" lineColor="#7FBFFF"/>
+				</box>
+				<frame>
+					<reportElement mode="Opaque" x="5" y="4" width="545" height="70" backcolor="#FFFFFF" uuid="b58a9b8b-7ace-4e64-a2d1-174a902e79b4"/>
+					<box>
+						<pen lineWidth="1.0" lineStyle="Double" lineColor="#BF7FFF"/>
+					</box>
+					<textField pattern="MMMMM dd, yyyy">
+						<reportElement x="4" y="4" width="106" height="16" forecolor="#00007F" uuid="d2cb6d95-8c53-4c19-8879-2add62b42bd2"/>
+						<textFieldExpression><![CDATA[new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date())]]></textFieldExpression>
+					</textField>
+					<textField>
+						<reportElement mode="Opaque" x="5" y="26" width="111" height="21" forecolor="#00007F" uuid="61342e64-f9ba-4388-a083-6d1d2d927a89"/>
+						<textFieldExpression><![CDATA[$F{userName}]]></textFieldExpression>
+					</textField>
+					<textField>
+						<reportElement x="473" y="26" width="65" height="21" forecolor="#00007F" uuid="a3ec5594-c6f9-403d-8c1b-23f718a1b987"/>
+						<textFieldExpression><![CDATA["OTRBALAN"]]></textFieldExpression>
+					</textField>
+					<textField>
+						<reportElement x="492" y="47" width="45" height="18" forecolor="#00007F" uuid="c632f7d4-6924-46c7-8b3e-1ac6c76e5a90"/>
+						<textFieldExpression><![CDATA["11.2.1.0"]]></textFieldExpression>
+					</textField>
+					<textField isBlankWhenNull="true">
+						<reportElement x="190" y="7" width="170" height="14" forecolor="#00007F" uuid="f16b8d00-c823-4d32-b4f7-a1b1b1ea2711"/>
+						<textFieldExpression><![CDATA[$F{fReportHeaderLabelName}]]></textFieldExpression>
+					</textField>
+					<textField isBlankWhenNull="true">
+						<reportElement mode="Opaque" x="190" y="26" width="146" height="22" forecolor="#00007F" uuid="01dc7dd1-fc78-4a12-9fa4-427e72eea867"/>
+						<textFieldExpression><![CDATA[$F{fCaseloadNameOne}]]></textFieldExpression>
+					</textField>
+					<textField evaluationTime="Report">
+						<reportElement x="515" y="4" width="24" height="20" forecolor="#00007F" uuid="804811f7-fed9-4bfb-8d85-eeb03a6a61c0"/>
+						<textElement verticalAlignment="Middle">
+							<font size="9"/>
+						</textElement>
+						<textFieldExpression><![CDATA[($V{PAGE_NUMBER}  + "".length())  < 1  ? $V{PAGE_NUMBER} : "0" + $V{PAGE_NUMBER}]]></textFieldExpression>
+					</textField>
+					<textField>
+						<reportElement x="423" y="4" width="91" height="20" forecolor="#00007F" uuid="2bfd7229-069d-44b7-a144-473107e8c19e"/>
+						<textElement textAlignment="Right" verticalAlignment="Middle">
+							<font fontName="SansSerif" size="9" isBold="false" isStrikeThrough="false"/>
+						</textElement>
+						<textFieldExpression><![CDATA["PAGE :    " + (($V{PAGE_NUMBER} + "".length())  < 1  ? $V{PAGE_NUMBER} : "0" +  $V{PAGE_NUMBER} ) + " OF "]]></textFieldExpression>
+					</textField>
+				</frame>
+			</frame>
+			<frame>
+				<reportElement mode="Opaque" x="0" y="84" width="555" height="41" backcolor="#7FBFFD" uuid="6fc6f599-d9b2-452b-9e70-e85f3c3baf09"/>
+				<textField>
+					<reportElement positionType="Float" x="139" y="2" width="331" height="18" forecolor="#00007F" uuid="84779bf2-99ff-4377-baad-b873a64c81dc"/>
+					<textFieldExpression><![CDATA["TRUST  BALANCE  SHEET  AND  INCOME  STATEMENT"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement positionType="Float" mode="Opaque" x="226" y="22" width="44" height="15" forecolor="#00007F" backcolor="#7FBFFF" uuid="43253922-492f-42d1-b75f-c41700a568a8"/>
+					<textFieldExpression><![CDATA["AS OF "]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="270" y="22" width="101" height="15" forecolor="#00007F" backcolor="#7FBFFF" uuid="ab8899d1-bd88-4227-8778-c9749aeb2227"/>
+					<textFieldExpression><![CDATA[$F{userDate}]]></textFieldExpression>
+				</textField>
+			</frame>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="20" splitType="Stretch">
+			<printWhenExpression><![CDATA[$F{subChildName} != null]]></printWhenExpression>
+			<textField isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="ContainerHeight" mode="Opaque" x="0" y="-4" width="281" height="20" isRemoveLineWhenBlank="true" forecolor="#050317" uuid="9c11d303-2574-4df0-acb0-09e67e72091a">
+					<printWhenExpression><![CDATA[$F{subChildName} != null]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<pen lineColor="#F4F4F4"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#F4F4F4"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#F4F4F4"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#F4F4F4"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#F4F4F4"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<paragraph leftIndent="5"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{subChildName}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00;(-#,##0.00)" isBlankWhenNull="true">
+				<reportElement stretchType="ContainerHeight" mode="Opaque" x="281" y="-4" width="273" height="20" isRemoveLineWhenBlank="true" uuid="b78778c7-1674-4df9-845d-d2e5e90946bf">
+					<printWhenExpression><![CDATA[$F{subChildName} != null]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<pen lineColor="#F4F4F4"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#F4F4F4"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#F4F4F4"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#F4F4F4"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#F4F4F4"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<paragraph rightIndent="5"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{amount}.compareTo( java.math.BigDecimal.ZERO) >= 0  ?$F{amount}.setScale( 2, java.math.BigDecimal.ROUND_HALF_UP ) :
+
+     "<"+
+     java.text.NumberFormat.getCurrencyInstance(new java.util.Locale("en", "US")).format($F{amount}.abs().setScale( 2, java.math.BigDecimal.ROUND_HALF_UP )).replace("$", "")
+     + ">"]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

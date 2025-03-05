@@ -1,0 +1,133 @@
+GET_OFFENDER_SENT_CONDITIONS {
+SELECT SENTENCE_SEQ,
+	COMM_CONDITION_TYPE,
+	COMM_CONDITION_CODE,
+	START_DATE,
+	CONDITION_STATUS,
+	STATUS_DATE,
+	OFFENDER_BOOK_ID,
+	EXPIRY_DATE,
+	LIST_SEQ,
+	COMMENT_TEXT,
+	CURFEW_START_TIME,
+	CURFEW_END_TIME,
+	CONDITION_RECOMMENDED_FLAG,
+	GOVERNOR_CONDITION_FLAG,
+	LENGTH,
+	LENGTH_UNIT,
+	DETAILS_TEXT,
+	OFFENDER_SENT_CONDITION_ID,
+	CURFEW_PROVIDER,
+	EXCLUSION_CODE,
+	RESIDENCY_ADDRESS_ID,
+	MENTAL_HEALTH_PROVIDER,
+	ALCOHOL_TREATMENT_PROVIDER,
+	ATTENDANCE_CENTRE,
+	CREATE_DATETIME,
+	CREATE_USER_ID,
+	MODIFY_DATETIME,
+	MODIFY_USER_ID,
+	CONDITION_REQUIRED_FLAG,
+	CONDITION_APPLIED_FLAG,
+	LONG_COMMENT_TEXT,
+	APPOINTMENT_PERSON_NAME,
+	REVIEW_CODE,
+	SUPERVISOR_NAME,
+	REPORT_TIME,
+	REPORT_DATE,
+	PERSONAL_RELATIONSHIP_FLAG,
+	VEHICLE_DETAILS_FLAG,
+	NON_ASSOCIATED_OFFENDERS,
+	DRUG_TESTING,
+	TERMINATION_DATE,
+	STATUS_REASON_CODE,
+	NO_RESIDENT_UNDER_AGE_OF,
+	PROHIBITED_CONTACT,
+	RESTRICTED_CHILD_AGE_OF,
+	RESTRICTED_APPROVAL_PERSON,
+	CURFEW_TAGGING_FLAG,
+	OTHER_PROGRAM,
+	NO_WORK_WITH_UNDER_AGE,
+	NO_WORK_WITH_UNDER_AGE_OF,
+	NO_ACCESS_TO_INTERNET,
+	NO_USER_OF_COMPUTER,
+	STATUS_UPDATE_REASON,
+	STATUS_UPDATE_COMMENT,
+	STATUS_UPDATE_DATE,
+	STATUS_UPDATE_STAFF_ID,
+	WORKFLOW_ID,
+	PROGRAM_ID,
+	ACTIVITY_CODE,
+	COND_ACT_TYPE,
+	ACTIVITY_STATUS,
+	CATEGORY_TYPE,
+	NON_ASSOCIATION_TEXT,
+	FINANCIAL_TOTAL_AMOUNT,
+	SEAL_FLAG,
+	OBJECT_ID,
+	OBJECT_TYPE,
+	BOARD_ORDER_FLAG FROM OFFENDER_SENT_CONDITIONS WHERE OFFENDER_SENT_CONDITION_ID=:OFFENDER_SENT_CONDITION_ID
+
+}
+
+GET_COMMUNITY_CONDITIONS {
+SELECT 1
+     FROM community_conditions
+    WHERE comm_condition_type = :comm_condition_type
+      AND comm_condition_code = :comm_condition_code
+      AND category_type       = :category_type
+      AND active_flag         = 'Y'
+      AND case_plan_flag      = 'Y'
+}
+
+GET_CASE_PLANS {
+SELECT cs.offender_book_id
+         ,cs.case_plan_id
+     FROM case_plans cs
+    WHERE cs.case_plan_status = 'ACTIVE'
+      AND cs.offender_book_id = :offender_book_id
+}
+
+GET_OFF_CASE_COND_ID {
+	SELECT nextval('off_case_cond_id') FROM DUAL
+}
+
+INSERT_OFFENDER_CASE_CONDITIONS {
+INSERT INTO offender_case_conditions(off_case_cond_id
+                                                    ,offender_book_id
+                                                    ,case_plan_id
+                                                    ,offender_sent_condition_id
+                                                    ,comm_condition_type
+                                                    ,comm_condition_code
+                                                    ,Category_Type
+                                                    ,length
+                                                    ,length_unit
+                                                    ,start_date
+                                                    ,end_date
+                                                    ,condition_status,
+                                                    create_datetime,
+                                                    create_user_id)
+                                         VALUES ( :v_off_cc_id
+                                                 ,:v_obi
+                                                 ,:v_caseplan_id
+                                                 ,:offender_sent_condition_id
+                                                 ,:comm_condition_type
+                                                 ,:comm_condition_code
+                                                 ,:Category_Type
+                                                 ,:length
+                                                 ,:length_unit
+                                                 ,:start_date
+                                                 ,:expiry_date
+                                                 ,:condition_status,
+                                                 current_timestamp,
+                                                 :createUserId)
+}
+
+GET_OFFENDER_CASE_CONDITIONS_T1_TRIGGER {
+SELECT *   FROM offender_case_conditions where offender_sent_condition_id =:OFFENDER_SENT_CONDITION_ID 
+    and case_plan_id  = (select max(oc.case_plan_id) from offender_case_conditions oc where oc.offender_sent_condition_id =:OFFENDER_SENT_CONDITION_ID  ) limit 1
+}
+
+UPDATE_OFFENDER_CASE_CONDITIONS {
+ update offender_case_conditions set length =:length , length_unit = :length_unit, start_date =:start_date,end_date =:expiry_date,condition_status =:condition_status where off_case_cond_id = :off_case_cond_id
+}

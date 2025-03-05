@@ -1,0 +1,61 @@
+CREATE TABLE oms_owner.off_fee_bills (
+	bill_id varchar(16) NOT NULL,
+	offender_fee_id int8 NOT NULL,
+	bill_date date NOT NULL,
+	bill_generate_datetime date NOT NULL DEFAULT current_timestamp,
+	bill_generate_amount int8 NOT NULL,
+	bill_generate_staff_id int8 NULL,
+	bill_generate_user varchar(32) NOT NULL,
+	statement_generated_flag varchar(1) NOT NULL DEFAULT 'N'::character varying,
+	billing_statement_id int8 NULL,
+	bill_ar_due_date date NOT NULL,
+	bill_ldpp_start_date date NOT NULL,
+	bill_ldpp_end_date date NOT NULL,
+	create_datetime timestamp(6) NOT null  default current_timestamp,
+	create_user_id varchar(32) NOT null,
+	modify_datetime timestamp(6) NULL,
+	modify_user_id varchar(32) NULL,
+	seal_flag varchar(1) NULL,
+	back_bill varchar(1) NOT NULL,
+	bill_ar_start_date date NULL,
+	CONSTRAINT off_fee_bills_bill_ar_due_date_check CHECK ((bill_ar_due_date = bill_ar_due_date)),
+	CONSTRAINT off_fee_bills_bill_ar_start_date_check CHECK ((bill_ar_start_date = date_trunc('D'::text, (bill_ar_start_date)::timestamp with time zone))),
+	CONSTRAINT off_fee_bills_bill_date_check CHECK ((bill_date = bill_date)),
+	CONSTRAINT off_fee_bills_bill_generate_amount_check CHECK ((bill_generate_amount >= 0)),
+	CONSTRAINT off_fee_bills_bill_ldpp_end_date_check CHECK ((bill_ldpp_end_date = bill_ldpp_end_date)),
+	CONSTRAINT off_fee_bills_bill_ldpp_start_date_check CHECK ((bill_ldpp_start_date = bill_ldpp_start_date)),
+	CONSTRAINT off_fee_bills_pk PRIMARY KEY (bill_id),
+	CONSTRAINT off_fee_bills_statement_generated_flag_check CHECK (((statement_generated_flag)::text = ANY (ARRAY[('N'::character varying)::text, ('Y'::character varying)::text]))),
+	CONSTRAINT off_fee_bills_fk1 FOREIGN KEY (offender_fee_id) REFERENCES oms_owner.off_fee_account_profile(offender_fee_id),
+	CONSTRAINT off_fee_bills_fk2 FOREIGN KEY (bill_generate_staff_id) REFERENCES oms_owner.staff_members(staff_id),
+	CONSTRAINT off_fee_bills_fk3 FOREIGN KEY (billing_statement_id) REFERENCES oms_owner.off_billing_statements(billing_statement_id)
+)
+TABLESPACE tag_data
+;
+
+
+comment on table OFF_FEE_BILLs is 'Offender fee accounts bills';
+
+comment on column OFF_FEE_BILLS.BILL_AR_DUE_DATE is 'Full balance payment due date as calculated when the bill record is created (it never gets updated), calculated based on the BILL_AR_START_DATE + 30 days';
+
+comment on column OFF_FEE_BILLS.BILL_LDPP_START_DATE is 'Start date for L&D PP Bill Status as calculated when the bill record is created, calculated based on the BILL_AR_START_DATE + 31 days, it gets updated by the aging process';
+
+comment on column OFF_FEE_BILLS.BILL_LDPP_END_DATE is 'End date for L&D PP Bill Status as calculated when the record is created, calculated based on the BILL_AR_START_DATE + 90 days, it gets updated by the aging process';
+
+comment on column OFF_FEE_BILLS.BILL_AR_START_DATE is 'Balance payment start date as calculated when the bill record is created (it never gets updated), calculated based on the billing cycle of the bill_date and system profile BILL_END_DAY + 1, in the past for backdated bills';
+
+comment on column OFF_FEE_BILLS.BILL_ID is 'Unique identifier of the billing statement when the billing statement is generated. A bill can appear on only one billing statement';
+
+comment on column OFF_FEE_BILLS.OFFENDER_FEE_ID is 'Unique fee account record id';
+
+comment on column OFF_FEE_BILLS.BILL_GENERATE_USER is 'The user who created the bill record, SYSTEM when system generated';
+
+comment on column OFF_FEE_BILLS.BILL_GENERATE_STAFF_ID is 'The staff who created the bill record, NULL when record was system generated';
+
+comment on column OFF_FEE_BILLS.BILL_GENERATE_DATETIME is 'The date the bill is generated, not necessarily the same as bill date';
+
+comment on column OFF_FEE_BILLS.STATEMENT_GENERATED_FLAG is 'Indicates if the bill is included on a statement aka a billing statement that includes the bill was generated';
+
+comment on column OFF_FEE_BILLS.BILL_DATE is 'Bill date (might be in the past compared with the date when the bill is generated, if the bill was backdated)';
+
+comment on column OFF_FEE_BILLS.BILL_GENERATE_AMOUNT is 'Bill amount when the bill was generated (matches the first bill transaction)';

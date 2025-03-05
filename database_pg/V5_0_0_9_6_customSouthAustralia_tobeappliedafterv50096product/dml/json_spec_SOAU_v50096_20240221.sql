@@ -1,0 +1,26 @@
+update
+    json_spec
+set
+    json_specs = '[{"operation":"shift","spec":{"staffDetails":{"*":{"first_name":"header.intUser.intUserName","user_id":"header.intUser.intUserId","date_time":["header.intDatetime","trailer.responseDatetime"]}},"correlationId":"header.intCorrelationId","pin":"body.prisonerDetails.imprisonmentDetails.pin"}},{"operation":"default","spec":{"header":{"intId":"SAPOLPhysicalDescription"},"trailer":{"respCode":"TBD","errMsg":"The prisoner does not Exist in Elite"}}}]',
+    modify_datetime = current_timestamp,
+    modify_user_id = 'OMS_OWNER'
+where
+    spec_key = 'PHYSICAL_DESC_ERROR_FORMATTER'; 
+
+update
+    json_spec
+set
+    json_specs = '[{"operation":"shift","spec":{"staffDetails":{"*":{"first_name":"header.intUser.intUserName","user_id":"header.intUser.intUserId","date_time":"header.intDatetime"}},"offenderDetails":{"*":{"first_name":"body.prisonerDetails[#2].demographics.firstName","last_name":"body.prisonerDetails[#2].demographics.surName","sex_code":"body.prisonerDetails[#2].demographics.gender","birth_date":"body.prisonerDetails[#2].demographics.dob","dcs_id":"body.prisonerDetails[#2].imprisonmentDetails.dcsId"}},"offenderBookingDetails":{"*":{"booking_no":"body.prisonerDetails[#2].imprisonmentDetails.imprisonmentId","booking_begin_date":"body.prisonerDetails[#2].imprisonmentDetails.intakeDate","booking_status":"body.prisonerDetails[#2].imprisonmentDetails.imprisonmentStatus","agy_loc_id":"body.prisonerDetails[#2].housing.facility"}},"offenderHousingDetails":{"*":{"housing_lev_1_code":"body.prisonerDetails[#2].housing.pod","housing_lev_2_code":"body.prisonerDetails[#2].housing.unit","housing_lev_3_code":"body.prisonerDetails[#2].housing.cell"}},"warnings":{"*":{"code":"body.prisonerDetails[#4].alerts[#2].alertCode","createdate":"body.prisonerDetails[#4].alerts[#2].alertStartDate","expirydate":"body.prisonerDetails[#4].alerts[#2].alertEndDate","comment_text":"body.prisonerDetails[#4].alerts[#2].alertComment"}},"offenderFinancialDetails":{"*":{"current_balance":"body.prisonerDetails[#2].financials.accountBalance","balance":"body.prisonerDetails[#2].financials.resettlementAccountBalance"}},"offenderProfileDetails":{"*":{"nationality":"body.prisonerDetails[#2].demographics.nationality","ethnicity":"body.prisonerDetails[#2].demographics.ethnicity","religion":"body.prisonerDetails[#2].demographics.religion"}}}},{"operation":"modify-default-beta","spec":{"body":{"prisonerDetails":{"*":{"housing":{"regime":" "},"financials":{"transactionSpendLimit":" "},"imprisonmentDetails":{"releaseDateTime":"","releaseReason":""}}}}}},{"operation":"default","spec":{"header":{"intId":"UnilinkWARN"}}}]',
+    modify_datetime = current_timestamp,
+    modify_user_id = 'OMS_OWNER'
+where
+    spec_key = 'TRANSFORM_WARNING';
+
+update
+    json_spec
+set
+    json_specs = '[{"operation":"shift","spec":{"staffDetails":{"*":{"user_id":"header.intUser.intUserId","first_name":"header.intUser.intUserName","date_time":"header.intDatetime"}},"offenderDetails":{"*":{"dcs_id":"body.prisonerDetails[#2].imprisonmentDetails.dcsId","first_name":"body.prisonerDetails[#2].demographics.firstName","middle_name":"body.prisonerDetails[#2].demographics.middleName","second_middle_name":"body.prisonerDetails[#2].demographics.secondMiddleName","last_name":"body.prisonerDetails[#2].demographics.surName","sex_code":"body.prisonerDetails[#2].demographics.gender","birth_date":"body.prisonerDetails[#2].demographics.dob"}},"offenderBookingDetails":{"*":{"booking_no":"body.prisonerDetails[#2].imprisonmentDetails.imprisonmentId","booking_begin_date":"body.prisonerDetails[#2].imprisonmentDetails.intakeDate","booking_status":"body.prisonerDetails[#2].imprisonmentDetails.imprisonmentStatus","agy_loc_id":"body.prisonerDetails[#2].housing.facility"}},"offenderHousingDetails":{"*":{"housing_lev_1_code":"body.prisonerDetails[#2].housing.pod","housing_lev_2_code":"body.prisonerDetails[#2].housing.unit","housing_lev_3_code":"body.prisonerDetails[#2].housing.cell","iep_level":"body.prisonerDetails[#2].housing.regime"}},"offenderReleaseDetails":{"*":{"movement_date":"body.prisonerDetails[#2].imprisonmentDetails.releaseDateTime","movement_reason_code":"body.prisonerDetails[#2].imprisonmentDetails.releaseReason"}},"offenderWarnings":{"*":{"code":"body.prisonerDetails[#4].alerts[#2].alertCode","createdate":"body.prisonerDetails[#4].alerts[#2].alertStartDate","expirydate":"body.prisonerDetails[#4].alerts[#2].alertEndDate","comment_text":"body.prisonerDetails[#4].alerts[#2].alertComment"}},"offenderFinancialDetails":{"*":{"current_balance":"body.prisonerDetails[#2].financials.accountBalance","balance":"body.prisonerDetails[#2].financials.resettlementAccountBalance"}},"offenderProfileDetails":{"*":{"nationality":"body.prisonerDetails[#2].demographics.nationality","ethnicity":"body.prisonerDetails[#2].demographics.ethnicity","religion":"body.prisonerDetails[#2].demographics.religion"}}}},{"operation":"modify-default-beta","spec":{"body":{"prisonerDetails":{"*":{"financials":{"accountBalance":0,"resettlementAccountBalance":0,"transactionSpendLimit":"TBD"},"alerts":[]}}}}},{"operation":"default","spec":{"header":{"intId":"UnilinkLOCA"}}}]',
+    modify_datetime = current_timestamp,
+    modify_user_id = 'OMS_OWNER'
+where
+    spec_key = 'PRISONER_MOVEMENTS_FORMATTER';

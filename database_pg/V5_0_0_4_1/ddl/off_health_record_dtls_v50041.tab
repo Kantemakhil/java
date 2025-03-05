@@ -1,0 +1,53 @@
+CREATE TABLE off_health_record_dtls (
+
+OFF_HEALTH_REC_DTL_ID BIGSERIAL NOT NULL,
+
+OFF_HEALTH_REC_ID int8 NOT NULL,
+
+HEALTH_TREAT_TYPE varchar(12) NOT NULL,
+
+HEALTH_PROVIDER varchar(12) NOT NULL,
+
+DESCRIPTION varchar(240),
+
+FROM_DATE DATE NOT NULL,
+
+TO_DATE DATE,
+
+COMMENT_TEXT varchar(4000),
+
+RECORD_CREATE_DATETIME timestamp(6) NOT NULL,
+
+create_datetime timestamp(6) NOT NULL DEFAULT systimestamp(),
+
+create_user_id varchar(32) NOT NULL,
+
+modify_datetime timestamp(6) NULL,
+
+modify_user_id varchar(32) NULL,
+
+seal_flag varchar(1) NULL,
+
+CONSTRAINT OFF_HEALTH_RECORD_DTLS_pk PRIMARY KEY (OFF_HEALTH_REC_DTL_ID ),
+
+CONSTRAINT OFF_HEALTH_RECORD_DTLS_fk1 FOREIGN KEY (OFF_HEALTH_REC_ID) REFERENCES oms_owner.OFF_HEALTH_RECORDS(OFF_HEALTH_REC_ID)
+
+)TABLESPACE tag_data;
+
+comment on table OFF_HEALTH_RECORD_DTLS is 'Offender health records details';
+
+comment on column OFF_HEALTH_RECORD_DTLS.OFF_HEALTH_REC_DTL_ID is 'Unique identification of health record detail';
+
+comment on column OFF_HEALTH_RECORD_DTLS.OFF_HEALTH_REC_ID is 'Unique identifier of the health record';
+
+comment on column OFF_HEALTH_RECORD_DTLS.HEALTH_TREAT_TYPE is 'Health Treat Type [ref domain=HEALTH_TREAT].';
+
+comment on column OFF_HEALTH_RECORD_DTLS.HEALTH_PROVIDER is 'Health provider [ref domain=HEALTH_PROV].';
+
+comment on column OFF_HEALTH_RECORD_DTLS.DESCRIPTION is 'Health record detail free text description';
+
+comment on column OFF_HEALTH_RECORD_DTLS.FROM_DATE is 'Start date';
+
+comment on column OFF_HEALTH_RECORD_DTLS.COMMENT_TEXT is 'Free text comment';
+
+comment on column OFF_HEALTH_RECORD_DTLS.RECORD_CREATE_DATETIME is 'The datetime the health record detail was entered in the system';

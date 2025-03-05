@@ -1,0 +1,1 @@
+DROP FUNCTION v_name_search2_fn(text);

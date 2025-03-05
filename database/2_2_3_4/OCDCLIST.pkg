@@ -1,0 +1,666 @@
+--- Package spec
+CREATE OR REPLACE PACKAGE "OCDCLIST"
+IS
+-- Purpose: This package contains the procedures for the form OCDCLIST.  The based blocks of the
+--          form OCDCLIST are built upon from these procedures.
+--
+
+   -- Definition of the record for the base table of CTL_LST for OCDCLIST
+   TYPE court_list_rec IS RECORD (
+      last_name               v_court_events.last_name%TYPE,
+      first_name              v_court_events.first_name%TYPE,
+      middle_name             v_court_events.middle_name%TYPE,
+      birth_date              v_court_events.birth_date%TYPE,
+      offender_id_display     v_court_events.offender_id_display%TYPE,
+      start_time              v_court_events.start_time%TYPE,
+      event_date              v_court_events.event_date%TYPE,
+      case_type               offender_cases.case_type%TYPE,
+                                                  ---Rajshree Defect ID 2132.
+      case_info_prefix        v_court_events.case_info_prefix%TYPE,
+      case_info_number        v_court_events.case_info_number%TYPE,
+      court_event_type        v_court_events.court_event_type%TYPE,
+      court_event_type_desc   v_court_events.court_event_type_desc%TYPE,
+      offender_book_id        v_court_events.offender_book_id%TYPE,
+      agy_loc_id              v_court_events.agy_loc_id%TYPE,
+      event_id                v_court_events.event_id%TYPE,
+      case_id                 v_court_events.case_id%TYPE,
+      check_sum               v_court_events.check_sum%TYPE
+   );
+
+   TYPE court_list_tab IS TABLE OF court_list_rec
+      INDEX BY BINARY_INTEGER;
+
+   PROCEDURE court_list_query (
+      court_list_data           IN OUT   sys_refcursor,
+      p_last_name               IN       VARCHAR2,
+      p_first_name              IN       VARCHAR2,
+      p_middle_name             IN       VARCHAR2,
+      p_birth_date              IN       DATE,
+      p_off_display             IN       VARCHAR2,
+      p_start_time              IN       DATE,
+      p_start_date              IN       DATE,
+      p_case_info_prefix        IN       VARCHAR2,
+      p_case_info_number        IN       VARCHAR2,
+      p_court_event_type        IN       VARCHAR2,
+      p_court_event_type_desc   IN       VARCHAR2,
+      p_court_date              IN       DATE,
+      p_agy_loc_id              IN       VARCHAR2,
+      p_off_bkg_id              IN       NUMBER,
+      p_event_id                IN       NUMBER,
+      p_case_id                 IN       NUMBER,
+      p_check_sum                        NUMBER
+   );
+
+   PROCEDURE court_list_insert (
+      court_list_data   IN       court_list_tab,
+      p_case_id         OUT      NUMBER
+   );
+
+   PROCEDURE court_list_update (court_list_data IN court_list_tab);
+
+   PROCEDURE court_list_lock (
+      p_event_id    court_events.event_id%TYPE,
+      p_check_sum   INTEGER
+   );
+
+   PROCEDURE get_case_prefix (p_prefix OUT VARCHAR2);
+
+   PROCEDURE get_off_details (
+      p_off_id        IN       offenders.offender_id%TYPE,
+      p_first_name    OUT      offenders.first_name%TYPE,
+      p_middle_name   OUT      offenders.middle_name%TYPE,
+      p_last_name     OUT      offenders.last_name%TYPE,
+      p_birth_date    OUT      offenders.birth_date%TYPE
+   );
+
+   FUNCTION court_event_exists (
+      p_off_bkg_id   court_events.offender_book_id%TYPE,
+      p_event_date   court_events.event_date%TYPE,
+      p_start_time   court_events.start_time%TYPE,
+      p_agy_loc_id   court_events.agy_loc_id%TYPE
+   )
+      RETURN BOOLEAN;
+
+   PROCEDURE default_crt_agency (
+      p_global_caseload_id   IN       VARCHAR2,
+      p_agy_loc_id           OUT      agency_locations.agy_loc_id%TYPE,
+      p_description          OUT      agency_locations.description%TYPE
+   );
+
+   FUNCTION get_checksum (p_event_id IN court_events.event_id%TYPE)
+      RETURN INTEGER;
+
+   FUNCTION show_version
+      RETURN VARCHAR2;
+END; 
+/
+                                                         
+
+CREATE OR REPLACE PACKAGE BODY "OCDCLIST"
+IS
+--
+-- Purpose: This package contains the procedures for the form OCDCLIST.  The based blocks of the
+--          form OCDCLIST are built upon from these procedures.
+--
+-- MODIFICATION HISTORY
+-- Person      Date          Version      Comments
+-- ---------   ------        ----------   ------------------------------------------------
+-- Om          18-Nov-2020   2.24 V4      #S4-6465 Same date list was not appearing court_list_query
+-- Rajshree    09-Mar-2007   2.23         #6063 Fixed status date as sysdate -1.
+-- Rajshree    13-Feb-2007   2.22         Added code to update the status in court_list_insert(At the time of creating
+--                                        the record with past date ,status was populating as SCH ,now changed to EXP.
+--                                        Also modify the check sum ,using same way as used in the veiw to get the
+--                                        correct value(Fix against :-error while updating the record 'Record is update by other user :- requery)
+--                                        ( Both issues found while fixing 6063)
+-- GJC         14 Oct 2006   2.21         Remove DBMS_OUTPUT calls
+-- Rajshree    15-Sep-2006   2.20         D#:4397Added direction code in court_list_insert.
+-- Surya       23-Aug-2006   2.19         Linked Cases: Modified court_list_insert by adding case_seq column
+--                                        as part of the Linked Cases.
+-- Claus       26-Jul-2006   2.18         D# 3621. Modified court_list_query to restrict on active bookings only
+-- Claus       28-Jun-2006   2.17         D# 2957. Only create record in offender_cases if no active case
+--                                        with same case info number already exists.
+-- D Rice      27-Jun-2006   2.16         Defect# 2887 - Added AND clause to cursor: vs_agycur in PROCEDURE: default_crt_agency
+--               so that only ACTIVE agencies are included in the query resultset.
+-- Rajshree    31-May-2006   2.15         Added/Removed code from court_list_insert,court_list_record
+--                                        Defect id 2132
+-- Claus       26-Apr-2006   2.14         D# 1618. Modified court_list_query. Removed restriction on
+--                                                 event_status.
+-- Surya       23-Apr-2006   2.13         Defaulted the status_update_reason of cases to 'ACTIVE'.
+-- Surya       21-Apr-2006   2.12         Changed the hard coded case_status value to 'A' as per
+--                                        new design change.
+-- Venu        17-Apr-2006   2.11         D# 1110, Modified Court_list_Insert procedure, If a case is
+--                                                 created from the court list then it should always
+--                                                 default to the event_date upon the case creation.
+-- Claus       28-Feb-2006   2.8          D# 389. Added function get_checksum.
+-- Claus       30-Jan-2006   2.7          D# 144. Modified court_list_lock procedure.
+-- Claus       19-Jan-2006   2.6          D# 144. Insert system date into offender_cases.
+-- Claus       19-Jan-2006   2.5          D# 144. Changed 'A' to 'ACTIVE' case status.
+-- Claus       18-Jan-2006   2.4          D# 144. Added procedure default_crt_agency.
+-- Claus       17-Jan-2006   2.3          D# 144. Removed audit columns from insert statements.
+-- Claus       12-Dec-2005   1.15         D# 144. Applied data model changes.
+
+   /* -----------------------------------------------------------------------------------------------------------
+This procedure provides the basic query of the block COURT LIST. (CRT_LST)
+It returns a weak reference cursor to the form for dynamic sorting.
+----------------------------------------------------------------------------------------------------------- */
+-- ====================================================================================
+   vcp_version   CONSTANT VARCHAR2 (60) := '2.24 V4  18-Nov-2020';
+
+-- ====================================================================================
+ 
+   PROCEDURE court_list_query (
+      court_list_data           IN OUT   sys_refcursor,
+      p_last_name               IN       VARCHAR2,
+      p_first_name              IN       VARCHAR2,
+      p_middle_name             IN       VARCHAR2,
+      p_birth_date              IN       DATE,
+      p_off_display             IN       VARCHAR2,
+      p_start_time              IN       DATE,
+      p_start_date              IN       DATE,
+      p_case_info_prefix        IN       VARCHAR2,
+      p_case_info_number        IN       VARCHAR2,
+      p_court_event_type        IN       VARCHAR2,
+      p_court_event_type_desc   IN       VARCHAR2,
+      p_court_date              IN       DATE,
+      p_agy_loc_id              IN       VARCHAR2,
+      p_off_bkg_id              IN       NUMBER,
+      p_event_id                IN       NUMBER,
+      p_case_id                 IN       NUMBER,
+      p_check_sum               IN       NUMBER
+   )
+   IS
+      lv_where   VARCHAR2 (500);
+   BEGIN
+      -- S4-6465    lv_where := ' event_date = ''' || p_court_date || '''';
+      lv_where := ' trunc(event_date) = ''' || trunc(p_court_date) || ''''; -- S4-6465
+      lv_where := lv_where || ' AND agy_loc_id = ''' || p_agy_loc_id || '''';
+      lv_where := lv_where || ' AND booking_active_flag = ''Y''';
+
+      IF p_last_name IS NOT NULL
+      THEN
+         lv_where :=
+               lv_where
+            || ' and last_name like  '''
+            || p_last_name
+            || '''
+          ';
+      END IF;
+
+      IF p_first_name IS NOT NULL
+      THEN
+         lv_where :=
+               lv_where
+            || ' and first_name like  '''
+            || p_first_name
+            || '''
+          ';
+      END IF;
+
+      IF p_middle_name IS NOT NULL
+      THEN
+         lv_where :=
+               lv_where
+            || ' and middle_name =  '''
+            || p_middle_name
+            || '''
+          ';
+      END IF;
+
+      IF p_court_event_type IS NOT NULL
+         AND p_court_event_type_desc IS NOT NULL
+      THEN
+         lv_where :=
+               lv_where
+            || ' and court_event_type =  '''
+            || p_court_event_type
+            || '''
+          ';
+      END IF;
+
+      OPEN court_list_data FOR    ' SELECT LAST_NAME,
+                    FIRST_NAME,
+                    MIDDLE_NAME,
+                    BIRTH_DATE,
+                    OFFENDER_ID_DISPLAY,
+                    start_time,
+                    event_date,
+                    case_info_prefix,
+                    case_info_number,
+                    court_event_type,
+                    court_event_type_desc,
+                    offender_book_id,
+                    agy_loc_id,
+                    event_id,
+                    case_id,
+                    check_sum
+                FROM v_court_events
+                WHERE '
+                               || lv_where
+                               || NVL
+                                     (tag_sort.get_order_by,
+                                      ' ORDER BY START_TIME, LAST_NAME, FIRST_NAME, MIDDLE_NAME '
+                                     );
+   END court_list_query;
+
+
+/***************************************************************************************/
+   PROCEDURE court_list_insert (
+      court_list_data   IN       court_list_tab,
+      p_case_id         OUT      NUMBER
+   )
+   IS
+      CURSOR get_case_id_cur
+      IS
+         SELECT case_id.NEXTVAL
+           FROM DUAL;
+
+      CURSOR get_event_id_cur
+      IS
+         SELECT event_id.NEXTVAL
+           FROM DUAL;
+
+      lv_case_id       offender_cases.case_id%TYPE;
+      lv_event_id      court_events.event_id%TYPE;
+      lv_case_type     reference_codes.code%TYPE;
+      lv_old_case_id   offender_cases.case_id%TYPE;
+
+      CURSOR get_offender_id_cur (
+         p_off_book_id   offender_bookings.offender_book_id%TYPE
+      )
+      IS
+         SELECT offender_id
+           FROM offender_bookings
+          WHERE offender_book_id = p_off_book_id;
+
+      CURSOR check_case_info_cur (
+         p_case_info     offender_cases.case_info_number%TYPE,
+         p_off_book_id   offender_cases.offender_book_id%TYPE
+      )
+      IS
+         SELECT case_id
+           FROM offender_cases
+          WHERE case_info_number = p_case_info
+            AND offender_book_id = p_off_book_id
+            AND case_status = 'A';
+
+--- Rajshree
+--- Removed get_case_type_cur and added code in OCDCLIST Screen. Defect ID 2132.
+---
+      lv_status        court_events.event_status%TYPE;         --Rajshree 6063
+   BEGIN
+      FOR i IN 1 .. court_list_data.COUNT
+      LOOP
+         DECLARE
+            lv_offender_id   offenders.offender_id%TYPE;
+         BEGIN
+            OPEN get_case_id_cur;
+
+            FETCH get_case_id_cur
+             INTO lv_case_id;
+
+            CLOSE get_case_id_cur;
+
+            p_case_id := lv_case_id;
+
+            OPEN get_event_id_cur;
+
+            FETCH get_event_id_cur
+             INTO lv_event_id;
+
+            CLOSE get_event_id_cur;
+
+            OPEN get_offender_id_cur (court_list_data (i).offender_book_id);
+
+            FETCH get_offender_id_cur
+             INTO lv_offender_id;
+
+            CLOSE get_offender_id_cur;
+
+            --@@@
+            --@@@ Claus, D# 2957. Only create record in offender_cases if no active case
+            --@@@ with same case info number exists, otherwise add court event to existing case.
+            --@@@
+            OPEN check_case_info_cur (court_list_data (i).case_info_number,
+                                      court_list_data (i).offender_book_id
+                                     );
+
+            FETCH check_case_info_cur
+             INTO lv_old_case_id;
+
+            CLOSE check_case_info_cur;
+
+            IF lv_old_case_id IS NULL
+            THEN
+               --@@@Surya 23-Aug-2006: Added case_seq as part of Linked Cases enhancement.
+               INSERT INTO offender_cases
+                           (case_id,
+                            offender_book_id,
+                            case_info_number,
+                            case_info_prefix,
+                            case_type, case_status,
+                            begin_date,
+                            agy_loc_id, status_update_reason,
+                            case_seq
+                           )
+                    VALUES (lv_case_id,
+                            court_list_data (i).offender_book_id,
+                            court_list_data (i).case_info_number,
+                            court_list_data (i).case_info_prefix,
+                            court_list_data (i).case_type,
+                                                           --Rajshree Defect ID 2132.
+                            'A',
+                            court_list_data (i).event_date,
+                            court_list_data (i).agy_loc_id, 'ACTIVE',
+                            tag_legal_cases.generate_case_seq
+                                          (court_list_data (i).offender_book_id
+                                          )
+                           );
+            ELSE
+               --@@@ Claus, 28-Jun-2006. D# 2957. Attach court event to existing case.
+               lv_case_id := lv_old_case_id;
+            END IF;
+
+--
+-- Rajshree 13/02/2007,Added code to insert the status as EXP if appoinment is created in past.
+-- #6063.
+            IF court_list_data (i).event_date < SYSDATE -1
+            THEN
+               lv_status := 'EXP';
+            ELSE
+               lv_status := 'SCH';
+            END IF;
+
+            INSERT INTO court_events
+                        (event_id, case_id,
+                         offender_book_id,
+                         event_date,
+                         start_time,
+                         court_event_type,
+                         agy_loc_id, event_status,            --Rajshree #6063
+                                                  direction_code
+                        )                                    --Rajshree # 4397
+                 VALUES (lv_event_id, lv_case_id,
+                         court_list_data (i).offender_book_id,
+                         court_list_data (i).event_date,
+                         court_list_data (i).start_time,
+                         court_list_data (i).court_event_type,
+                         court_list_data (i).agy_loc_id, lv_status,
+                                                                    --Rajshree # 6063
+                         'OUT'
+                        );                                   --Rajshree # 4397
+         END;
+      END LOOP;
+   EXCEPTION
+      WHEN OTHERS
+      THEN
+         tag_error.handle;
+   END;
+
+/***************************************************************************************/
+   PROCEDURE court_list_update (court_list_data IN court_list_tab)
+   IS
+      lv_status   court_events.event_status%TYPE;             --Rajshree 6063
+   BEGIN
+      FOR i IN 1 .. court_list_data.COUNT
+      LOOP
+      --Rajshree 13/02/2007 ,#6063, to update the status
+         IF court_list_data (i).start_time < SYSDATE - 1
+         THEN
+            lv_status := 'EXP';
+         ELSE
+            lv_status := 'SCH';
+         END IF;
+
+         BEGIN
+            UPDATE court_events
+               SET start_time = court_list_data (i).start_time,
+                   court_event_type = court_list_data (i).court_event_type,
+                   event_status = lv_status --Rajshree 6063
+             WHERE event_id = court_list_data (i).event_id;
+         END;
+      END LOOP;
+   EXCEPTION
+      WHEN OTHERS
+      THEN
+         tag_error.handle;
+   END;
+
+/***************************************************************************************/
+   PROCEDURE court_list_lock (
+      p_event_id    court_events.event_id%TYPE,
+      p_check_sum   INTEGER
+   )
+   IS
+      CURSOR lock_cur
+      IS
+         SELECT     ROWID,
+                    tag_schedule.check_sum
+                                          (NVL (ce.modify_datetime,
+                                                ce.create_datetime
+                                               )
+                                          ) check_sum
+               FROM court_events ce
+              WHERE event_id = p_event_id
+         FOR UPDATE NOWAIT;
+
+      v_rowid       ROWID;
+      v_check_sum   INTEGER;
+   BEGIN
+      BEGIN
+         OPEN lock_cur;
+
+         FETCH lock_cur
+          INTO v_rowid, v_check_sum;
+
+         CLOSE lock_cur;
+      EXCEPTION
+         WHEN OTHERS
+         THEN
+            tag_error.raise_app_error (-20002,
+                                       'Can not lock the record',
+                                       TRUE
+                                      );
+      END;
+
+      IF v_check_sum <> p_check_sum
+      THEN
+         tag_error.raise_app_error (-20001, 'The record has changed ', TRUE);
+      END IF;
+   END court_list_lock;
+
+/***************************************************************************************/
+   PROCEDURE get_case_prefix (p_prefix OUT VARCHAR2)
+   IS
+      CURSOR prefix_cur
+      IS
+         SELECT parent_code
+           FROM reference_codes
+          WHERE domain = 'LEG_CASE_TYP' AND list_seq = 1;
+   BEGIN
+      OPEN prefix_cur;
+
+      FETCH prefix_cur
+       INTO p_prefix;
+
+      CLOSE prefix_cur;
+   EXCEPTION
+      WHEN OTHERS
+      THEN
+         tag_error.handle;
+   END;
+
+/***************************************************************************************/
+   PROCEDURE get_off_details (
+      p_off_id        IN       offenders.offender_id%TYPE,
+      p_first_name    OUT      offenders.first_name%TYPE,
+      p_middle_name   OUT      offenders.middle_name%TYPE,
+      p_last_name     OUT      offenders.last_name%TYPE,
+      p_birth_date    OUT      offenders.birth_date%TYPE
+   )
+   IS
+      CURSOR get_name_cur
+      IS
+         SELECT first_name, middle_name, last_name, birth_date
+           FROM offenders
+          WHERE offender_id = p_off_id;
+   BEGIN
+      OPEN get_name_cur;
+
+      FETCH get_name_cur
+       INTO p_first_name, p_middle_name, p_last_name, p_birth_date;
+
+      CLOSE get_name_cur;
+   EXCEPTION
+      WHEN OTHERS
+      THEN
+         tag_error.handle;
+   END;
+
+/***************************************************************************************/
+   FUNCTION court_event_exists (
+      p_off_bkg_id   court_events.offender_book_id%TYPE,
+      p_event_date   court_events.event_date%TYPE,
+      p_start_time   court_events.start_time%TYPE,
+      p_agy_loc_id   court_events.agy_loc_id%TYPE
+   )
+      RETURN BOOLEAN
+   IS
+      CURSOR court_cur
+      IS
+         SELECT COUNT (offender_book_id)
+           FROM court_events
+          WHERE p_off_bkg_id = offender_book_id
+            AND p_event_date = event_date
+            AND p_start_time = start_time
+            AND p_agy_loc_id = agy_loc_id;
+
+      lv_count   INTEGER;
+   BEGIN
+      OPEN court_cur;
+
+      FETCH court_cur
+       INTO lv_count;
+
+      CLOSE court_cur;
+
+      IF lv_count > 0
+      THEN
+         RETURN (TRUE);
+      ELSE
+         RETURN (FALSE);
+      END IF;
+   EXCEPTION
+      WHEN OTHERS
+      THEN
+         tag_error.handle;
+   END court_event_exists;
+
+/***************************************************************************************/
+   PROCEDURE default_crt_agency (
+      p_global_caseload_id   IN       VARCHAR2,
+      p_agy_loc_id           OUT      agency_locations.agy_loc_id%TYPE,
+      p_description          OUT      agency_locations.description%TYPE
+   )
+   IS
+      v_agy_loc_id    agency_locations.agy_loc_id%TYPE;
+      v_description   agency_locations.description%TYPE;
+      v_count         NUMBER;
+
+      --
+      --  Cursor to count the number of CRT institutions for caseload.
+      --
+      CURSOR vs_agycur
+      IS
+         SELECT COUNT (0)
+           FROM agency_locations al
+          WHERE al.agency_location_type = 'CRT'
+            AND al.agy_loc_id IN (SELECT ca.agy_loc_id
+                                    FROM caseload_agency_locations ca
+                                   WHERE ca.caseload_id = p_global_caseload_id)
+            AND al.agy_loc_id NOT IN ('TRN', 'OUT')
+            AND al.active_flag = 'Y';
+
+      --
+      -- Cursor to get institutiuon details .
+      --
+      CURSOR vs_agyloccur
+      IS
+         SELECT al.agy_loc_id, al.description
+           FROM agency_locations al
+          WHERE al.agency_location_type = 'CRT'
+            AND al.agy_loc_id IN (SELECT ca.agy_loc_id
+                                    FROM caseload_agency_locations ca
+                                   WHERE ca.caseload_id = p_global_caseload_id)
+            AND al.agy_loc_id NOT IN ('TRN', 'OUT');
+   BEGIN
+      --
+      -- Count number of CRT Agency locations
+      --
+      OPEN vs_agycur;
+
+      FETCH vs_agycur
+       INTO v_count;
+
+      CLOSE vs_agycur;
+
+      IF v_count = 1
+      THEN
+         --
+         -- Only one location, so default it
+         --
+         OPEN vs_agyloccur;
+
+         FETCH vs_agyloccur
+          INTO p_agy_loc_id, p_description;
+
+         CLOSE vs_agyloccur;
+      END IF;
+   EXCEPTION
+      WHEN OTHERS
+      THEN
+         tag_error.handle;
+   END default_crt_agency;
+
+/***************************************************************************************/
+   FUNCTION get_checksum (p_event_id IN court_events.event_id%TYPE)
+      RETURN INTEGER
+   IS
+      CURSOR checksum_cur
+      IS
+         SELECT tag_schedule.check_sum (NVL (ce.modify_datetime,
+                                             ce.create_datetime
+                                            )
+                                       )
+           FROM court_events ce
+          WHERE event_id = p_event_id;
+
+      v_checksum   INTEGER;
+   BEGIN
+      OPEN checksum_cur;
+
+      FETCH checksum_cur
+       INTO v_checksum;
+
+      CLOSE checksum_cur;
+
+      RETURN (v_checksum);
+   EXCEPTION
+      WHEN OTHERS
+      THEN
+         tag_error.handle;
+   END;
+
+/***************************************************************************************/
+   FUNCTION show_version
+      RETURN VARCHAR2
+   IS
+   BEGIN
+      RETURN (vcp_version);
+   END show_version;
+/***************************************************************************************/
+END;
+/
+
+ 
+ 
+ 

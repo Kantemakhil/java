@@ -1,0 +1,5 @@
+alter table IWP_DOCUMENTS add column reason varchar(12);
+comment on column IWP_DOCUMENTS.reason is 'Reason for deleting the elite document [domain=DEL_DOC]';
+
+
+

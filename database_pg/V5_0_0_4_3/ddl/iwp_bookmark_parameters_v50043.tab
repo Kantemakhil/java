@@ -1,0 +1,7 @@
+ALTER TABLE iwp_bookmark_parameters ADD module_block_code varchar(4);
+comment on column iwp_bookmark_parameters.module_block_code is 'Indicates that bookmark paramter is assoociated to the module block';
+
+ALTER TABLE iwp_bookmark_parameters ADD field varchar(64) NULL;
+COMMENT ON COLUMN iwp_bookmark_parameters.field IS 'Indicates that bookmark paramter is assoociated to the field in the module block';
+
+ALTER TABLE iwp_bookmark_parameters ADD CONSTRAINT iwp_para_mod_trigger_fk FOREIGN KEY (module_block_code) REFERENCES module_triggers(trigger_id) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE;

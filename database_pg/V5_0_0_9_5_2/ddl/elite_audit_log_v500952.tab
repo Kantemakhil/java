@@ -1,0 +1,27 @@
+ALTER TABLE audit_log.elite_audit_log ADD audit_id BIGINT NULL;
+
+ALTER TABLE audit_log.elite_audit_log ADD audit_id_temp serial NOT NULL;
+
+UPDATE audit_log.elite_audit_log SET audit_id = audit_id_temp;
+
+ALTER TABLE audit_log.elite_audit_log ALTER COLUMN audit_id SET NOT NULL;
+
+ALTER TABLE audit_log.elite_audit_log DROP COLUMN audit_id_temp;
+
+ALTER TABLE audit_log.elite_audit_log ADD CONSTRAINT test_serial_pk PRIMARY KEY (audit_id, audittime);
+
+ALTER TABLE audit_log.elite_audit_log  ADD offender_id_display varchar(10);
+
+ALTER TABLE audit_log.elite_audit_log ADD booking_no varchar(14);
+
+COMMENT ON TABLE audit_log.elite_audit_log IS 'Storage table for insert, update, delete audit operations.';
+
+COMMENT ON COLUMN audit_log.elite_audit_log.audit_id IS 'Unique identifier for each audit entry; the value is managed by the core Elite; the primary key has to include the audittime information due to partitioning';
+COMMENT ON COLUMN audit_log.elite_audit_log.audittime IS 'Audit entry timestamp as received from core Elite';
+COMMENT ON COLUMN audit_log.elite_audit_log.action IS 'Audit action type (I/U/D) timestamp as received from core Elite';
+COMMENT ON COLUMN audit_log.elite_audit_log.username IS 'The Elite application user modifying the data in the core Elite';
+COMMENT ON COLUMN audit_log.elite_audit_log.table_name IS 'The Elite table name being modified in the core Elite';
+COMMENT ON COLUMN audit_log.elite_audit_log.row_data_new IS 'The new data';
+COMMENT ON COLUMN audit_log.elite_audit_log.row_data_old IS 'The old data';
+COMMENT ON COLUMN audit_log.elite_audit_log.offender_id_display IS 'Offender Id Display (client facing identifier)';
+COMMENT ON COLUMN audit_log.elite_audit_log.booking_no IS 'Booking No (client facing identifier)';

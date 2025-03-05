@@ -1,0 +1,4 @@
+---------- Deleting the data which has more than 12 characters as this was changed to drop down and these will come from reference code.Previously it was free text
+delete from offender_oic_sanctions A where exists (select * from (select *  from oic_hearing_results A where exists  (select * from agency_incident_charges B where A.agency_incident_id=B.agency_incident_id and A.charge_seq=B.charge_seq and length(evidence_dispose_text)>12))B where A.oic_hearing_id=oic_hearing_id and A.result_seq=result_seq);
+delete from oic_hearing_results A where exists  (select * from agency_incident_charges B where A.agency_incident_id=B.agency_incident_id and A.charge_seq=B.charge_seq and length(evidence_dispose_text)>12);
+delete from agency_incident_charges where length(evidence_dispose_text)>12;

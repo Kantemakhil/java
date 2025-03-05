@@ -1,0 +1,3 @@
+ALTER FOREIGN TABLE oms_owner.elite_generic_log_remote ADD audit_id BIGINT NOT NULL;
+ALTER FOREIGN TABLE oms_owner.elite_generic_log_remote ADD offender_id_display varchar(10);
+ALTER FOREIGN TABLE oms_owner.elite_generic_log_remote ADD booking_no varchar(14);

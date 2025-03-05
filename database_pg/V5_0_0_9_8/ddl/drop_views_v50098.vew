@@ -1,0 +1,3 @@
+drop view v_living_unit_summaries;
+drop view v_living_unit_rolls;
+drop view v_living_unit_rolls_2;

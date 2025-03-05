@@ -1,0 +1,11 @@
+alter table property_group_items 
+add column create_datetime timestamp(6) default current_timestamp,
+add column create_user_id varchar(32) NULL,
+add column modify_datetime timestamp(6) NULL,
+add column modify_user_id varchar(32) null;
+
+update property_group_items set create_datetime=current_timestamp where create_datetime is null;
+update property_group_items set create_user_id='OMS_OWNER' where create_user_id is null;
+
+alter table property_group_items alter column create_datetime set not null;
+alter table property_group_items alter column create_user_id set not null;

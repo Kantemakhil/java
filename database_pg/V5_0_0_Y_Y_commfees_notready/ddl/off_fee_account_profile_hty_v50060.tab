@@ -1,0 +1,24 @@
+CREATE TABLE oms_owner.off_fee_account_profile_hty (
+	offender_fee_id int8 NOT NULL,
+	record_datetime date NOT NULL DEFAULT sysdate(),
+	amount int8 NOT NULL,
+	day_of_month int4 NULL,
+	start_date date NOT NULL,
+	effective_date date NULL,
+	expiry_date date NULL,
+	fee_act_status varchar(12) NOT NULL,
+	status_effective_date date NOT NULL,
+	create_datetime timestamp(6) NOT NULL DEFAULT current_timestamp,
+	create_user_id varchar(32) NOT NULL,
+	modify_datetime timestamp(6) NULL,
+	modify_user_id varchar(32) NULL,
+	seal_flag varchar(1) NULL,
+	comment_text varchar(240) NULL,
+	CONSTRAINT off_fee_account_prof_hty_fk1 FOREIGN KEY (offender_fee_id) REFERENCES oms_owner.off_fee_account_profile(offender_fee_id)
+)
+TABLESPACE tag_data
+;
+
+COMMENT ON TABLE OMS_OWNER.OFF_FEE_ACCOUNT_PROFILE_HTY  IS 'History of offender fee account profile for items that affect billing or reporting';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_ACCOUNT_PROFILE_HTY.OFFENDER_FEE_ID IS 'Unique fee account record id';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_ACCOUNT_PROFILE_HTY.RECORD_DATETIME IS 'Date and time when the history record was created';

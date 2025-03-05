@@ -1,0 +1,21 @@
+create table stage_off_profiles
+(    offender_id_display  varchar2(10)    not null 
+   , booking_begin_date   date            not null
+   , profile_type         varchar2(12)    not null
+   , profile_code         varchar2(40)
+   , invalid_reason       varchar2(256)
+   , invalid_flag         varchar2(1) 
+)
+tablespace tag_data;
+
+ALTER TABLE stage_off_profiles
+  ADD CONSTRAINT stage_off_profiles_uk UNIQUE(offender_id_display, booking_begin_date, profile_type)
+  USING index tablespace TAG_INDX;
+
+comment on column stage_off_profiles.offender_id_display is 'The user facing unique identifier of an offender. If padding is turned on, the value should be ten characters long, padded left with zeroes.';
+comment on column stage_off_profiles.booking_begin_date is 'The start date of the incarceration period.';
+comment on column stage_off_profiles.profile_type is 'The type of information stored. Must belong to an offender profile (profile_category PA or PI) as defined on profile_types.';
+comment on column stage_off_profiles.profile_code is 'Enterable field for the profile_type. If the profile_type is configured as a CODE code_value_type, validate against profile_codes for the associated profile_type.';
+comment on column stage_off_profiles.invalid_reason is 'The reason the record will be skipped during conversion.';
+comment on column stage_off_profiles.invalid_flag is 'A flag to indicate whether the record should be processed. Records marked with ''N'' will be skipped during conversion.';
+comment on table stage_off_profiles is 'Configurable offender-specific data elements as defined on profile_types. Records populated for offender personal information (profile category PI) and physical attributes (profile category PA)';

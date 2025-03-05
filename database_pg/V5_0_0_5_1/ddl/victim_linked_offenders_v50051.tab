@@ -1,0 +1,28 @@
+create table victim_linked_offenders (
+victim_id int8 not null,
+offender_id int8 not null,
+associated_legal_case varchar(12) null,
+active_flag varchar(1) not null default 'Y',
+deactivated_datetime timestamp(6) null,
+note varchar(400) null,
+create_datetime timestamp(6) not null default current_timestamp(6),
+create_user_id varchar(32) not null,
+modify_datetime timestamp(6),
+modify_user_id varchar(32),
+seal_flag varchar(1)
+) tablespace tag_data; 
+
+alter table oms_owner.victim_linked_offenders add constraint victim_linked_offenders_pk primary key (victim_id, offender_id);
+
+alter table oms_owner.victim_linked_offenders  add constraint victim_linked_offenders_fk1 foreign key (victim_id) references oms_owner.victim_records(victim_id) on delete no action not deferrable initially immediate;
+
+alter table oms_owner.victim_linked_offenders  add constraint victim_linked_offenders_fk2 foreign key  (offender_id) references oms_owner.offenders(offender_id) on delete no action not deferrable initially immediate;
+
+comment on table victim_linked_offenders is 'Stores the offenders linked to the victims';
+
+comment on column victim_linked_offenders.victim_id is 'Unique identifier for the victim';
+comment on column victim_linked_offenders.offender_id is 'Offender surrogate identifier, corresponds to the root offender id that groups together all offender legal names and aliases';
+comment on column victim_linked_offenders.associated_legal_case is 'The most recently linked custodial or non-custodial order ex.{"offenderBookId":2930,"orderType":"CUST","displayNo":"C_1","orderNo":1}';  
+comment on column victim_linked_offenders.active_flag is 'Indicates if the association is active(Y/N)';
+comment on column victim_linked_offenders.deactivated_datetime is 'Deactivation datetime';
+comment on column victim_linked_offenders.note is 'Free text';

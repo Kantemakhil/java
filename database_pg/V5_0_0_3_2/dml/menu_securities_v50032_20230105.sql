@@ -1,0 +1,5 @@
+INSERT INTO MENU_SECURITIES(MENU_ID, PARENT_MENU_ID, MENU_ITEM, MODULE_NAME, SORT_ORDER, CREATE_DATETIME, CREATE_USER_ID, MODIFY_DATETIME, MODIFY_USER_ID, SEAL_FLAG)
+VALUES(NEXTVAL('LABLE_ID_SEQUENCE'),(select menu_id from menu_securities ms where menu_item='Legals/Sentence Calculation'), 'Parole Orders', 'OCDPAROR', 28, CURRENT_TIMESTAMP, 'OMS_OWNER',NULL,NULL, NULL);
+
+INSERT INTO oms_owner.menu_securities (menu_id, parent_menu_id, menu_item, module_name, sort_order, create_datetime, create_user_id, modify_datetime, modify_user_id, seal_flag, dynamic_form) 
+VALUES(nextVal('menu_id'), (select menu_id from menu_securities ms  where parent_menu_Id=(select parent_menu_id  from menu_securities where module_name='OIDMPITM') and menu_item='Maintenance'), 'Property Bundles', 'OUMBUNDL', 2, current_timestamp, 'OMS_OWNER', NULL,NULL, NULL, NULL);

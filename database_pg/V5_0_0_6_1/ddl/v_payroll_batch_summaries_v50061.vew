@@ -1,0 +1,12 @@
+CREATE OR REPLACE VIEW oms_owner.v_payroll_batch_summaries
+AS SELECT off_wrk.payroll_batch_id,
+    off_wrk.offender_id,
+    off_wrk.offender_book_id,
+    sum(off_wrk.number_of_units) AS summary_number_of_units,
+    v_payh.first_name,
+    v_payh.last_name,
+    sum(off_wrk.payroll_amount) AS summary_payroll_amount
+   FROM offender_works off_wrk,
+    v_payroll_header v_payh
+  WHERE off_wrk.offender_id = v_payh.root_offender_id AND off_wrk.processed_flag::text = 'N'::text AND COALESCE(off_wrk.summary_offender_work_id::text, ''::text) = ''::text AND off_wrk.payroll_batch_id > 0 AND v_payh.payroll_caseload_id::text = off_wrk.caseload_id::text
+  GROUP BY off_wrk.payroll_batch_id, off_wrk.offender_id, v_payh.first_name, v_payh.last_name, off_wrk.offender_book_id;

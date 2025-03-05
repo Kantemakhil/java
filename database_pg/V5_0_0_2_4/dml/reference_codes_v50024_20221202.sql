@@ -1,0 +1,33 @@
+insert
+	into
+	oms_owner.reference_codes
+(domain,
+	code,
+	description,
+	list_seq,
+	active_flag,
+	system_data_flag,
+	modify_user_id,
+	expired_date,
+	new_code,
+	parent_code,
+	parent_domain,
+	create_datetime,
+	create_user_id,
+	modify_datetime,
+	seal_flag)
+values('KEY_DATES',
+'BOOKING_HED',
+'Hold Expiry',
+null,
+'Y',
+'N',
+null,
+null,
+null,
+null,
+null,
+current_timestamp,
+'OMS_OWNER',
+current_timestamp,
+null);

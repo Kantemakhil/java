@@ -1,0 +1,3 @@
+ALTER TABLE oms_owner.sentence_calc_types ADD sanctions_flag VARCHAR(1);
+
+comment on column oms_owner.sentence_calc_types.sanctions_flag is 'This column is used to store weather the saving sentence is eligible for sanctions or not';

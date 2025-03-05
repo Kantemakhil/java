@@ -1,0 +1,22 @@
+CREATE OR REPLACE VIEW oms_owner.v_offender_cip_inquiry
+AS SELECT vhb.offender_id_display,
+    ocd.offender_book_id,
+    ocd.placement_seq,
+    vhb.last_name,
+    vhb.first_name,
+    substr(vhb.living_unit_description, 1, "position"(vhb.living_unit_description, ';'::text) - 1) AS living_unit,
+    ocd.placement_type,
+    oms_miscellaneous_getdesccode('PLACE_TYPE'::character varying, ocd.placement_type) AS placement_type_desc,
+    ocd.placement_reason_code,
+    oms_miscellaneous_getdesccode('PLACE_RSN'::character varying, ocd.placement_reason_code) AS placement_reason_desc,
+    ocd.expiry_date,
+    ocd.review_date,
+    ocd.rel_by_per_code,
+    ocd.rel_by_per_name,
+    ocd.release_date,
+    ocd.release_time,
+    ocd.effective_time,
+    ocd.agy_loc_id
+   FROM offender_cip_details ocd,
+    v_header_block vhb
+  WHERE ocd.offender_book_id = vhb.offender_book_id AND vhb.active_flag::text = 'Y'::text; 

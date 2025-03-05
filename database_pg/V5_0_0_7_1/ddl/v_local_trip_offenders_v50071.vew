@@ -1,0 +1,88 @@
+CREATE OR REPLACE VIEW oms_owner.v_local_trip_offenders
+AS SELECT st.scheduled_trip_id,
+    v.route_name,
+    sch.inmate_id,
+    sch.event_id,
+    sch.offender_book_id,
+    sch.offender_id_display,
+    sch.offender_last_name,
+    sch.offender_first_name,
+    sch.sex_code,
+    sch.race_code,
+    sch.event_type,
+    sch.event_sub_type,
+    sch.agy_loc_id AS offender_from_loc,
+    sch.housing_location,
+    sch.to_agy_loc_id AS offender_to_loc,
+    sch.comment_text,
+    sch.record_source,
+    min(v.from_seq) AS from_seq,
+    max(v.to_seq) AS to_seq
+   FROM v_route_locations v,
+    ( SELECT v_sch.offender_id AS inmate_id,
+            v_sch.offender_id_display,
+            v_sch.offender_book_id,
+            v_sch.event_id,
+            v_sch.offender_last_name,
+            v_sch.offender_first_name,
+            o.sex_code,
+            o.race_code,
+            v_sch.event_type,
+            v_sch.event_sub_type,
+            v_sch.scheduled_trip_id,
+            v_sch.agy_loc_id,
+                CASE
+                    WHEN ob.agy_loc_id::text = v_sch.agy_loc_id::text THEN ((((((((v_sch.agy_loc_id::text || '-'::text) || v_sch.lu_level_1_code) ||
+                    CASE
+                        WHEN COALESCE(v_sch.lu_level_2_code, ''::text) = ''::text THEN NULL::text
+                        ELSE '-'::text
+                    END) || v_sch.lu_level_2_code) ||
+                    CASE
+                        WHEN COALESCE(v_sch.lu_level_3_code, ''::text) = ''::text THEN NULL::text
+                        ELSE '-'::text
+                    END) || v_sch.lu_level_3_code) ||
+                    CASE
+                        WHEN COALESCE(v_sch.lu_level_4_code, ''::text) = ''::text THEN NULL::text
+                        ELSE '-'::text
+                    END) || v_sch.lu_level_4_code)::character varying
+                    ELSE v_sch.agy_loc_id
+                END AS housing_location,
+            v_sch.to_agy_loc_id,
+            v_sch.comment_text,
+            v_sch.record_source
+           FROM v_offender_all_schedules v_sch,
+            offenders o,
+            offender_bookings ob
+          WHERE (v_sch.record_source = ANY (ARRAY['SCH'::text, 'COURT'::text])) AND COALESCE(v_sch.event_status, ' '::character varying)::text <> 'EXP'::text AND v_sch.offender_id = o.offender_id AND v_sch.offender_book_id = ob.offender_book_id AND v_sch.scheduled_trip_id IS NOT NULL AND v_sch.scheduled_trip_id::text <> ''::text
+        UNION ALL
+         SELECT non_admitted_inmate_mvmts.non_adm_inmate_id AS inmate_id,
+            non_admitted_inmate_mvmts.inmate_id,
+            NULL::bigint AS int8,
+            NULL::bigint AS int8,
+            non_admitted_inmate_mvmts.last_name,
+            non_admitted_inmate_mvmts.first_name,
+            NULL::character varying AS "varchar",
+            NULL::character varying AS "varchar",
+            non_admitted_inmate_mvmts.mvmt_type,
+            non_admitted_inmate_mvmts.mvmt_reason_code,
+            non_admitted_inmate_mvmts.scheduled_trip_id,
+            non_admitted_inmate_mvmts.from_agy_loc_id,
+            non_admitted_inmate_mvmts.from_agy_loc_id,
+            non_admitted_inmate_mvmts.to_agy_loc_id,
+            (('Responsible Agency: '::text || upper(non_admitted_inmate_mvmts.responsible_agency::text)) || '  Emergency Contact: '::text) || upper(non_admitted_inmate_mvmts.emergency_contact::text),
+            NULL::text AS text
+           FROM non_admitted_inmate_mvmts
+          WHERE non_admitted_inmate_mvmts.scheduled_trip_id IS NOT NULL AND non_admitted_inmate_mvmts.scheduled_trip_id::text <> ''::text) sch,
+    scheduled_trips st
+  WHERE st.scheduled_trip_id = sch.scheduled_trip_id AND st.route_name::text = v.route_name::text AND v.from_seq >= (( SELECT max(lpad(rsd.leg_id::character varying::text, 4, '0'::text) || lpad(rsd.leg_seq::character varying::text, 4, '0'::text)) AS max
+           FROM route_stop_details rsd
+          WHERE rsd.agy_loc_id::text = sch.agy_loc_id::text AND rsd.route_name::text = v.route_name::text AND rsd.active_flag::text = 'Y'::text AND (lpad(rsd.leg_id::character varying::text, 4, '0'::text) || lpad(rsd.leg_seq::character varying::text, 4, '0'::text)) < (( SELECT max(lpad(rsdx.leg_id::character varying::text, 4, '0'::text) || lpad(rsdx.leg_seq::character varying::text, 4, '0'::text)) AS max
+                   FROM route_stop_details rsdx
+                  WHERE rsdx.route_name::text = v.route_name::text AND rsdx.agy_loc_id::text = sch.to_agy_loc_id::text AND rsdx.active_flag::text = 'Y'::text)))) AND v.from_seq < (( SELECT min(lpad(rsd.leg_id::character varying::text, 4, '0'::text) || lpad(rsd.leg_seq::character varying::text, 4, '0'::text)) AS min
+           FROM route_stop_details rsd
+          WHERE rsd.agy_loc_id::text = sch.to_agy_loc_id::text AND rsd.route_name::text = v.route_name::text AND rsd.active_flag::text = 'Y'::text AND (lpad(rsd.leg_id::character varying::text, 4, '0'::text) || lpad(rsd.leg_seq::character varying::text, 4, '0'::text)) > (( SELECT max(lpad(rsd2.leg_id::character varying::text, 4, '0'::text) || lpad(rsd2.leg_seq::character varying::text, 4, '0'::text)) AS max
+                   FROM route_stop_details rsd2
+                  WHERE rsd2.agy_loc_id::text = sch.agy_loc_id::text AND rsd2.route_name::text = v.route_name::text AND rsd2.active_flag::text = 'Y'::text AND (lpad(rsd2.leg_id::character varying::text, 4, '0'::text) || lpad(rsd2.leg_seq::character varying::text, 4, '0'::text)) < (( SELECT max(lpad(rsdx.leg_id::character varying::text, 4, '0'::text) || lpad(rsdx.leg_seq::character varying::text, 4, '0'::text)) AS max
+                           FROM route_stop_details rsdx
+                          WHERE rsdx.route_name::text = v.route_name::text AND rsdx.agy_loc_id::text = sch.to_agy_loc_id::text AND rsdx.active_flag::text = 'Y'::text))))))
+  GROUP BY st.scheduled_trip_id, v.route_name, sch.inmate_id, sch.event_id, sch.offender_book_id, sch.offender_id_display, sch.offender_last_name, sch.offender_first_name, sch.sex_code, sch.race_code, sch.event_type, sch.event_sub_type, sch.agy_loc_id, sch.housing_location, sch.to_agy_loc_id, sch.comment_text, sch.record_source;

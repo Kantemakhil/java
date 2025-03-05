@@ -1,0 +1,9 @@
+ALTER TABLE oms_owner.iwp_templates ADD signature_access varchar(1);
+
+comment on column oms_owner.iwp_templates.signature_access is 'It indicates if signature access is allowed for the template';
+
+ALTER TABLE oms_owner.iwp_documents ADD signed_doc bytea;
+
+comment on column oms_owner.iwp_documents.signed_doc is 'It stores the signed document in blob format';
+
+ALTER TABLE oms_owner.iwp_documents ALTER COLUMN document_status TYPE varchar(24);

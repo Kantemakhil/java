@@ -1,0 +1,29 @@
+create table oms_owner.oms_module_report (
+  report_id                bigint not null,
+  module_name              varchar(20) not null,  
+  report_body              bytea not null,
+  report_file_name         varchar(100) not null,
+  report_version           bigint not null,
+  create_datetime          timestamp(6) not null default current_timestamp ,
+  create_user_id           varchar(32),
+  modify_datetime          timestamp(6),
+  modify_user_id           varchar(32),
+  seal_flag                varchar(1) 
+) tablespace tag_data;
+
+
+alter table oms_owner.oms_module_report 
+   add constraint oms_module_report_pk PRIMARY KEY (report_id)
+    using index tablespace tag_indx;
+	
+alter table oms_owner.oms_module_report   
+	add constraint oms_module_report_fk1 foreign key (module_name) 
+	references oms_modules(module_name) on delete no action not deferrable initially immediate;							   	
+	
+comment on table oms_owner.oms_module_report is 'It stores the Jasper report templates as bytea for each report module.';	
+
+COMMENT ON COLUMN oms_owner.oms_module_report.report_id IS 'Unique number assigned to each report (sequence=oms_module_report_seq).';
+COMMENT ON COLUMN oms_owner.oms_module_report.module_name IS 'The code used to uniquely identify the name of the module.';
+COMMENT ON COLUMN oms_owner.oms_module_report.report_body IS 'Content of the report';
+COMMENT ON COLUMN oms_owner.oms_module_report.report_file_name IS 'File name of the inserted report';
+COMMENT ON COLUMN oms_owner.oms_module_report.report_version IS 'Version upgraded every time the report is updated';

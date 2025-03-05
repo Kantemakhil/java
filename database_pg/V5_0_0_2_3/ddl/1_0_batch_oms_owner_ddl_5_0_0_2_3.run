@@ -1,0 +1,110 @@
+--echo everything (this eliminates the need to call psql -a)
+\set ECHO all
+
+--set the message level sent to client
+SET client_min_messages = warning;
+
+--print connection information
+\echo 'Database Information:'
+\conninfo
+
+--set client session behaviour
+\set AUTOCOMMIT on
+\timing on
+\set footer on
+\x auto
+\pset null <NULL>
+\set VERBOSITY verbose
+\pset pager off
+
+show search_path;
+
+select current_timestamp;
+
+--record scripts version
+call log_db_version_control('5', 'initial PostgreSql Elite db version ');
+call log_db_version_control_patches('5', '5_0_0_2_3', 'ddl set 1_0 of patch 5_0_0_2_3', '1_0_batch_oms_owner_ddl_5_0_0_2_3.run');
+
+--execute sql scripts
+
+--
+\i court_evnt_appointment_outcome_v50023.tab
+
+-- 
+\i incident_follow_up_id_v50023.seq
+\i incident_follow_up_details_v50023.tab
+--
+
+--
+\i offender_ppty_con_txns_v50023.tab
+\i offender_ppty_items_v50023.tab
+\i offender_ppty_item_txns_v50023.tab
+
+--
+\i oms_module_report_seq_v50023.seq
+\i oms_module_report_v50023.tab
+
+\i v_header_block_fn_v50023.fun
+\i oms_intake_get_offender_supervision_u_v50023.fun
+\i pims_weight_get_caseload_type_u1_v50023.fun
+\i pims_weight_get_sup_level_u_v50023.fun
+
+\i offender_cond_transfer_v50023.tab
+
+--drop views
+\i drop_views_v50023.vew
+
+\i addresses_v50023.tab
+\i addresses_jn_v50023.tab
+
+\i assessments_v50023.tab
+
+\i agency_visit_config_v50023.tab
+\i incentives_earn_privs_v50023.tab
+\i visit_cycle_limits_v50023.tab
+\i off_incentives_earn_privs_v50023.tab
+\i offender_visits_v50023.tab
+
+--views
+\i v_address_usages_v50023.vew
+\i corporate_address_v_v50023.vew
+\i v_offender_course_events_v50023.vew
+\i v_offender_all_schedules_2_v50023.vew
+\i v_offender_all_schedules_new_v50023.vew
+\i v_offender_all_schedules_v50023.vew
+\i v_addresses_v50023.vew
+\i person_address_v_v50023.vew
+\i v_corporate_addresses_v50023.vew
+\i v_offender_employ_addresses_v50023.vew
+\i v_offender_addresses_v50023.vew
+\i v_staff_addresses_v50023.vew
+\i v_course_activities_v50023.vew
+\i v_agency_addresses_v50023.vew
+\i v_offender_education_addresses_v50023.vew
+\i v_person_addresses_v50023.vew
+\i v_off_ext_movements_v50023.vew
+\i v_offender_scheduled_trips_v50023.vew
+\i v_route_locations_v50023.vew
+\i v_local_trip_offenders_v50023.vew
+\i v_local_trip_occupancy_v50023.vew
+\i v_route_occupancy_v50023.vew
+\i v_corporate_address_phones_v50023.vew
+\i v_program_placements_v50023.vew
+\i v_off_addresses_v50023.vew
+\i v_curfew_addresses_v50023.vew
+\i offender_address_v_v50023.vew
+\i v_assign_offender_trips_v50023.vew
+\i v_transfer_waiting_lists_v50023.vew
+
+ 
+select current_timestamp;
+
+show search_path;
+
+ 
+ 
+
+
+
+
+

@@ -1,0 +1,8 @@
+ALTER TABLE oms_owner.iwp_documents 	
+   ADD CONSTRAINT iwp_documents_fk2 FOREIGN KEY (template_id)
+   REFERENCES oms_owner.iwp_templates(template_id) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE;   
+   
+   
+CREATE INDEX iwp_documents_ni1 ON oms_owner.iwp_documents USING btree (template_id) TABLESPACE TAG_INDX;   
+
+

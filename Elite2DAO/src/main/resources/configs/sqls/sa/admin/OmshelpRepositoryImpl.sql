@@ -1,0 +1,31 @@
+
+
+OUMSYLAB_EXECUTE_ALL_OMSMODULEHELP{
+select MODULE_NAME, HELP_TYPE, HELP_URL, HELP_DESC, ROW_ID from OMS_MODULES_HELP
+}
+OMSHELP_INSERT_VALUES{
+insert into OMS_MODULES_HELP(MODULE_NAME, HELP_TYPE, HELP_URL, HELP_DESC, create_datetime,create_user_id) values (:moduleName, :helpType, :helpUrl, :helpDesc, current_timestamp, :createUserId) 
+}
+
+OMSHELP_UPDATE_VALUES{
+update OMS_MODULES_HELP set MODULE_NAME =:moduleName, HELP_TYPE =:helpType, HELP_URL =:helpUrl, HELP_DESC =:helpDesc, modify_datetime=current_timestamp , modify_user_id =:modifyUserId where ROW_ID = :rowId 
+}
+
+OMSHELP_DELETE_VALUES{
+DELETE FROM OMS_MODULES_HELP WHERE MODULE_NAME=:moduleName AND HELP_TYPE=:helpType AND  HELP_URL=:helpUrl
+}
+BASEURL_HELP_INSERT{
+INSERT INTO OMS_MODULES_BASE_HELP_URL(ID,BASE_HELP_PDF_URL,BASE_HELP_VIDEO_URL,BASE_HELP_HTML_URL,STATUS, CREATE_DATETIME , CREATE_USER_ID , MODIFY_DATETIME ) VALUES(:id,:baseHelpPdfUrl,:baseHelpVideoUrl,:baseHelpHtmlUrl,:status,current_timestamp , :createUserId , NULL )  
+}
+OMSHELP_EXECUTE_QUERY{
+select * from OMS_MODULES_BASE_HELP_URL WHERE STATUS='Y'
+}
+
+BASE_HELP_URl_ID{
+select NEXTVAL('BASE_URL_ID')
+}
+OMSHELP_INACTIVE_STATUS{
+UPDATE OMS_MODULES_BASE_HELP_URL SET STATUS='N' WHERE ID=:id
+}
+
+

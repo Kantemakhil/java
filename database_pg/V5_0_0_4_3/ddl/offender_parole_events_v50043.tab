@@ -1,0 +1,25 @@
+CREATE TABLE oms_owner.offender_parole_events (
+offender_book_id int8 NOT NULL,
+parole_event_id int8 NOT NULL,
+event_date timestamp(6) NOT NULL,
+parole_event varchar(12) NOT NULL,
+comment varchar(255) NULL,
+create_datetime timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+create_user_id varchar(32) NOT NULL,
+modify_datetime timestamp NULL,
+modify_user_id varchar(32) NULL
+) tablespace tag_data;
+
+alter table offender_parole_events add constraint offender_parole_events_pk primary key(offender_book_id, parole_event_id) using index tablespace tag_indx;
+
+ALTER TABLE offender_parole_events  
+  ADD CONSTRAINT offender_parole_events_fk1 FOREIGN KEY (offender_book_id) 
+   REFERENCES offender_bookings(offender_book_id)  ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE; 
+
+comment on table offender_parole_events is 'Records events that occur while on parole and are about parole';
+
+comment on column offender_parole_events.offender_book_id is 'Unique identifier for offender booking';
+comment on column offender_parole_events.parole_event_id is 'Parole event id (counter from 1 per each booking)';
+comment on column offender_parole_events.event_date is 'Parole event date';
+comment on column offender_parole_events.parole_event is 'Parole event type [domain=PAR_EVENTS]';
+comment on column offender_parole_events.comment is 'Comment';

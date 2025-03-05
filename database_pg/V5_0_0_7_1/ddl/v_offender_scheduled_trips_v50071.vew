@@ -1,0 +1,19 @@
+CREATE OR REPLACE VIEW oms_owner.v_offender_scheduled_trips
+AS SELECT oas.scheduled_trip_id,
+    oas.offender_id_display,
+    oas.offender_book_id,
+    oas.offender_last_name,
+    oas.offender_first_name,
+    oas.living_unit_desc AS from_location_desc,
+    oas.agy_loc_id,
+    oas.to_agy_loc_id,
+    oas.event_date,
+    oas.start_time,
+    oas.event_status,
+    oas.event_type,
+    oas.event_sub_type,
+    oas.offender_id,
+    oas.event_id,
+    oas.record_source
+   FROM v_offender_all_schedules oas
+  WHERE (oas.record_source = ANY (ARRAY['SCH'::text, 'COURT'::text])) AND oas.scheduled_trip_id IS NOT NULL;

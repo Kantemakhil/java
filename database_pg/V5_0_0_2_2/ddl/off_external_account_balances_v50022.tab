@@ -1,0 +1,33 @@
+create table oms_owner.off_external_account_balances
+	(account_balance_id      bigint, 
+	root_offender_id        bigint not null,
+	account_id              bigint not null,
+	account_details         varchar(50) not null, 
+	account_type            varchar(50) not null,
+	balance                 numeric(11,2) not null,
+	last_changed            timestamp(6),  	
+    create_datetime         TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP NOT NULL ,
+    create_user_id          VARCHAR(32) NOT NULL ,
+    modify_datetime         TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
+    modify_user_id          VARCHAR(32),
+    seal_flag               VARCHAR(1) 	
+) tablespace tag_data;
+	
+alter table oms_owner.off_external_account_balances   
+  add constraint off_external_acc_balances_pk primary key (account_balance_id)
+  using index tablespace tag_indx;
+
+alter table oms_owner.off_external_account_balances add constraint off_external_acc_balances_uk1 unique(root_offender_id, account_type);  
+  	
+comment on table oms_owner.off_external_account_balances is 'Stores the most recent offender external balances (no history)';
+
+comment on column oms_owner.off_external_account_balances.account_balance_id is 'Unique record identifier (db seq=ext_account_balance_id)';
+comment on column oms_owner.off_external_account_balances.root_offender_id is 'The root offender id of the offender.';
+comment on column oms_owner.off_external_account_balances.account_id is 'The inmate identifier in the external system.';
+comment on column oms_owner.off_external_account_balances.account_details is 'Additional details of inmate (ex: offender name).';
+comment on column oms_owner.off_external_account_balances.account_type is 'The type of financial account that comes from the external system (static values PRIVATE, EARNINGS).'; 
+comment on column oms_owner.off_external_account_balances.balance is 'The balance of the external financial account.';
+comment on column oms_owner.off_external_account_balances.last_changed is 'The date and time the financial account balance was last updated in the external system.';
+
+
+

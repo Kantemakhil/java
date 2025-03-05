@@ -1,0 +1,6 @@
+alter table incident_staff_reports add locked_by int4;
+comment on column incident_staff_reports.locked_by is 'The staff who locked the record.';
+
+alter table oms_owner.incident_staff_reports 
+	add constraint incident_staff_reports_fk1 foreign key (locked_by) 
+	references oms_owner.staff_members(staff_id) on delete no action not deferrable initially immediate;	

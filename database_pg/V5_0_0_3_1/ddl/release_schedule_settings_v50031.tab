@@ -1,0 +1,16 @@
+create table oms_owner.release_schedule_settings 
+(rel_sch_setting_type varchar(12), 
+rel_sch_setting_value bytea, 
+create_datetime    timestamp(6) default current_timestamp not null, 
+create_user_id    varchar(32) not null, 
+modify_datetime    timestamp(6), 
+modify_user_id    varchar(32), 
+seal_flag    varchar(1)) tablespace tag_data; 
+
+alter table oms_owner.release_schedule_settings 
+ add constraint release_schedule_settings_pk primary key(rel_sch_setting_type) 
+ using index tablespace tag_indx; 
+
+comment on table oms_owner.release_schedule_settings is 'The table stores the release schedule settings information (configuration for key date, alerts and charge indicators).'; 
+comment on column oms_owner.release_schedule_settings.rel_sch_setting_type is 'Setting type [static values: KEY_DATE, ALERTS, CHARGE_IND]'; 
+comment on column oms_owner.release_schedule_settings.rel_sch_setting_value is 'Stores the settings';

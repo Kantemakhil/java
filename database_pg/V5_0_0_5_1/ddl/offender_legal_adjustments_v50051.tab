@@ -1,0 +1,9 @@
+ALTER TABLE oms_owner.offender_legal_adjustments add COLUMN rd_years  numeric(5,1);
+ALTER TABLE oms_owner.offender_legal_adjustments add COLUMN rd_months numeric(5,1);
+ALTER TABLE oms_owner.offender_legal_adjustments add COLUMN rd_weeks  numeric(5,1);
+ALTER TABLE oms_owner.offender_legal_adjustments add COLUMN rd_days  int4;
+
+COMMENT ON COLUMN oms_owner.offender_legal_adjustments.rd_years IS 'Remission duration years';
+COMMENT ON COLUMN oms_owner.offender_legal_adjustments.rd_months IS 'Remission duration months';
+COMMENT ON COLUMN oms_owner.offender_legal_adjustments.rd_weeks IS 'Remission duration weeks';
+COMMENT ON COLUMN oms_owner.offender_legal_adjustments.rd_days IS 'Remission duration days';

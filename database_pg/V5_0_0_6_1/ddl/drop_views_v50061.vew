@@ -1,0 +1,16 @@
+DROP view v_gang_affiliations;
+DROP view v_offender_cip_inquiry;
+DROP VIEW v_header_block;
+DROP VIEW v_header_block2;
+--DROP view v_header_block_new; --new view in this release
+DROP view v_offender_all_visitors;
+DROP view v_name_search2; 
+drop view v_payroll_batch_summaries;
+DROP view v_payroll_header; 
+DROP view v_property_header_block; 
+DROP view v_trust_header; 
+DROP view v_trust_header1; 
+DROP view v_trust_header_a;
+drop view agy_placements_v2;
+drop view agy_placements_v1;
+drop view v_tag_header_block;

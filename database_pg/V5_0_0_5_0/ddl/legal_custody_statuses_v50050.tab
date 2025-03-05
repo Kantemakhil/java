@@ -1,0 +1,28 @@
+CREATE TABLE oms_owner.legal_custody_statuses (
+status_code varchar(12) NOT NULL,
+status_description varchar(40) NOT NULL,
+status_rank int4 NOT NULL,
+intake_flag varchar(1) NOT NULL DEFAULT 'Y',
+release_flag varchar(1) NOT NULL DEFAULT 'Y',
+always_display_flag varchar(1) NOT NULL DEFAULT 'Y',
+active_flag varchar(1) NOT NULL DEFAULT 'Y',
+expiry_date date,
+create_datetime timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+create_user_id varchar(32) NOT NULL,
+modify_datetime timestamp(6),
+modify_user_id varchar(32),
+seal_flag varchar(1)
+) tablespace tag_data;
+
+alter table legal_custody_statuses add constraint legal_custody_statuses_pk primary key (status_code);
+
+comment on table legal_custody_statuses is 'Maintains the offender custody statuses';
+
+comment on column legal_custody_statuses.status_code is 'Custody status code';
+comment on column legal_custody_statuses.status_description is 'Custody status description';
+comment on column legal_custody_statuses.status_rank is 'Custody status rank.';
+comment on column legal_custody_statuses.intake_flag is ' The custody status to be assigned to offenders on intake. ';
+comment on column legal_custody_statuses.release_flag is 'The custody status to be assigned to offenders on release. ';
+comment on column legal_custody_statuses.always_display_flag is 'Indicates if the custody status value should always display';
+comment on column legal_custody_statuses.active_flag is 'Indicates if custody status is active/inactive (Y/N values)';
+comment on column legal_custody_statuses.expiry_date is 'Expiry date for inactive custody status';

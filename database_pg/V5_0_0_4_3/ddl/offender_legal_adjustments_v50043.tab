@@ -1,0 +1,40 @@
+CREATE TABLE oms_owner.offender_legal_adjustments(
+offender_order_adjust_id int8 NOT NULL,
+adjust_code varchar(12) NOT NULL,
+offender_book_id int8 NOT NULL,
+object_id int8 NULL,
+object_type varchar(12) NOT NULL,
+adjust_date timestamp(6) NOT NULL,
+adjust_days int4 NOT NULL,
+adjust_from_date timestamp(6) NULL,
+adjust_to_date timestamp(6) NULL,
+comment_text varchar(240) NULL,
+create_datetime timestamp(6) NOT NULL DEFAULT current_timestamp,
+create_user_id varchar(32) NOT NULL,
+modify_datetime timestamp(6) NULL,
+modify_user_id varchar(32) NULL,
+seal_flag varchar(1) NULL
+)tablespace tag_data;
+
+alter table offender_legal_adjustments add constraint offender_legal_adjustments_pk primary key(offender_order_adjust_id) using index tablespace tag_indx;
+
+ALTER TABLE offender_legal_adjustments  
+  ADD CONSTRAINT offender_legal_adjustments_fk1 FOREIGN KEY (offender_book_id) 
+   REFERENCES offender_bookings(offender_book_id)  ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE; 
+   
+ALTER TABLE offender_legal_adjustments  
+  ADD CONSTRAINT offender_legal_adjustments_fk2 FOREIGN KEY (adjust_code) 
+   REFERENCES sentence_adjustments(sentence_adjust_code)  ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE;
+   
+
+comment on table offender_legal_adjustments is 'Sentece adjustments,booking adjustments and parole adjustments';
+
+comment on column offender_legal_adjustments.offender_order_adjust_id is 'Unique identifier for each adjustment [db sequence=offender_order_adjust_id_seq]';
+comment on column offender_legal_adjustments.adjust_code is 'Adjust type [based on sentence adjustement types configuration]';
+comment on column offender_legal_adjustments.offender_book_id is 'Unique indetifier for offender booking';
+comment on column offender_legal_adjustments.object_id is 'Parole event id, booking id or sentence order id';
+comment on column offender_legal_adjustments.object_type is 'There are two possible types of adjustment here: it is either BOOKING, representing a booking level adjustment, or an order level adjustment (e.g., CUST and PAR). The combination of object_type and object_id associates the adjustment with the parent record it affects (logical relationship). The current implementation limits the object_type to PAR, BOOKING and CUST values, but the purpose is to apply sentence adjustments to the booking as a whole, or to a particular legal order.';
+comment on column offender_legal_adjustments.adjust_date is 'Adjustment date';
+comment on column offender_legal_adjustments.adjust_days is 'Adjustment days';
+comment on column offender_legal_adjustments.adjust_from_date is 'Adjustment from date';
+comment on column offender_legal_adjustments.adjust_to_date is 'Adjustment to date';

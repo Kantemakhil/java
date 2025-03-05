@@ -1,0 +1,1 @@
+alter table oms_owner.offender_case_notes alter column case_note_text type varchar(32000);

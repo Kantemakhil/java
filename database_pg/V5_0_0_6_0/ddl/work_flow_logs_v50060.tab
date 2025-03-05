@@ -1,0 +1,6 @@
+ALTER TABLE work_flow_logs alter column work_flow_status drop not null;
+ALTER TABLE work_flow_logs ADD COLUMN comment VARCHAR(240);
+
+comment on column work_flow_logs.work_flow_status is 'Verification status, values DONE or COMP for alerts and releases, domain=WRK_FLW_ST for case plans'; 
+comment on column work_flow_logs.work_action_code is 'Action code [domain=WRK_FLW_ACT]'; 
+comment on column work_flow_logs.comment is 'Free text'; 

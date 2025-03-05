@@ -1,0 +1,63 @@
+-- oms_owner.v_grievance_inquiry source
+
+CREATE OR REPLACE VIEW oms_owner.v_grievance_inquiry
+AS SELECT (ofd.last_name::text || ', '::text) || ofd.first_name::text AS off_name,
+    ofd.offender_id_display,
+    ofd.offender_id,
+    obk.offender_book_id,
+    ofg.grievance_id,
+    ofg.report_date,
+    ofg.griev_type,
+    ofg.agy_loc_id,
+    ( SELECT ogt1.assigned_staff_id
+           FROM offender_grievance_txns ogt1
+          WHERE ogt1.grievance_id = ofg.grievance_id AND ogt1.assigned_staff_id IS NOT NULL AND ogt1.assigned_staff_id::text <> ''::text AND ogt1.txn_seq = (( SELECT max(ogt2.txn_seq) AS max
+                   FROM offender_grievance_txns ogt2
+                  WHERE ogt2.grievance_id = ofg.grievance_id AND ogt2.assigned_staff_id IS NOT NULL AND ogt2.assigned_staff_id::text <> ''::text AND (ogt2.status::text IN ( SELECT reference_codes.code
+                           FROM reference_codes
+                          WHERE reference_codes.domain::text = 'GRIEV_STATUS'::text AND reference_codes.parent_code::text = 'ACTIVE'::text AND reference_codes.active_flag::text = 'Y'::text))))) AS assigned_staff_id,
+    ( SELECT ogt3.griev_level
+           FROM offender_grievance_txns ogt3
+          WHERE ogt3.grievance_id = ofg.grievance_id AND ogt3.griev_level IS NOT NULL AND ogt3.griev_level::text <> ''::text AND ogt3.txn_seq = (( SELECT max(ogt4.txn_seq) AS max
+                   FROM offender_grievance_txns ogt4
+                  WHERE ogt4.grievance_id = ofg.grievance_id AND ogt4.griev_level IS NOT NULL AND ogt4.griev_level::text <> ''::text AND (ogt4.status::text IN ( SELECT reference_codes.code
+                           FROM reference_codes
+                          WHERE reference_codes.domain::text = 'GRIEV_STATUS'::text AND reference_codes.parent_code::text = 'ACTIVE'::text AND reference_codes.active_flag::text = 'Y'::text))))) AS griev_level,
+    ( SELECT date_trunc('day'::text, ogt5.end_date)::date - date_trunc('day'::text, LOCALTIMESTAMP)::date
+           FROM offender_grievance_txns ogt5
+          WHERE ogt5.grievance_id = ofg.grievance_id AND ogt5.end_date IS NOT NULL AND ogt5.end_date::text <> ''::text AND ogt5.txn_seq = (( SELECT max(ogt6.txn_seq) AS max
+                   FROM offender_grievance_txns ogt6
+                  WHERE ogt6.grievance_id = ofg.grievance_id AND ogt6.end_date IS NOT NULL AND ogt6.end_date::text <> ''::text AND (ogt6.status::text IN ( SELECT reference_codes.code
+                           FROM reference_codes
+                          WHERE reference_codes.domain::text = 'GRIEV_STATUS'::text AND reference_codes.parent_code::text = 'ACTIVE'::text AND reference_codes.active_flag::text = 'Y'::text))))) AS days_rem,
+    ( SELECT gr.description
+           FROM grievance_reasons gr
+          WHERE gr.griev_type::text = ofg.griev_type::text AND gr.griev_reason_code::text = ofg.griev_reason_code::text) AS griev_reason_code_desc,
+    ofg.griev_reason_code,
+    ( SELECT ( SELECT grievance_txns.description
+                   FROM grievance_txns
+                  WHERE grievance_txns.txn_type::text = ogt1.txn_type::text AND grievance_txns.griev_type::text = ofg.griev_type::text) AS description
+           FROM offender_grievance_txns ogt1
+          WHERE ogt1.grievance_id = ofg.grievance_id AND ogt1.txn_seq = (( SELECT max(ogt2.txn_seq) AS max
+                   FROM offender_grievance_txns ogt2
+                  WHERE ogt2.grievance_id = ofg.grievance_id AND (ogt2.status::text IN ( SELECT reference_codes.code
+                           FROM reference_codes
+                          WHERE reference_codes.domain::text = 'GRIEV_STATUS'::text AND reference_codes.parent_code::text = 'ACTIVE'::text AND reference_codes.active_flag::text = 'Y'::text))))) AS txn_type_desc,
+    ( SELECT ogt1.txn_type
+           FROM offender_grievance_txns ogt1
+          WHERE ogt1.grievance_id = ofg.grievance_id AND ogt1.txn_seq = (( SELECT max(ogt2.txn_seq) AS max
+                   FROM offender_grievance_txns ogt2
+                  WHERE ogt2.grievance_id = ofg.grievance_id AND (ogt2.status::text IN ( SELECT reference_codes.code
+                           FROM reference_codes
+                          WHERE reference_codes.domain::text = 'GRIEV_STATUS'::text AND reference_codes.parent_code::text = 'ACTIVE'::text AND reference_codes.active_flag::text = 'Y'::text))))) AS txn_type
+   FROM offenders ofd,
+    offender_bookings obk,
+    offender_grievances ofg
+  WHERE ofd.offender_id = obk.offender_id AND obk.offender_book_id = ofg.offender_book_id AND obk.active_flag::text = 'Y'::text
+  ORDER BY (( SELECT date_trunc('day'::text, ogt5.end_date) - date_trunc('day'::text, LOCALTIMESTAMP)
+           FROM offender_grievance_txns ogt5
+          WHERE ogt5.grievance_id = ofg.grievance_id AND ogt5.end_date IS NOT NULL AND ogt5.end_date::text <> ''::text AND ogt5.txn_seq = (( SELECT max(ogt6.txn_seq) AS max
+                   FROM offender_grievance_txns ogt6
+                  WHERE ogt6.grievance_id = ofg.grievance_id AND ogt6.end_date IS NOT NULL AND ogt6.end_date::text <> ''::text AND (ogt6.status::text IN ( SELECT reference_codes.code
+                           FROM reference_codes
+                          WHERE reference_codes.domain::text = 'GRIEV_STATUS'::text AND reference_codes.parent_code::text = 'ACTIVE'::text AND reference_codes.active_flag::text = 'Y'::text))))));

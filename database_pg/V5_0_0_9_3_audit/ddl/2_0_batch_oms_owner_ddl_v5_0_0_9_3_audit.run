@@ -1,0 +1,50 @@
+--echo everything (this eliminates the need to use -a)
+\set ECHO all
+
+--set the message level sent to client
+SET client_min_messages = warning;
+
+--print connection information
+\echo 'Database Information:'
+\conninfo
+
+--set client session behaviour
+\set AUTOCOMMIT on
+\timing on
+\set footer on
+\x auto
+\pset null <NULL>
+\set VERBOSITY verbose
+\pset pager off
+
+show search_path;
+
+select current_timestamp;
+
+--record scripts version
+call log_db_version_control('5', 'initial PostgreSql Elite db version ');
+call log_db_version_control_patches('5', 'v5_0_0_9_3_audit', 'ddl audit columns set 2_0 of patch v5_0_0_9_3_audit', '2_0_batch_oms_owner_ddl_v5_0_0_9_3_audit.run');
+
+--execute sql scripts
+
+---------------------------------------------------------------------
+--ddl and dml to support ddl for nullable/not nullable and default 
+---------------------------------------------------------------------
+
+\i 7_fix_tables_with_create_user_id_nullable.sql 
+\i 8_fix_tables_remove_default_for_create_user_id.sql 
+\i 9_fix_tables_create_datetime_nullable_default.sql 
+\i 10_fix_tables_modify_datetime_nullable_default.sql 
+
+
+select current_timestamp;
+
+show search_path;
+
+ 
+ 
+
+
+
+
+

@@ -1,0 +1,49 @@
+--echo everything (this eliminates the need to use -a)
+\set ECHO all
+
+--set the message level sent to client
+SET client_min_messages = warning;
+
+--print connection information
+\echo 'Database Information:'
+\conninfo
+
+--set client session behaviour
+\set AUTOCOMMIT on
+\timing on
+\set footer on
+\x auto
+\pset null <NULL>
+\set VERBOSITY verbose
+\pset pager off
+
+show search_path;
+
+select current_timestamp;
+
+--record scripts version
+call log_db_version_control('5', 'initial PostgreSql Elite db version ');
+call log_db_version_control_patches('5', '5_0_0_5_0', 'ddl set 1_0 of patch 5_0_0_5_0', '1_0_batch_oms_owner_ddl_5_0_0_5_0.run');
+
+--execute sql scripts
+
+\i bank_cheque_books_v50050.tab
+\i indigent_ind_flagformula_v50050.fun
+\i legal_custody_statuses_v50050.tab
+\i legal_settings_v50050.tab
+\i off_court_report_charges_v50050.tab
+\i persons_v50050.tab
+\i iwp_bookmark_out_parameters_v50050.tab
+
+
+select current_timestamp;
+
+show search_path;
+
+ 
+ 
+
+
+
+
+

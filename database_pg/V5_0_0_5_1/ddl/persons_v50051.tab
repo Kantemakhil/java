@@ -1,0 +1,8 @@
+alter table PERSONS add column title varchar(12);
+alter table PERSONS add column gender varchar(12);
+alter table PERSONS add column notes varchar(400);
+
+comment on column PERSONS.title is 'title [domain=TITLE]';
+comment on column PERSONS.sex is 'The actual gender of the offender [domain=SEX]';
+comment on column PERSONS.gender is 'The Socially defined gender of the person [domain=GENDER]';
+comment on column PERSONS.notes is 'Free text';

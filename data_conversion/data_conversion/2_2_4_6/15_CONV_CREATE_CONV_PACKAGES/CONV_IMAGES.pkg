@@ -1,0 +1,291 @@
+CREATE OR REPLACE PACKAGE CONV_IMAGES IS
+
+   FUNCTION show_version RETURN VARCHAR2;
+
+   PROCEDURE offender_header_images;  
+   PROCEDURE set_off_active_header_images; 
+
+   PROCEDURE main;
+
+END CONV_IMAGES;
+/
+
+CREATE OR REPLACE PACKAGE BODY CONV_IMAGES IS
+  -- ====================================================================================
+   vcp_version CONSTANT VARCHAR2(60) := '12.1.1.0 28-JAN-2021';
+  -- ====================================================================================
+  /*
+     MODIFICATION HISTORY (Please put version history in a reverse-chronological order below)
+     --------------------
+     Person      Date         Version             Comments
+     ---------   ---------    ---------           -----------------------------------
+     Syscon     10-JUL-2019   12.1.1.0            Initial version: offender images                                                 
+  */
+  --------------------------------------------------------------------------------------------
+   g_max_limit    PLS_INTEGER := 10000; 
+
+ --------------------------------------------------------------------------------------------
+
+   FUNCTION show_version RETURN VARCHAR2 IS
+   BEGIN
+      RETURN(vcp_version);
+   END show_version;
+
+   PROCEDURE offender_header_images 
+   IS 
+      CURSOR lv_rec_cur
+      IS
+      SELECT  image_id.nextval  as image_id
+	           ,stg_img.capture_date  as capture_date 
+             ,'OFF_BKG' as image_object_type 
+             ,conv_map_bookings.offender_book_id as image_object_id 
+             ,stg_img.offender_id_display as stage_offender_id_display  
+             ,stg_img.booking_begin_date as stage_booking_begin_date 
+             ,NULL as image_object_seq    --this is null for mugshots      
+             ,'FACE' as image_view_type      --always FACE for mugshots      
+             ,CASE 
+                 WHEN stg_img.image_thumbnail IS NULL THEN EMPTY_BLOB() 
+                 ELSE stg_img.image_thumbnail  
+              END as image_thumbnail 	
+             ,CASE 
+                 WHEN stg_img.image_original IS NULL THEN EMPTY_BLOB() 
+                 ELSE stg_img.image_original 
+              END as image_original    
+            ,CASE 
+                 WHEN stg_img.image_full IS NULL THEN EMPTY_BLOB() 
+                 ELSE stg_img.image_full  
+              END as image_full        
+	           ,'N' as active_flag  --set the active record after the inserts
+             ,NVL(stg_img.orientation_type, 'FRONT')as orientation_type 
+             ,NVL(stg_img.capture_date, systimestamp) AS create_datetime
+             ,conv_utilities.g_conv_user AS create_user_id
+	           ,NVL(capture_date, systimestamp)  AS modify_datetime
+	           ,NULL          AS modify_user_id
+	          ,NULL seal_flag
+       FROM oms_stage.stage_image stg_img, conv_map_bookings
+      WHERE stg_img.offender_id_display = conv_map_bookings.stage_offender_id_display(+)
+        AND stg_img.booking_begin_date = conv_map_bookings.stage_booking_begin_date(+) 
+        AND stg_img.image_object_type = 'OFF_BKG';
+
+      TYPE typ_tab IS TABLE OF lv_rec_cur%ROWTYPE INDEX BY PLS_INTEGER;
+      lv_rec       typ_tab;
+    --
+    -- Userd defined exceptions
+       dml_errors              EXCEPTION;
+      lv_bulk_error_indx       NUMBER;
+      lv_error_count_img       NUMBER;
+      lv_error_count_img_org   NUMBER;
+      PRAGMA EXCEPTION_INIT(dml_errors, -24381);   
+   BEGIN
+      conv_utilities.logging('offender_header_images', NULL, NULL, 'START', 'Procedure starts at: ' || systimestamp);
+      lv_error_count_img := 0;
+      lv_error_count_img_org := 0;
+
+      OPEN lv_rec_cur;
+      LOOP
+         FETCH lv_rec_cur BULK COLLECT
+           INTO lv_rec LIMIT 500;   --custom limit here because of the blob images
+         --
+          -- Exit when no records to process
+         EXIT WHEN lv_rec.count = 0;
+         --
+         -- Bulk Process into table images
+         BEGIN
+            FORALL i IN lv_rec.first .. lv_rec.last SAVE EXCEPTIONS
+            INSERT /*+ APPEND */ INTO images 
+             (       image_id 
+	            ,capture_date 
+                    ,image_object_type
+		    ,image_object_id 
+		    ,image_object_seq 
+		    ,image_view_type 
+		    ,image_thumbnail 
+		    ,active_flag 
+		    ,orientation_type		 
+		    ,create_datetime
+		    ,create_user_id
+		    ,modify_datetime
+		    ,modify_user_id
+		    ,seal_flag )
+             VALUES (lv_rec(i).image_id 
+	            ,lv_rec(i).capture_date 
+                    ,lv_rec(i).image_object_type 
+		    ,lv_rec(i).image_object_id 
+		    ,lv_rec(i).image_object_seq 
+		    ,lv_rec(i).image_view_type 
+		    ,lv_rec(i).image_thumbnail  
+		    ,lv_rec(i).active_flag 
+		    ,lv_rec(i).orientation_type		   
+		    ,lv_rec(i).create_datetime 
+		    ,lv_rec(i).create_user_id 
+		    ,lv_rec(i).modify_datetime 
+		    ,lv_rec(i).modify_user_id 
+		    ,lv_rec(i).seal_flag );
+         EXCEPTION
+            WHEN dml_errors THEN
+               lv_error_count_img := lv_error_count_img + SQL%bulk_exceptions.count;
+               FOR j IN 1 .. SQL%bulk_exceptions.count
+               LOOP
+                  lv_bulk_error_indx := SQL%BULK_EXCEPTIONS(j).error_index;
+                  conv_utilities.logging('offender_header_images-images',NULL, NULL, 'ERROR -- image id: ' || lv_rec(lv_bulk_error_indx).image_id 
+                       || ' :stage_offender_id_display: ' || lv_rec(lv_bulk_error_indx).stage_offender_id_display
+                       || ' :stage_booking_begin_date: ' || TO_CHAR(lv_rec(lv_bulk_error_indx).stage_booking_begin_date, 'DD-MON-YYYY HH24:MI:SS')
+                       || ' :capture_date: ' || TO_CHAR(lv_rec(lv_bulk_error_indx).capture_date, 'DD-MON-YYYY HH24:MI:SS') 
+                       || ' :image_view_type: ' || lv_rec(lv_bulk_error_indx).image_view_type 
+                       || ' :orientation_type: ' || lv_rec(lv_bulk_error_indx).orientation_type 
+                       ,SQLERRM(-sql%BULK_EXCEPTIONS(j).error_code));
+              END LOOP;
+         END;
+
+         COMMIT;
+
+         ----- Bulk Process into table image_originals
+         BEGIN
+            FORALL i IN lv_rec.first .. lv_rec.last SAVE EXCEPTIONS
+            INSERT /*+ APPEND */ INTO image_originals 
+             ( image_id 
+	            ,image_original  
+              ,image_full 		 
+		          ,create_datetime
+		          ,create_user_id
+		          ,modify_datetime
+		          ,modify_user_id
+		          ,seal_flag )
+            VALUES (lv_rec(i).image_id  
+	                 ,lv_rec(i).image_original
+                   ,lv_rec(i).image_full  		  	   
+		               ,lv_rec(i).create_datetime 
+		               ,lv_rec(i).create_user_id 
+		               ,lv_rec(i).modify_datetime 
+		               ,lv_rec(i).modify_user_id 
+		               ,lv_rec(i).seal_flag );
+         EXCEPTION
+            WHEN dml_errors THEN
+               lv_error_count_img_org := lv_error_count_img_org + SQL%bulk_exceptions.count;
+               FOR j IN 1 .. SQL%bulk_exceptions.count
+               LOOP
+                  lv_bulk_error_indx := SQL%BULK_EXCEPTIONS(j).error_index;
+                  conv_utilities.logging('offender_header_images-image_originals',NULL, NULL, 'ERROR -- image id: ' || lv_rec(lv_bulk_error_indx).image_id     
+                          || ' :stage_offender_id_display: ' || lv_rec(lv_bulk_error_indx).stage_offender_id_display
+                          || ' :stage_booking_begin_date: ' || TO_CHAR(lv_rec(lv_bulk_error_indx).stage_booking_begin_date, 'DD-MON-YYYY HH24:MI:SS')
+                          || ' :capture_date: ' || TO_CHAR(lv_rec(lv_bulk_error_indx).capture_date, 'DD-MON-YYYY HH24:MI:SS') 
+                          || ' :image_view_type: ' || lv_rec(lv_bulk_error_indx).image_view_type 
+                          || ' :orientation_type: ' || lv_rec(lv_bulk_error_indx).orientation_type 
+                       ,SQLERRM(-sql%BULK_EXCEPTIONS(j).error_code));
+              END LOOP;
+         END;
+         COMMIT;
+         ----------
+                  
+         lv_rec.DELETE;
+         EXIT WHEN lv_rec_cur%NOTFOUND;
+      END LOOP;
+
+      COMMIT;
+      lv_rec.DELETE;
+      CLOSE lv_rec_cur;
+
+
+      DBMS_STATS.GATHER_TABLE_STATS(ownname=>'OMS_OWNER',tabname=>'IMAGES',cascade=>TRUE);
+      DBMS_STATS.GATHER_TABLE_STATS(ownname=>'OMS_OWNER',tabname=>'IMAGE_ORIGINALS',cascade=>TRUE);
+
+      conv_utilities.logging('offender_header_images', NULL, NULL, 'END', 'Number of failures images : ' || lv_error_count_img ||  ' Number of failures image originals : ' || lv_error_count_img_org || '.  Procedure ends at: ' || systimestamp);
+
+   EXCEPTION
+      WHEN OTHERS THEN
+        IF lv_rec_cur%ISOPEN THEN CLOSE lv_rec_cur; END IF;
+        conv_utilities.logging('offender_header_images', NULL, NULL,  'EXCEPTION', SQLERRM || 'Procedure generates exception at time: ' || systimestamp);
+   END offender_header_images;
+
+----------------------------------------------------------------------------------------------------------------------------------------
+
+   PROCEDURE set_off_active_header_images 
+   IS 
+      CURSOR lv_rec_cur
+      IS
+      SELECT  rowid, image_id,  rank() OVER (PARTITION BY images.image_object_id ORDER BY images.capture_date DESC) rank_nr
+       FROM images 
+      WHERE image_object_type = 'OFF_BKG' AND image_view_type = 'FACE' AND orientation_type = 'FRONT' 
+      FOR UPDATE;
+
+      TYPE typ_tab IS TABLE OF lv_rec_cur%ROWTYPE INDEX BY PLS_INTEGER;
+      lv_rec       typ_tab;
+    --
+    -- Userd defined exceptions
+       dml_errors              EXCEPTION;
+      lv_bulk_error_indx       NUMBER;
+      lv_error_count           NUMBER;
+      PRAGMA EXCEPTION_INIT(dml_errors, -24381);   
+   BEGIN
+      conv_utilities.logging('set_off_active_header_images', NULL, NULL, 'START', 'Procedure starts at: ' || systimestamp);
+      lv_error_count := 0;
+
+      OPEN lv_rec_cur;
+      LOOP
+         FETCH lv_rec_cur BULK COLLECT
+           INTO lv_rec LIMIT g_max_limit;
+         --
+          -- Exit when no records to process
+         EXIT WHEN lv_rec.count = 0;
+         --
+         -- Bulk Process into table images
+         BEGIN
+            FORALL i IN lv_rec.first .. lv_rec.last SAVE EXCEPTIONS
+               UPDATE images 
+                  SET active_flag = 'Y' 
+                WHERE rowid = lv_rec(i).rowid 
+                  AND lv_rec(i).rank_nr = 1;
+         EXCEPTION
+            WHEN dml_errors THEN
+               lv_error_count := lv_error_count + SQL%bulk_exceptions.count;
+               FOR j IN 1 .. SQL%bulk_exceptions.count
+               LOOP
+                  lv_bulk_error_indx := SQL%BULK_EXCEPTIONS(j).error_index;
+                  conv_utilities.logging('set_off_active_header_images',NULL, NULL, 'ERROR -- image id: ' || lv_rec(lv_bulk_error_indx).image_id 
+                       ,SQLERRM(-sql%BULK_EXCEPTIONS(j).error_code));
+              END LOOP;
+         END;
+
+         COMMIT;           
+         lv_rec.DELETE;
+         EXIT WHEN lv_rec_cur%NOTFOUND;
+      END LOOP;
+
+      COMMIT;
+      lv_rec.DELETE;
+      CLOSE lv_rec_cur;
+
+
+      DBMS_STATS.GATHER_TABLE_STATS(ownname=>'OMS_OWNER',tabname=>'IMAGES',cascade=>TRUE);
+
+      conv_utilities.logging('set_off_active_header_images', NULL, NULL, 'END', 'Number of failures : ' || lv_error_count  || '.  Procedure ends at: ' || systimestamp);
+
+   EXCEPTION
+      WHEN OTHERS THEN
+        IF lv_rec_cur%ISOPEN THEN CLOSE lv_rec_cur; END IF;
+        conv_utilities.logging('set_off_active_header_images', NULL, NULL,  'EXCEPTION', SQLERRM || 'Procedure generates exception at time: ' || systimestamp);
+   END set_off_active_header_images;
+
+   PROCEDURE main
+   IS
+   BEGIN
+
+      --
+      conv_utilities.logging('PACKAGE - CONV_IMAGES', NULL, NULL, 'START', systimestamp);
+
+      offender_header_images;
+      set_off_active_header_images;
+   
+      BEGIN
+         conv_utilities.alter_sequences(p_conv_pkg_name => 'CONV_IMAGES');
+      EXCEPTION
+         WHEN OTHERS THEN
+            null; --nothing to do because the procedure already logs the exception and we don't want to abort the entire process in main
+      END;
+
+      conv_utilities.logging('PACKAGE - CONV_IMAGES', NULL, NULL, 'END', systimestamp);
+
+   END main;
+
+END CONV_IMAGES;
+/

@@ -1,0 +1,4 @@
+ALTER TABLE  rp_other_occupants  ADD format varchar(32);
+update  rp_other_occupants set format ='LOC';
+alter table rp_other_occupants alter column format set not null;
+comment on column rp_other_occupants.format is 'Indicates the phone number format'; 

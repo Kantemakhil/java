@@ -1,0 +1,61 @@
+
+OUMTRNBK_MRGPROC_FIND_V_MERGE_TRANSACTION_PROCESSES {
+	SELECT MERGE_TRANSACTION_ID, TRANSACTION_TYPE, PROCESS_ID, PROCESS_NAME, PROCESS_DESCRIPTION, TRANSFER_FLAG, TIMEFRAME_FLAG, BEGIN_DATE, BEGIN_TIME, END_DATE, END_TIME, MANDATORY_ON_FLAG, DEFAULT_ON_FLAG,
+ 	 (select TIMEFRAME_REQUIRED_FLAG  from merge_processes  where process_id = mrg_proc.process_id) as ISPROCESSTIMEREQUIRED,
+     transfer_booking_core.get_booking_start_date(:P_FROM_OFF_BOOK_ID) BOOKINGSTARTDATE,
+     transfer_booking_core.get_booking_end_date(:P_FROM_OFF_BOOK_ID) BOOKINGENDDATE,
+     transfer_booking_core.get_booking_end_date(transfer_booking_core.get_prev_book_id(:P_FROM_OFF_BOOK_ID, :P_FROM_ROOT_OFF_ID)) PREVBKGENDDATE,
+     transfer_booking_core.get_booking_start_date(transfer_booking_core.get_next_book_id(:P_FROM_OFF_BOOK_ID, :P_FROM_ROOT_OFF_ID)) NEXTBKGSTARTDATE
+ 	FROM V_MERGE_TRANSACTION_PROCESSES mrg_proc WHERE MERGE_TRANSACTION_ID =:MERGE_TRANSACTION_ID
+ 	
+}
+OUMTRNBK_MRGPROC_INSERT_MERGE_TRANSACTION_PROCESSES {
+	INSERT INTO MERGE_TRANSACTION_PROCESSES(MERGE_TRANSACTION_ID,PROCESS_ID,BEGIN_DATE,END_DATE,TIMEFRAME_FLAG,CREATE_DATETIME,CREATE_USER_ID,MODIFY_DATETIME,MODIFY_USER_ID,SEAL_FLAG) 
+	VALUES(:mergeTransactionId,:processId,:beginDate,:endDate,:timeframeFlag,CURRENT_TIMESTAMP,:createUserId,:modifyDatetime,:modifyUserId,:sealFlag)
+}
+
+OUMTRNBK_MRGPROC_DELETE_MERGE_TRANSACTION_PROCESSES {
+	DELETE MERGE_TRANSACTION_PROCESSES  where MERGE_TRANSACTION_ID=:mergeTransactionId and PROCESS_ID=:processId
+}
+
+
+OUMTRNBK_CREATE_FORM_GLOBALS {
+	SELECT DESCRIPTION INTO V_FORM_DESC FROM OMS_MODULES WHERE MODULE_NAME = V_FORM_NAME
+}
+
+OUMTRNBK_IS_PROCESS_TIME_REQUIRED_ {
+	SELECT TIMEFRAME_REQUIRED_FLAG FROM MERGE_PROCESSES WHERE PROCESS_ID = :PROCESSID
+}
+
+OUMTRNBK_IS_PROCESS_DEFAULT_TRANSFER_ {
+	SELECT DEFAULT_ON_FLAG FROM MERGE_PROCESSES WHERE PROCESS_ID = :PROCESSID
+}
+
+
+
+
+OUMTRNBK_COUNT_OFF_BOOKINGS{
+SELECT count(*) FROM offender_bookings WHERE root_offender_id = :pFromOffRootId
+}
+
+OUMTRNBK_GET_INST_BOOK_ACTIVE{
+SELECT COUNT (0) FROM offender_bookings WHERE offender_book_id = :pFromOffBookId AND (active_flag = 'Y' OR community_active_flag = 'Y')
+}
+
+OUMTRNBK_GET_TO_BOOK_ACTIVE{
+SELECT COUNT (0) FROM offender_bookings WHERE root_offender_id = :pToOffRootId AND (active_flag = 'Y' OR community_active_flag = 'Y')
+}
+
+OUMTRNBK_GET_ACTIVE_BOOKING_CUR{
+SELECT COUNT (*) FROM offender_bookings WHERE offender_book_id = :pOffBookId AND (active_flag = 'Y' OR community_active_flag = 'Y') AND booking_begin_date = (SELECT MAX (booking_begin_date) FROM offender_bookings WHERE offender_book_id = :pOffBookId)
+}
+
+
+
+OUMTRNBK_MRGPROC_GET_V_MERGE_TRANSACTION_PROCESSES{
+SELECT MERGE_TRANSACTION_ID, TRANSACTION_TYPE, PROCESS_ID, PROCESS_NAME, PROCESS_DESCRIPTION, TRANSFER_FLAG, TIMEFRAME_FLAG, BEGIN_DATE, BEGIN_TIME, END_DATE, END_TIME, MANDATORY_ON_FLAG, DEFAULT_ON_FLAG FROM V_MERGE_TRANSACTION_PROCESSES WHERE MERGE_TRANSACTION_ID =:mergeTransactionId
+}
+
+OUMTRNBK_MRGPROC_UPDATE_MERGE_TRANSACTION_PROCESSES {
+update MERGE_TRANSACTION_PROCESSES set merge_transaction_id = :mergeTransactionId, process_id = :processId, begin_date =:beginDate,end_date = :endDate, timeframe_flag = :timeframeFlag , modify_datetime = :modifyDatetime, modify_user_id =:modifyUserId, seal_flag = :sealFlag where MERGE_TRANSACTION_ID=:mergeTransactionId and PROCESS_ID=:processId 
+}

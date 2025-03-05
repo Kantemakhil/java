@@ -1,0 +1,101 @@
+version: 2
+jobs:
+
+  checkout_code:
+    docker:
+      - image: circleci/node:14.16
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - save_cache:
+          key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
+          paths: ~/repo
+
+  build_frontend:
+    docker:
+      - image: circleci/node:14.16
+    resource_class: medium+
+    working_directory: ~/repo
+    steps:
+      - restore_cache:
+          key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
+      - restore_cache:
+          keys:
+            # concatenate the child pom into one tag to ensure that any change in the child is captured in the tag
+            - v1-dependencies-yarn-package_json( {{ checksum "Elite2Angular/package.json" }} )
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-yarn-
+      - run:
+          working_directory: ~/repo
+          command: ./build.sh ui
+          no_output_timeout: 30m
+
+      # saving the results ...
+      - save_cache:
+          key: v1-dependencies-yarn-package_json({{ checksum "Elite2Angular/package.json" }})
+          paths: ./Elite2Angular/node_modules
+      - save_cache:
+          key: v1-build-frontend-{{ .Environment.CIRCLE_SHA1 }}
+          paths: .build-artifacts/frontend
+
+  build_backend:
+    docker:
+      - image: circleci/openjdk:8-jdk
+
+    working_directory: ~/repo
+    environment:
+      MAVEN_OPTS: -Xmx3200m
+    
+    steps:
+      - restore_cache:
+          key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          # concatenate the child pom into one tag to ensure that any change in the child is captured in the tag
+          - v1-dependencies-mvn-common-({{ checksum "Elite2Common/pom.xml" }})-dao({{ checksum "Elite2DAO/pom.xml" }})-business({{ checksum "Elite2Business/pom.xml" }})-web({{ checksum "Elite2Web/pom.xml" }})
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-mvn-
+
+      - run:
+          working_directory: ~/repo
+          command: ./build.sh war
+
+      # Saving the results ...
+      - save_cache:
+          key: v1-dependencies-mvn-common-({{ checksum "Elite2Common/pom.xml" }})-dao({{ checksum "Elite2DAO/pom.xml" }})-business({{ checksum "Elite2Business/pom.xml" }})-web({{ checksum "Elite2Web/pom.xml" }})
+          paths: ~/.m2
+      - save_cache:
+          paths: .build-artifacts/backend
+          key: v1-build-backend-{{ .Environment.CIRCLE_SHA1 }}
+
+  build_docker:
+    working_directory: ~/repo
+    machine: true
+    steps:
+      - restore_cache:
+          # Getting the source code ...
+          key: v1-repo-{{ .Environment.CIRCLE_SHA1 }}
+      - restore_cache:
+          # Getting the frontend assets (binaries) ...
+          key: v1-build-frontend-{{ .Environment.CIRCLE_SHA1 }}
+      - restore_cache:
+          # Getting the backend assets (binaries) ...
+          key: v1-build-backend-{{ .Environment.CIRCLE_SHA1 }}
+      - run:
+          working_directory: ~/repo
+          command: ./build.sh docker publish
+
+workflows:
+  version: 2
+  build_all:
+   jobs:
+      - checkout_code
+      - build_backend:
+          requires:
+            - checkout_code
+      - build_docker:
+          requires:
+            - build_backend
+

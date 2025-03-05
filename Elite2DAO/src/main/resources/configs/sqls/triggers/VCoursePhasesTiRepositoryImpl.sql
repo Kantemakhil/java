@@ -1,0 +1,3 @@
+V_COURSE_PHASES_TI_V_COURSE_PHASES{
+INSERT INTO course_activities (COURSE_CLASS, CRS_ACTY_ID, PARENT_CRS_ACTY_ID, PROGRAM_ID ,CAPACITY, SCHEDULE_START_DATE, SCHEDULE_END_DATE, ACTIVE_FLAG, EXPIRY_DATE,COMMENT_TEXT, PROVIDER_PARTY_CLASS, PROVIDER_PARTY_ID, PROVIDER_PARTY_CODE, SERVICES_ADDRESS_ID, placement_corporate_ID  ) VALUES ('CRS_PH', :coursePhaseId, :parentCrsActyId, :programPhaseId, :capacity,:scheduleStartDate, :scheduleEndDate, :activeFlag, :expiryDate,:commentText, :providerPartyClass, :providerPartyId, :providerPartyCode,:servicesAddressId, :placementCorporateId )
+}

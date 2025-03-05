@@ -1,0 +1,1 @@
+\copy (select * from agency_internal_locations where POSITION('-' IN internal_location_code) <> 0 order by internal_location_id) TO 'agy_int_locs_hous_locs_dash_issue_records.csv' (format CSV);

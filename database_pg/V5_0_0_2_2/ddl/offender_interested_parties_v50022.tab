@@ -1,0 +1,33 @@
+create table oms_owner.offender_interested_parties 
+(party_id			BIGSERIAL NOT NULL,
+offender_book_id	int8  NOT NULL,  
+party_type			VARCHAR(32) NOT NULL,
+party_description	varchar(100) not null,
+party_comment		VARCHAR(1000),
+record_type     	VARCHAR(12)  NOT NULL,
+record_id    		VARCHAR(12)  NOT NULL,
+create_datetime     TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP NOT NULL ,
+create_user_id      VARCHAR(32) NOT NULL ,
+modify_datetime     TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
+modify_user_id      VARCHAR(32),
+seal_flag           VARCHAR(1) 	
+) tablespace tag_data;
+
+alter table oms_owner.offender_interested_parties   
+  add constraint offender_interested_parties_pk primary key (party_id)
+  using index tablespace tag_indx;
+
+alter table oms_owner.offender_interested_parties 
+	add constraint offender_interested_parties_fk1 foreign key (offender_book_id) 
+	references offender_bookings(offender_book_id) on delete no action not deferrable initially immediate;	
+
+comment on table oms_owner.offender_interested_parties is 'Offenders Interested Parties';
+
+comment on column oms_owner.offender_interested_parties.party_id  is 'Unique record identifier';
+comment on column oms_owner.offender_interested_parties.offender_book_id  is 'Unique identifier for booking';
+comment on column oms_owner.offender_interested_parties.party_type  is 'The party type (ref domain=INST_PARTIES)';
+comment on column oms_owner.offender_interested_parties.party_description  is 'The party Description (free text, usualy the name of the party)';
+comment on column oms_owner.offender_interested_parties.party_comment  is 'Party details';
+comment on column oms_owner.offender_interested_parties.record_type  is '(static values CUST,NCUS,CEVT,BAIL)';  
+comment on column oms_owner.offender_interested_parties.record_id  is 'Record link';      
+

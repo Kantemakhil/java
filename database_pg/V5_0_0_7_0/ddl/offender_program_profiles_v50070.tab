@@ -1,0 +1,11 @@
+alter table OFFENDER_PROGRAM_PROFILES
+add column email_flag varchar(1) NULL,
+add column sms_flag varchar(1) NULL,
+add column email_schedule_hours_before int8 NULL,
+add column sms_schedule_hours_before int8 null;
+
+comment on column OFFENDER_PROGRAM_PROFILES.email_flag is 'Value Y indicates to send EMAIL notification';
+comment on column OFFENDER_PROGRAM_PROFILES.sms_flag is 'Value Y indicates to send SMS notification';
+
+comment on column OFFENDER_PROGRAM_PROFILES.email_schedule_hours_before is 'The hours before EMAIL notification has to be sent';
+comment on column OFFENDER_PROGRAM_PROFILES.sms_schedule_hours_before is 'The hours before SMS notification has to be sent';

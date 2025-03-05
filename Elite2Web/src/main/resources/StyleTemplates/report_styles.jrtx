@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio -->
+<jasperTemplate xmlns="http://jasperreports.sourceforge.net/jasperreports/template" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/template http://jasperreports.sourceforge.net/xsd/jaspertemplate.xsd">
+	<style name="report_header" mode="Opaque" forecolor="#48544B" backcolor="#B3B3B3" hTextAlign="Left" vTextAlign="Middle" fontName="Times New Roman" fontSize="10" isBold="true">
+		<box topPadding="8" leftPadding="8" bottomPadding="8" rightPadding="8">
+			<pen lineColor="#D3D3D3"/>
+			<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#D3D3D3"/>
+			<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#D3D3D3"/>
+			<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#D3D3D3"/>
+			<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#D3D3D3"/>
+		</box>
+		<paragraph leftIndent="0" rightIndent="0"/>
+	</style>
+	<style name="report_title" forecolor="#4C4C4D" hTextAlign="Left" fontName="Arial" fontSize="14" isBold="true"/>
+	<style name="table_header" mode="Opaque" forecolor="#FFFFFF" backcolor="#7F7F7F" hTextAlign="Left" vTextAlign="Middle" fontName="Arial" fontSize="9" isBold="true">
+		<pen lineColor="#4C4C4D"/>
+		<box>
+			<pen lineWidth="1.0" lineStyle="Solid" lineColor="#4C4C4D"/>
+			<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#4C4C4D"/>
+			<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#4C4C4D"/>
+			<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#4C4C4D"/>
+			<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#4C4C4D"/>
+		</box>
+		<paragraph leftIndent="5"/>
+	</style>
+	<style name="report_style_static" forecolor="#1D368D" hTextAlign="Left" fontName="Times New Roman" fontSize="10"/>
+	<style name="report_subtitle" forecolor="#4C4C4D" fontName="Arial" fontSize="12" isBold="false" isItalic="true"/>
+	<style name="subheader_labels" mode="Transparent" forecolor="#4C4C4D" fontName="Arial" fontSize="11" isBold="true"/>
+	<style name="report_font" mode="Opaque" forecolor="#4C4C4D" backcolor="#FFFFFF" fontName="Arial" fontSize="9">
+		<paragraph lineSpacing="Single" lineSpacingSize="38.0"/>
+	</style>
+	<style name="report_logo">
+		<box topPadding="8" leftPadding="8" bottomPadding="8" rightPadding="8"/>
+	</style>
+	<style name="report_subheader">
+		<box topPadding="8" leftPadding="8" bottomPadding="8" rightPadding="8"/>
+	</style>
+	<style name="table_content" mode="Opaque" forecolor="#4C4C4D" backcolor="#FFFFFF" markup="none" fontName="Arial" fontSize="9">
+		<box topPadding="8" leftPadding="8" bottomPadding="8" rightPadding="8">
+			<pen lineWidth="0.0" lineStyle="Solid" lineColor="#4C4C4D"/>
+			<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+			<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+			<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+			<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph lineSpacingSize="1.0"/>
+	</style>
+	<style name="table_header_font" mode="Transparent" forecolor="#FFFFFF" fontName="Arial" fontSize="9" isBold="true">
+		<box topPadding="8" leftPadding="8" bottomPadding="8" rightPadding="8"/>
+	</style>
+	<style name="Style" mode="Opaque" isBlankWhenNull="true">
+		<box>
+			<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+			<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+			<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+			<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+	</style>
+</jasperTemplate>

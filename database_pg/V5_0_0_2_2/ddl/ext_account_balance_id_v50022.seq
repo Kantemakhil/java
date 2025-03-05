@@ -1,0 +1,2 @@
+--sequence for column off_external_account_balances.account_balance_id
+Create sequence oms_owner.ext_account_balance_id start with 1 increment by 1;

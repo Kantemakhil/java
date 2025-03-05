@@ -1,0 +1,3 @@
+ALTER TABLE offender_tier_levels ADD COLUMN deactivated_date date NULL;
+
+comment on column offender_tier_levels.deactivated_date is 'The date when the record is deativated (Active flag updated to N)';

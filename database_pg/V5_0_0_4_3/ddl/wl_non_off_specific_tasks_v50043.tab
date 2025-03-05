@@ -1,0 +1,28 @@
+create table wl_non_off_specific_tasks (
+agy_loc_id varchar(6) not null,
+staff_position varchar(12) not null,
+workload_task_type varchar(12) not null,
+units int4 not null,
+create_datetime timestamp(6) not null default current_timestamp,
+create_user_id varchar(32) not null,
+modify_datetime timestamp(6) null,
+modify_user_id varchar(32) null,
+seal_flag varchar(1) null
+) tablespace tag_data;
+
+alter table wl_non_off_specific_tasks add constraint wl_non_off_specific_tasks_pk primary key(agy_loc_id,staff_position,workload_task_type) using index tablespace tag_indx;
+
+ALTER TABLE wl_non_off_specific_tasks  
+  ADD CONSTRAINT wl_non_off_specific_tasks_fk1 FOREIGN KEY (agy_loc_id) 
+   REFERENCES agency_locations(agy_loc_id)  ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE; 
+   
+ALTER TABLE wl_non_off_specific_tasks  
+  ADD CONSTRAINT wl_non_off_specific_tasks_fk2 FOREIGN KEY (staff_position) 
+   REFERENCES wl_default_staff_units(staff_position)  ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE;    
+
+comment on table wl_non_off_specific_tasks is 'Default workload task types for community officer positions and agencies';
+
+comment on column wl_non_off_specific_tasks.agy_loc_id is 'The agency location';
+comment on column wl_non_off_specific_tasks.staff_position is 'The officer position [reference_domain= STAFF_POS]';
+comment on column wl_non_off_specific_tasks.workload_task_type is 'The workload task type, [reference_domain= WORKLOAD_TASK]';
+comment on column wl_non_off_specific_tasks.units is ' The units assigning to non offender specific task per position and agency';

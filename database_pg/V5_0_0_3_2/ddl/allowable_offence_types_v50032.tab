@@ -1,0 +1,13 @@
+ALTER TABLE allowable_offence_types ADD COLUMN offence_id int8;
+update allowable_offence_types aot set offence_id = (select offence_id from offences off where aot.offence_code = off.offence_code and aot.statute_code = off.statute_code );
+ALTER TABLE allowable_offence_types ALTER COLUMN offence_id SET NOT null;
+
+ALTER TABLE allowable_offence_types ADD CONSTRAINT allow_ot_ofn_fk1 FOREIGN KEY (offence_id) REFERENCES offences(offence_id) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE allowable_offence_types DROP CONSTRAINT allowable_offence_types_pk;
+ALTER TABLE allowable_offence_types ADD CONSTRAINT allowable_offence_types_pk PRIMARY KEY (offence_id, offence_type) using index tablespace tag_indx;
+
+comment on column oms_owner.allowable_offence_types.offence_id is 'Unique identified of the offence';
+
+ALTER TABLE allowable_offence_types DROP COLUMN offence_code;
+ALTER TABLE allowable_offence_types DROP COLUMN statute_code;

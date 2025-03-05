@@ -1,0 +1,1 @@
+ALTER TABLE oms_owner.route_stop_details ALTER COLUMN leg_seq TYPE int8 USING leg_seq::int8;

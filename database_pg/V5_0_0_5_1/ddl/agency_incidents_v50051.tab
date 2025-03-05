@@ -1,0 +1,3 @@
+ALTER TABLE agency_incidents ALTER COLUMN internal_location_id DROP NOT NULL;
+
+comment on column agency_incidents.internal_location_id is 'The unique identifier of the incident location within the facility for custodial incidents, not populated for community incidents';

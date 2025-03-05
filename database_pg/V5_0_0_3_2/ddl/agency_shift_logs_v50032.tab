@@ -1,0 +1,14 @@
+alter table AGENCY_SHIFT_LOGS  add REASON varchar(12);
+comment on column AGENCY_SHIFT_LOGS.REASON is 'Activity Reason [domain=ACT_REAS].';
+
+alter table AGENCY_SHIFT_LOGS  add START_TIME timestamp(6);
+comment on column AGENCY_SHIFT_LOGS.START_TIME is 'Activity Start time.';
+
+alter table AGENCY_SHIFT_LOGS  add END_TIME timestamp(6);
+comment on column AGENCY_SHIFT_LOGS.END_TIME is 'Activity End time.';
+
+alter table AGENCY_SHIFT_LOGS  add amend_flag varchar(1);
+comment on column AGENCY_SHIFT_LOGS.amend_flag is 'Indicates the records is amended';
+
+alter table AGENCY_SHIFT_LOGS  add error_flag varchar(1);
+comment on column AGENCY_SHIFT_LOGS.error_flag is 'Indicates the records was entered in error';

@@ -1,0 +1,39 @@
+-- Create table 
+REM Creating table CONV_RANK_MOVEMENTS to retain ranking the client offender movements
+
+create table CONV_RANK_MOVEMENTS
+(
+    stage_offender_id_display  VARCHAR2(10)    not null 
+   ,stage_booking_begin_date   DATE            not null
+   ,stage_movement_datetime        DATE            not null
+   ,stage_move_type                 VARCHAR2(12)    not null
+   ,stage_move_reason_code          VARCHAR2(12)    not null
+   ,stage_direction_code            VARCHAR2(12)    not null
+   ,rank_asc                   NUMBER(10)      
+   ,rank_desc                  NUMBER(10)      
+)
+tablespace TAG_DATA 
+  pctfree 10
+  initrans 1
+  maxtrans 255
+  storage
+  (
+    initial 2M
+    next 2M
+    minextents 1
+    maxextents unlimited
+    pctincrease 0
+  )
+LOGGING 
+NOCOMPRESS 
+NOCACHE
+NOPARALLEL
+MONITORING;
+
+COMMENT ON TABLE CONV_RANK_MOVEMENTS IS 'Retain ranking the client offender movements'; 
+
+
+CREATE UNIQUE INDEX CONV_RANK_MOVEMENTS_UK1 
+    ON CONV_RANK_MOVEMENTS(stage_offender_id_display, stage_booking_begin_date, stage_movement_datetime)
+       TABLESPACE TAG_INDX;
+

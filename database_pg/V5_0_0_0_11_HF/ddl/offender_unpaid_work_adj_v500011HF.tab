@@ -1,0 +1,5 @@
+alter table offender_unpaid_work_adj add offender_sent_condition_id bigint;
+
+comment on column offender_unpaid_work_adj.offender_sent_condition_id is 'Reference to the  offender_sent_conditions';
+
+alter table offender_unpaid_work_adj add constraint offender_unpaid_work_adj_fk1 foreign key(offender_sent_condition_id) references offender_sent_conditions(offender_sent_condition_id); 

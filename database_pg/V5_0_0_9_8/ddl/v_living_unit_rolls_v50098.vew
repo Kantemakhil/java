@@ -1,0 +1,36 @@
+CREATE OR REPLACE VIEW oms_owner.v_living_unit_rolls
+AS WITH RECURSIVE cte_down_top AS (
+         SELECT v_living_unit_rolls_2.agy_loc_id,
+            v_living_unit_rolls_2.living_unit_id,
+            v_living_unit_rolls_2.parent_living_unit_id,
+            v_living_unit_rolls_2.bkg_allocated AS allocated,
+            v_living_unit_rolls_2.bkg_in_living_units AS in_living_units,
+            v_living_unit_rolls_2.bkg_out_of_living_units AS out_of_living_units,
+            v_living_unit_rolls_2.bkg_out_of_agy AS out_of_agy,
+            v_living_unit_rolls_2.bkg_reserved_beds AS reserved_beds
+           FROM v_living_unit_rolls_2
+          WHERE NOT (EXISTS ( SELECT 1
+                   FROM agency_internal_locations agyl
+                  WHERE agyl.parent_internal_location_id = v_living_unit_rolls_2.living_unit_id))
+        UNION ALL
+         SELECT roll2.agy_loc_id,
+            roll2.living_unit_id,
+            roll2.parent_living_unit_id,
+            c.allocated + roll2.bkg_allocated,
+            c.in_living_units + roll2.bkg_in_living_units,
+            c.out_of_living_units + roll2.bkg_out_of_living_units,
+            c.out_of_agy + roll2.bkg_out_of_agy,
+            c.reserved_beds + roll2.bkg_reserved_beds
+           FROM v_living_unit_rolls_2 roll2
+             JOIN cte_down_top c ON c.parent_living_unit_id = roll2.living_unit_id
+        )
+ SELECT cte_down_top.agy_loc_id,
+    cte_down_top.living_unit_id,
+    cte_down_top.parent_living_unit_id,
+    sum(cte_down_top.allocated) AS allocated,
+    sum(cte_down_top.in_living_units) AS in_living_units,
+    sum(cte_down_top.out_of_living_units) AS out_of_living_units,
+    sum(cte_down_top.out_of_agy) AS out_of_agy,
+    sum(cte_down_top.reserved_beds) AS reserved_beds
+   FROM cte_down_top
+  GROUP BY cte_down_top.agy_loc_id, cte_down_top.living_unit_id, cte_down_top.parent_living_unit_id;

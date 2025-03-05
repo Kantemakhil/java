@@ -1,0 +1,35 @@
+CREATE TABLE oms_owner.person_additional_names (
+	person_id int8 NOT NULL,
+	pers_add_name_id bigserial NOT NULL,
+	last_name varchar(35) NOT NULL,
+	first_name varchar(35)  NULL,
+	middle_name varchar(35) NULL,
+	second_middle_name varchar(35) NULL,
+	name_type  varchar(12) NOT NULL,
+    create_datetime timestamp(6) NOT NULL DEFAULT current_timestamp,
+    create_user_id varchar(32) NOT NULL ,
+    modify_datetime timestamp(6) NULL ,
+    modify_user_id varchar(32) NULL,
+    seal_flag varchar(1) NULL
+)  tablespace tag_setup_data;
+
+ALTER TABLE oms_owner.person_additional_names 
+ADD CONSTRAINT person_additional_names_fk1 FOREIGN KEY (person_id)
+REFERENCES oms_owner.persons(person_id) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE oms_owner.person_additional_names 
+ADD CONSTRAINT person_additional_names_uk1 UNIQUE (pers_add_name_id) using index tablespace tag_indx;
+
+CREATE INDEX person_additional_names_ni1 ON oms_owner.person_additional_names USING btree (last_name, first_name);
+CREATE INDEX person_additional_names_ni2 ON oms_owner.person_additional_names USING btree (upper((last_name)::text), upper((first_name)::text));
+CREATE INDEX person_additional_names_ni3 ON oms_owner.person_additional_names USING btree (soundex((last_name)::text));
+
+comment on table oms_owner.person_additional_names is 'Person additional nmaes';
+
+comment on column oms_owner.person_additional_names.person_id is 'Identifies the parent person record in table persons';
+comment on column oms_owner.person_additional_names.pers_add_name_id is 'Surrogate key, unique record identifier across the table';
+comment on column oms_owner.person_additional_names.last_name is 'Last name';
+comment on column oms_owner.person_additional_names.first_name is 'First name';
+comment on column oms_owner.person_additional_names.middle_name is 'Middle name';
+comment on column oms_owner.person_additional_names.second_middle_name is 'Second middle name';
+comment on column oms_owner.person_additional_names.name_type is 'Name type [domain="NAME_TYPE"]';

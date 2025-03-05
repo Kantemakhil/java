@@ -1,0 +1,7 @@
+OFFENDERS_TJN_INSERT_OFFENDERS_JN {
+INSERT INTO offenders_jn ( jn_operation, jn_oracle_user, jn_datetime, jn_notes, jn_appln, jn_session, offender_id, offender_name_seq, id_source_code, last_name, name_type, first_name, middle_name, birth_date, sex_code, suffix, last_name_soundex, birth_place, birth_country_code, create_date, last_name_key, alias_offender_id, first_name_key, middle_name_key, offender_id_display, root_offender_id, caseload_type, alias_name_type, parent_offender_id, unique_obligation_flag, suspended_flag, suspended_date, race_code, remark_code, add_info_code, birth_county, birth_state, middle_name_2, title, age, create_user_id, last_name_alpha_key, name_sequence, seal_flag, gender_code ) VALUES ( :jnOperation, :jnOracleUser, current_timestamp, :jnNotes, :jnAppln, :jnSession, :offenderId, :offenderNameSeq, :idSourceCode, :lastName, :nameType, :firstName, :middleName, :birthDate, :sexCode, :suffix, :lastNameSoundex, :birthPlace, :birthCountryCode, current_timestamp, :lastNameKey, :aliasOffenderId, :firstNameKey, :middleNameKey, :offenderIdDisplay, :rootOffenderId, :caseloadType, :aliasNameType, :parentOffenderId, :uniqueObligationFlag, :suspendedFlag, :suspendedDate, :raceCode, :remarkCode, :addInfoCode, :birthCounty, :birthState, :middleName2, :title, :age, :createUserId, :lastNameAlphaKey, :nameSequence, :sealFlag, :genderCode )
+}
+
+OFFENDERS_TJN_OFFEDER_EXECUTE_QUERY {
+select * from offenders where offender_id=:offender_id
+}

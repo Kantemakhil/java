@@ -1,0 +1,15 @@
+---***** V5_0_0_0_4 oms_owner DDL  correct tablespaces
+psql --no-psqlrc -U oms_owner  -d  dbname -h hostname -f 2_0_batch_oms_owner_ddl_5_0_0_0_4_correction_tablespaces.run >> 2_0_batch_oms_owner_ddl_5_0_0_0_4_correction_tablespaces.log 2>&1  & type 2_0_batch_oms_owner_ddl_5_0_0_0_4_correction_tablespaces.log
+
+--checks
+
+ SELECT * 
+FROM pg_indexes 
+WHERE schemaname = 'oms_owner' 
+  and (tablespace IS NULL or tablespace NOT IN ('tag_data', 'tag_setup_data', 'tag_indx', 'tag_setup_indx') )
+  order by tablespace, tablename; 
+  
+select * from pg_tables 
+where schemaname = 'oms_owner' 
+  and (tablespace IS NULL or tablespace NOT IN  ('tag_data', 'tag_setup_data', 'tag_images', 'tag_image_originals', 'tag_iwp', 'tag_jn', 'tag_wf', 'interface', 'tag_biometric') ) 
+ order by tablespace, tablename; 

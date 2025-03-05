@@ -1,0 +1,116 @@
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OCDRECEI','H','OCDRECEI.htm','OCDRECEI html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OCDBRECI','H','OCDBRECI.htm','OCDBRECI html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OCUPAYPL','H','OCUPAYPL.htm','OCUPAYPL html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OCUOTRAH','H','OCUOTRAH.htm','OCUOTRAH html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OCUGLTRD','H','OCUGLTRD.htm','OCUGLTRD html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OCDCPPAY','H','OCDCPPAY.htm','OCDCPPAY html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OCUDPDIS','H','OCUDPDIS.htm','OCUDPDIS html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OTDOPCTA','H','OTDOPCTA.htm','OTDOPCTA html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OCDCBENE','H','OCDCBENE.htm','OCDCBENE html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OCDADJUS','H','OCDADJUS.htm','OCDADJUS html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OCDREVER','H','OCDREVER.htm','OCDREVER html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OCDOFACC','H','OCDOFACC.htm','OCDOFACC html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OCUFOVDT','H','OCUFOVDT.htm','OCUFOVDT html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OCUTRDET','H','OCUTRDET.htm','OCUTRDET html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OCUBADJ','H','OCUBADJ.htm','OCUBADJ html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OCUACHIS','H','OCUACHIS.htm','OCUACHIS html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OCIPBENE','H','OCIPBENE.htm','OCIPBENE html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OCUTRAHI','H','OCUTRAHI.htm','OCUTRAHI html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OCICBENE','H','OCICBENE.htm','OCICBENE html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OTMDPRIO','H','OTMDPRIO.htm','OTMDPRIO html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OCMMPBAL','H','OCMMPBAL.htm','OCMMPBAL html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OCSRECEI','H','OCSRECEI.htm','OCSRECEI html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OTDCRVOI','H','OTDCRVOI.htm','OTDCRVOI html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OTMCNSER','H','OTMCNSER.htm','OTMCNSER html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OTMCPRIN','H','OTMCPRIN.htm','OTMCPRIN html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OTMBACCO','H','OTMBACCO.htm','OTMBACCO html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OTDAGJTR','H','OTDAGJTR.htm','OTDAGJTR html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OTDMGJTR','H','OTDMGJTR.htm','OTDMGJTR html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OTDGLIRT','H','OTDGLIRT.htm','OTDGLIRT html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OTIGLBAL','H','OTIGLBAL.htm','OTIGLBAL html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OTMACPRD','H','OTMACPRD.htm','OTMACPRD html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OCMCOACT','H','OCMCOACT.htm','OCMCOACT html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OTMONCOA','H','OTMONCOA.htm','OTMONCOA html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OTMLOCKR','H','OTMLOCKR.htm','OTMLOCKR html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OCMTRANS','H','OCMTRANS.htm','OCMTRANS html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OCMTROPS','H','OCMTROPS.htm','OCMTROPS html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OTUINVAC','H','OTUINVAC.htm','OTUINVAC html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OCMPFACC','H','OCMPFACC.htm','OCMPFACC html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OUMAGYHT','H','OUMAGYHT.htm','OUMAGYHT html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OUIAUACT','H','OUIAUACT.htm','OUIAUACT html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OIUSMSEL','H','OIUSMSEL.htm','OIUSMSEL html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OUIAUSES','H','OUIAUSES.htm','OUIAUSES html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OUIADACT','H','OUIADACT.htm','OUIADACT html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OUIAFLAT','H','OUIAFLAT.htm','OUIAFLAT html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OMSYSJNT','H','OMSYSJNT.htm','OMSYSJNT html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OMSALJNT','H','OMSALJNT.htm','OMSALJNT html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OCINAMES','H','OCINAMES.htm','OCINAMES html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OIIBOOKS','H','OIIBOOKS.htm','OIIBOOKS html file');
+ insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OCDCSCH','H','OCDCSCH.htm','OCDCSCH html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OCUAOFFI','H','OCUAOFFI.htm','OCUAOFFI html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OUMCPASS','H','OUMCPASS.htm','OUMCPASS html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OUMPERSD','H','OUMPERSD.htm','OUMPERSD html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OUMSYPFL','H','OUMSYPFL.htm','OUMSYPFL html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OUMTAGRE','H','OUMTAGRE.htm','OUMTAGRE html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OUMPURGE','H','OUMPURGE.htm','OUMPURGE html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OUIMERGE','H','OUIMERGE.htm','OUIMERGE html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OIUMTLOG','H','OIUMTLOG.htm','OIUMTLOG html file');
+insert into oms_modules_help(module_name,help_type,help_url,help_desc) 
+ values('OIUMTSTP','H','OIUMTSTP.htm','OIUMTSTP html file');

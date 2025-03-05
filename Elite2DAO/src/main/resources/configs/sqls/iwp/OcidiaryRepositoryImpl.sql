@@ -1,0 +1,261 @@
+
+OCIDIARY_FIND_RGLOCATION {
+ 	SELECT AGY_LOC.DESCRIPTION   ,AGY_LOC.AGY_LOC_ID CODE  FROM   AGENCY_LOCATIONS AGY_LOC ,         CASELOAD_AGENCY_LOCATIONS CAL WHERE  AGY_LOC.AGY_LOC_ID      = CAL.AGY_LOC_ID  AND    CAL.CASELOAD_ID         = :CASELOADID ORDER BY AGY_LOC.DESCRIPTION
+}
+
+OCIDIARY_FIND_RGTYPE {
+ 	select
+	REF_CODE.DESCRIPTION ,
+	REF_CODE.CODE
+from
+	REFERENCE_CODES REF_CODE
+where
+	domain = 'EVENTS'
+	and (ACTIVE_FLAG = 'Y'
+		and EXPIRED_DATE is null )
+	and PARENT_CODE is null
+order by
+	LIST_SEQ ,
+	CODE
+}
+
+OCIDIARY_FIND_RGSUBTYPE {
+ 	select
+	DESCRIPTION ,
+	CODE
+from
+	REFERENCE_CODES REF_CODE
+where
+	domain = 'EVENTS'
+	and PARENT_CODE = :EVENTTYPE
+	and (ACTIVE_FLAG = 'Y'
+		and EXPIRED_DATE is null )
+order by
+	LIST_SEQ ,
+	CODE
+}
+
+OCIDIARY_FIND_RGOFFSCHOUTCOME {
+ 	select
+	DESCRIPTION ,
+	CODE
+from
+	REFERENCE_CODES RC
+where
+	domain = 'OUTCOMES'
+	and CODE in(
+	select
+		OUTCOME_CODE
+	from
+		EVENT_MEASURE_OUTCOMES EMO ,
+		EVENT_MEASURES EM
+	where
+		EM.EVENT_TYPE = :EVENTTYPE
+		and EM.EVENT_SUB_TYPE = :EVENTSUBTYPE
+		and EM.EVENT_MEASURE_ID = EMO.EVENT_MEASURE_ID
+		and RC.CODE = EMO.OUTCOME_CODE )
+	and (ACTIVE_FLAG = 'Y'
+		and EXPIRED_DATE is null )
+order by
+	LIST_SEQ ,
+	CODE
+}
+
+OCIDIARY_FIND_RGOUTCOME {
+ 	select
+	RC.DESCRIPTION ,
+	RC.CODE
+from
+	REFERENCE_CODES RC
+where
+	domain = 'OUTCOMES'
+	and (ACTIVE_FLAG = 'Y'
+		and EXPIRED_DATE is null )
+order by
+	LIST_SEQ ,
+	DESCRIPTION ,
+	CODE
+}
+
+OCIDIARY_OFFSCH_FIND_V_OFFENDER_ALL_SCHEDULES {
+ 	SELECT
+    EVENT_ID,
+    OFFENDER_BOOK_ID,
+    IN_OUT_STATUS,
+    BOOKING_NO,
+    BOOKING_ACTIVE_FLAG,
+    OFFENDER_ID,
+    OFFENDER_ID_DISPLAY,
+    OFFENDER_LAST_NAME,
+    OFFENDER_FIRST_NAME,
+    EVENT_DATE,
+    START_TIME,
+    END_TIME,
+    EVENT_CLASS,
+    EVENT_TYPE,
+    EVENT_TYPE_DESC,
+    EVENT_SUB_TYPE,
+    EVENT_SUB_TYPE_DESC,
+    ACTIVE_FLAG,
+    EVENT_STATUS,
+    EVENT_STATUS_DESC,
+    EVENT_OUTCOME,
+    EVENT_OUTCOME_DESC,
+    BUSY_DATE_FLAG,
+    OUTCOME_REASON_CODE,
+    REFERENCE_ID,
+    APPLICATION_DATE,
+    APPLICATION_TIME,
+    RETURN_DATE,
+    RETURN_TIME,
+    COMMENT_TEXT,
+    DETAILS,
+    AGY_LOC_ID,
+    AGY_LOC_DESC,
+    LIVING_UNIT_ID,
+    LIVING_UNIT_DESC,
+    LU_LEVEL_1_CODE,
+    LU_LEVEL_2_CODE,
+    LU_LEVEL_3_CODE,
+    LU_LEVEL_4_CODE,
+    AGENCY_IML_ID,
+    AGENCY_IML_DESC,
+    AGENCY_IML_LEVEL_1_CODE,
+    AGENCY_IML_LEVEL_2_CODE,
+    AGENCY_IML_LEVEL_3_CODE,
+    TO_AGY_LOC_ID,
+    TO_AGY_LOC_DESC,
+    TO_LOC,
+    TO_LOC_DESC,
+    ESCORT_CODE,
+    ESCORT_DESC,
+    DIRECTION_CODE,
+    SCHEDULE_MOVEMENT_TIME,
+    FROM_CITY_CODE,
+    FROM_CITY_NAME,
+    TO_CITY_CODE,
+    TO_CITY_NAME,
+    TO_INTERNAL_LOCATION_ID,
+    TO_INTERNAL_LOCATION_DESC,
+    TO_INT_LOC_LEVEL_1_CODE,
+    TO_INT_LOC_LEVEL_2_CODE,
+    TO_INT_LOC_LEVEL_3_CODE,
+    TO_INT_LOC_USER_DESC,
+    CREDITED_HOURS,
+    ENGAGEMENT_CODE,
+    UNDERSTANDING_CODE,
+    PIECE_WORK,
+    IN_TIME,
+    OUT_TIME,
+    PERFORMANCE_CODE,
+    TRANSPORT_CODE,
+    SICK_NOTE_EXPIRY_DATE,
+    SICK_NOTE_RECEIVED_DATE,
+    UNEXCUSED_ABSENCE_FLAG,
+    UNPAID_WORK_ACTION,
+    UNPAID_WORK_BEHAVIOUR,
+    AGREED_TRAVEL_HOUR,
+    CHECK_BOX_1,
+    CHECK_BOX_2,
+    HIDDEN_COMMENT_TEXT,
+    IN_CHARGE_STAFF_ID,
+    IN_CHARGE_STAFF_NAME,
+    OFF_PRGREF_ID,
+    CONTACT_PERSON_NAME,
+    TO_ADDRESS_OWNER_CLASS,
+    TO_ADDRESS_ID,
+    UNPAID_WORK_SUPERVISOR,
+    TA_ID,
+    RECORD_SOURCE,
+    CHECK_SUM,
+    PROV_STATE_CODE,
+    PROV_STATE_DESC,
+    SCHEDULED_TRIP_ID
+    
+FROM
+    v_offender_all_schedules  v_offender_all_schedules
+       /* WHERE
+    ROWNUM <= 500   v_offender_sentence_events
+    ORDER by offender_last_name ,event_date desc,start_time */
+  
+    
+}
+OCIDIARY_OFFSCH_UPDATE_V_OFFENDER_ALL_SCHEDULES {
+	UPDATE V_OFFENDER_ALL_SCHEDULES set /* where */
+}
+
+
+OCIDIARY_CREATE_FORM_GLOBALS {
+	SELECT DESCRIPTION INTO V_FORM_DESC FROM OMS_MODULES WHERE MODULE_NAME = V_FORM_NAME
+}
+
+OCIDIARY_DEFINE_WHERE_CLAUSEDEFINE_WHERE_CLAUSE {
+	SELECT OFF_BKG.OFFENDER_BOOK_ID FROM OFFENDER_BOOKINGS OFF_BKG WHERE (   OFF_BKG.ACTIVE_FLAG = 'Y' OR OFF_BKG.COMMUNITY_ACTIVE_FLAG = 'Y' )
+}
+
+OCIDIARY_CREATE_FORM_GLOBALS_STAFF_ID {
+	SELECT STAFF_ID FROM STAFF_MEMBERS WHERE LAST_NAME = :LASTNAME AND FIRST_NAME = :FIRSTNAME
+}
+OCIDIARY_DEFINE_WHERE_CLAUSEDEFINE_WHERE_CLAUSE {
+	select
+	OFF_BKG.OFFENDER_BOOK_ID
+from
+	OFFENDER_BOOKINGS OFF_BKG
+where
+	( OFF_BKG.ACTIVE_FLAG = ' Y'
+		or OFF_BKG.COMMUNITY_ACTIVE_FLAG = ' Y' )
+}
+
+
+OCIDIARY_CHECK_UA_EVENT_OUTCOME{
+select
+	'Y'
+from
+	EVENT_MEASURES event_measure,
+	EVENT_MEASURE_OUTCOMES event_out
+where
+	event_measure.event_type = :p_event_type
+	and event_measure.event_sub_type = :p_event_sub_type
+	and event_out.outcome_code = :p_event_outcome
+	and event_out.set_counter_flag = 'Y'
+	and event_out.event_measure_id = event_measure.event_measure_id;
+}
+
+
+OCIDIARY_DESTROY_UAS{
+select
+	offender_book_id,
+	sentence_seq,
+	counted_flag
+from
+	OFFENDER_SENTENCE_UA_EVENTS
+where
+	event_id = :p_event_id
+         for
+update;
+         }
+         
+OCIDIARY_CREATE_UAS {
+select
+	offender_book_id,
+	sentence_seq,
+	event_date
+from
+	v_offender_sentence_events v_off_sent
+where
+	v_off_sent.event_id = :p_event_id;
+          }
+          
+          
+OCIDIARY_COUNT_SENTENCE_UA {         
+          select
+	COUNT (*)
+from
+	OFFENDER_SENTENCE_UA_EVENTS
+where
+	offender_book_id = :p_offender_book_id
+	and sentence_seq = :p_sentence_seq
+	and event_date = :p_event_date
+	and event_id != :p_event_id;
+            }
+         

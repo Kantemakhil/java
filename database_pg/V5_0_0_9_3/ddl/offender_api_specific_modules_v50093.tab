@@ -1,0 +1,22 @@
+create table offender_api_specific_modules
+(module_name varchar(20) not null,
+create_datetime timestamp not null,
+create_user_id varchar(32) not null,
+modify_datetime timestamp null,
+modify_user_id varchar(32) null,
+seal_flag varchar(1) null)
+tablespace tag_setup_data ;
+
+ALTER TABLE offender_api_specific_modules 
+   ADD CONSTRAINT offender_api_specific_modules_pk PRIMARY KEY (module_name)  
+USING INDEX TABLESPACE tag_indx;
+
+ALTER TABLE offender_api_specific_modules 
+   ADD CONSTRAINT offender_api_specific_modules_fk1 FOREIGN KEY (module_name)
+   REFERENCES oms_modules(module_name) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE; 
+
+ 
+
+comment on table offender_api_specific_modules is 'Lists the name of application modules that call the offender search type APIs.';
+
+comment on column offender_api_specific_modules.module_name is 'The code used to uniquely identify the name of the module.';

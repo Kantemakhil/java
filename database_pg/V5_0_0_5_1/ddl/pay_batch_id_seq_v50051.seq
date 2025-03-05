@@ -1,0 +1,1 @@
+CREATE SEQUENCE pay_batch_id_seq INCREMENT by 1 START with 1; 

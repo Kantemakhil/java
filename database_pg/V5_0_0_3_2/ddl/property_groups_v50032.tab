@@ -1,0 +1,25 @@
+alter table property_groups 
+add column caseload_id varchar(6) NULL,
+add column property_seq int4 NOT NULL DEFAULT 99,
+add column active_flag varchar(1) NOT NULL DEFAULT 'Y'::character varying,
+add column expiry_date timestamp(6) NULL,
+add column create_datetime timestamp(6) NULL default current_timestamp,
+add column create_user_id varchar(32) NULL,
+add column modify_datetime timestamp(6) NULL,
+add column modify_user_id varchar(32) null;
+
+
+comment on column property_groups.caseload_id is 'The caseload identifier';
+comment on column property_groups.property_seq is 'Maintains the property group sequence';
+comment on column property_groups.active_flag is 'Indicates if the record is active (Y/N), default value will be Y';
+comment on column property_groups.expiry_date is 'It stores the expriy date to maintain when group item is activate or deactivated';
+
+alter table property_groups add constraint property_groups_fk foreign key(caseload_id) references caseloads(caseload_id) on delete no action not deferrable initially immediate;
+
+alter table property_groups drop constraint property_groups_pk;
+alter table property_groups add constraint property_groups_pk unique(group_id, caseload_id);	
+
+update property_groups set create_datetime=current_timestamp where create_datetime is null;
+update property_groups set create_user_id='OMS_OWNER' where create_user_id is null;
+alter table property_groups alter column create_datetime set not null;
+alter table property_groups alter column create_user_id set not null;

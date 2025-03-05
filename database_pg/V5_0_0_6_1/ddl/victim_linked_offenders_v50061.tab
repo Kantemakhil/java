@@ -1,0 +1,5 @@
+UPDATE victim_linked_offenders 
+   SET note = SUBSTR(note, 1, 240) 
+ WHERE length(note)>240;
+
+ALTER TABLE victim_linked_offenders ALTER COLUMN note TYPE varchar(240);

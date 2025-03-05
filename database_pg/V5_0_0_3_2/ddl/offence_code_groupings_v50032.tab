@@ -1,0 +1,13 @@
+ALTER TABLE offence_code_groupings  ADD COLUMN offence_id int8;
+update offence_code_groupings  ocg set offence_id = (select offence_id from offences off where ocg.offence_code = off.offence_code and ocg.statute_code = off.statute_code );
+ALTER TABLE offence_code_groupings ALTER COLUMN offence_id SET NOT null;
+
+ALTER TABLE offence_code_groupings ADD CONSTRAINT ofn_cg_ofn_f1 FOREIGN KEY (offence_id) REFERENCES offences(offence_id) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE offence_code_groupings DROP CONSTRAINT offender_code_groupings_pk;
+ALTER TABLE offence_code_groupings ADD CONSTRAINT offender_code_groupings_pk PRIMARY KEY (offence_group, offence_id) using index tablespace tag_indx;
+
+comment on column oms_owner.offence_code_groupings.offence_id is 'Unique identified of the offence';
+
+ALTER TABLE offence_code_groupings DROP COLUMN offence_code;
+ALTER TABLE offence_code_groupings DROP COLUMN statute_code;

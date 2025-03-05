@@ -1,0 +1,1 @@
+ALTER SEQUENCE court_evnt_appoint_outcome_id RENAME TO court_evnt_sanct_dtl_id_seq;

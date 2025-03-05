@@ -1,0 +1,41 @@
+create table oms_owner.off_incentives_earn_privs
+(iep_level_seq       bigint,  
+offender_book_id     bigint not null, 
+iep_level_code       varchar(12) not null,   
+assigned_date        timestamp(6) not null,
+approved_staff_id    bigint not null,
+next_review_date     timestamp(6),
+review_comment       VARCHAR(250),
+create_datetime      TIMESTAMP(6) not null default current_timestamp,
+create_user_id       VARCHAR(32) not null,
+modify_datetime      TIMESTAMP(6),
+modify_user_id       VARCHAR(32),
+seal_flag            varchar(1)
+) tablespace tag_data;
+
+
+alter table oms_owner.off_incentives_earn_privs    
+  add constraint off_incentives_earn_privs_pk PRIMARY KEY (iep_level_seq)
+  using index tablespace tag_indx;
+
+alter table oms_owner.off_incentives_earn_privs  
+	add constraint off_incentives_earn_privs_fk1 foreign key(offender_book_id) 
+	references offender_bookings(offender_book_id) on delete no action not deferrable initially immediate;	
+	
+alter table oms_owner.off_incentives_earn_privs  
+	add constraint off_incentives_earn_privs_fk2 foreign key(approved_staff_id) 
+	references staff_members(staff_id) on delete no action not deferrable initially immediate;	
+	
+alter table oms_owner.off_incentives_earn_privs  
+	add constraint off_incentives_earn_privs_fk3 foreign key(iep_level_code) 
+	references incentives_earn_privs(iep_level_code) on delete no action not deferrable initially immediate;		
+	
+comment on table oms_owner.off_incentives_earn_privs is 'Stores the offender incentives earned privileges level details';
+
+comment on column oms_owner.off_incentives_earn_privs.iep_level_seq is 'Unique identification number for each offender assigned to the iep level(sequence=iep_level_seq)';
+comment on column oms_owner.off_incentives_earn_privs.offender_book_id is ' The system generated identifier for an offender booking.';
+comment on column oms_owner.off_incentives_earn_privs.iep_level_code is 'The IEP LEVEL code';
+comment on column oms_owner.off_incentives_earn_privs.assigned_date is ' The date when the IEP_LEVEL is assigned to the offender';
+comment on column oms_owner.off_incentives_earn_privs.approved_staff_id is 'The staff who approved the iep level';
+comment on column oms_owner.off_incentives_earn_privs.next_review_date is ' The IEP_LEVEL Next Review date';
+comment on column oms_owner.off_incentives_earn_privs.review_comment is 'Review comment';

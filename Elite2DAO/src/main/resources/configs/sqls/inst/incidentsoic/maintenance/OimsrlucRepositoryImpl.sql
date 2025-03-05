@@ -1,0 +1,40 @@
+OIMSRLUC_REF_CODE_CONDS{
+  SELECT report_type ,AUTOMATIC_FLAG ,LENGTH ,length_unit FROM STAFF_REPORTS_MAINT where report_type = :reportType
+}
+OIMSRLUC_REF_CODE_DOMAIN{
+
+select
+	domain ,
+	DESCRIPTION ,
+	DOMAIN_STATUS ,
+	OWNER_CODE ,
+	APPLN_CODE ,
+	OLD_CODE_TABLE ,
+	PARENT_DOMAIN ,
+	CODE_LENGTH ,
+	CREATE_DATETIME ,
+	CREATE_USER_ID ,
+	MODIFY_DATETIME ,
+	MODIFY_USER_ID ,
+	SUPER_SET_DOMAIN ,
+	SEAL_FLAG
+from
+	REFERENCE_DOMAINS
+	where domain ='STAFF_REPORT'
+order by
+	domain
+}
+
+
+OIMSRLUC_REFCODE_UPDATE_STAFF_REPORTS_MAINT{
+UPDATE STAFF_REPORTS_MAINT set AUTOMATIC_FLAG  = :automaticFlag ,LENGTH = :length ,length_unit=:lengthUnit ,MODIFY_USER_ID  = :modifyUserId, MODIFY_DATETIME  = current_timestamp   where report_type  = :reportType
+}
+
+OIMSRLUC_REFCODE_INSERT_STAFF_REPORTS_MAINT{
+ INSERT INTO STAFF_REPORTS_MAINT (report_type,AUTOMATIC_FLAG ,LENGTH ,length_unit,SEAL_FLAG ,CREATE_USER_ID ,CREATE_DATETIME)
+ VALUES(:reportType,:automaticFlag,:length,:lengthUnit,:sealFlag,:createUserId, CURRENT_TIMESTAMP)
+}
+
+OIMSRLUC_REF_CODE_UNIT_DOMAIN{
+select * from reference_codes rc  where domain = 'COND_UNIT'
+}

@@ -1,0 +1,2 @@
+alter table automation_teams add team_email varchar(100);
+comment on column automation_teams.team_email is 'Identifies the team email address';

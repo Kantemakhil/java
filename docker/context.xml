@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context>
+
+	<Parameter name="config-file" value="/config/db.properties" override="true" />
+
+    <WatchedResource>WEB-INF/web.xml</WatchedResource>
+    <WatchedResource>${catalina.base}/conf/web.xml</WatchedResource>
+
+
+	<Resource name="jdbc/OF2AJSDB" 
+		cachingAllowed="false" 
+		validationQuery="SELECT 1 FROM DUAL" 
+		validationInterval="34000" 
+		
+		type="javax.sql.DataSource" 
+		driverClassName="org.postgresql.Driver"
+		factory="org.apache.tomcat.jdbc.pool.DataSourceFactory" 
+
+		timeBetweenEvictionRunsMillis="34000" 
+		testWhileIdle="true" 
+		testOnReturn="false" 
+		testOnBorrow="true" 
+		removeAbandonedTimeout="60" 
+		removeAbandoned="true" 
+
+		url="${datasource.url}" 
+		username="${datasource.username}" 
+		password="${datasource.password}" 
+
+		minIdle="1" 
+		minEvictableIdleTimeMillis="55000" 
+		maxWait="100000" 
+		maxIdle="10" 
+		maxActive="100" 
+		logAbandoned="true" 
+		jmxEnabled="true" 
+
+		jdbcInterceptors="org.apache.tomcat.jdbc.pool.interceptor.ConnectionState;org.apache.tomcat.jdbc.pool.interceptor.StatementFinalizer" 
+		initialSize="2" 
+ 
+		auth="Container"
+	/>
+			
+</Context>

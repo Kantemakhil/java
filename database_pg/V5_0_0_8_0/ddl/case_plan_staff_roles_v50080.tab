@@ -1,0 +1,13 @@
+ALTER TABLE case_plan_staff_roles ADD COLUMN cp_owner varchar(1) NULL DEFAULT 'N'::character varying;
+UPDATE case_plan_staff_roles 
+   SET cp_owner = 'N' 
+ WHERE cp_owner <> 'Y'; 
+ALTER TABLE case_plan_staff_roles ALTER COLUMN cp_owner SET NOT NULL;
+comment on column case_plan_staff_roles.cp_owner is 'Indicates if the record denotes a case plan officer owner (values N, Y)';
+
+ALTER TABLE case_plan_staff_roles RENAME COLUMN primary_flag to cn_officer;
+UPDATE case_plan_staff_roles 
+   SET cn_officer = 'N' 
+ WHERE cn_officer <> 'Y'; 
+ALTER TABLE case_plan_staff_roles ALTER COLUMN cn_officer SET NOT NULL;
+comment on column case_plan_staff_roles.cn_officer is 'Indicates if the record denotes a case note officer (values N, Y)';

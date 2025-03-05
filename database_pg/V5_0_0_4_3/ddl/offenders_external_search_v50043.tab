@@ -1,0 +1,2 @@
+Alter table offenders_external_search  add second_middle_name varchar(35);
+comment on column offenders_external_search.second_middle_name is 'Offender second middle name';

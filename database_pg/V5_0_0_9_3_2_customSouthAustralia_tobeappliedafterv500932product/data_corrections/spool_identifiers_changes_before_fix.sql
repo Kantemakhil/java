@@ -1,0 +1,1 @@
+\copy (select offender_id, offender_id_seq, identifier_type, identifier from offender_identifiers where identifier_type = COALESCE((select profile_value from system_profiles where profile_type = 'LABEL' AND profile_code = 'OFF_ID_CODE'), 'SBI') and identifier <> LTRIM(identifier, '0')) TO 'spool_identifiers_changes_before_fix.csv' (format CSV);		

@@ -1,0 +1,64 @@
+--echo everything (this eliminates the need to call psql -a)
+\set ECHO all
+
+--set the message level sent to client
+SET client_min_messages = warning;
+
+--print connection information
+\echo 'Database Information:'
+\conninfo
+
+--set client session behaviour
+\set AUTOCOMMIT on
+\timing on
+\set footer on
+\x auto
+\pset null <NULL>
+\set VERBOSITY verbose
+\pset pager off
+
+show search_path;
+
+select current_timestamp;
+
+--record scripts version
+call log_db_version_control('5', 'initial PostgreSql Elite db version ');
+call log_db_version_control_patches('5', '5_0_0_3_2', 'ddl set 1_0 of patch 5_0_0_3_2', '1_0_batch_oms_owner_ddl_5_0_0_3_2.run');
+
+--execute sql scripts
+
+
+\i agency_incident_charges_ext_inv_detls_v50032.tab
+\i agency_incident_charges_v50032.tab
+\i drop_foreign_keys_v50032.tab
+\i agency_shift_logs_v50032.tab
+\i ocuchgou_data_v50032.tab
+\i offence_id_seq_v50032.seq
+\i offences_v50032.tab
+\i offence_indicators_v50032.tab
+\i allowable_offence_types_v50032.tab 
+\i offence_code_groupings_v50032.tab
+\i offender_release_details_v50032.tab
+\i offenders_shift_log_v50032.tab
+\i phones_v50032.tab
+\i property_group_items_v50032.tab
+\i property_groups_v50032.tab
+\i property_item_id_v50032.seq
+\i v_agency_addresses_v50032.vew
+\i v_corporate_addresses_v50032.vew
+\i v_offender_employ_addresses_v50032.vew
+\i v_person_addresses_v50032.vew
+\i v_staff_addresses_v50032.vew
+ 
+
+select current_timestamp;
+
+show search_path;
+
+ 
+ 
+
+
+
+
+

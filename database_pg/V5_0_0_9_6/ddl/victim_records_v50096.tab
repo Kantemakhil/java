@@ -1,0 +1,1 @@
+ALTER table victim_records  ALTER COLUMN note TYPE varchar(4000);

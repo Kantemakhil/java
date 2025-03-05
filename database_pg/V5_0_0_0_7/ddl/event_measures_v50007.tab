@@ -1,0 +1,5 @@
+alter table oms_owner.event_measures add  email_flag varchar(1);
+alter table oms_owner.event_measures add  sms_flag varchar(1);
+
+comment on column oms_owner.event_measures.email_flag is 'If Email Flag is set Y for that Schedule type need to send notification for that appointment';
+comment on column oms_owner.event_measures.sms_flag is 'If SMS Flag is set Y for that Schedule type need to send notification for that appointment';

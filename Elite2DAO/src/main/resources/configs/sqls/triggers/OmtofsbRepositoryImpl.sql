@@ -1,0 +1,3 @@
+delete_offender_files_trig{
+DELETE FROM offender_files_trig
+}

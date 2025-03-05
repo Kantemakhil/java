@@ -1,0 +1,50 @@
+-- Create table 
+CREATE TABLE CONV_LOGS
+(
+  LOG_ID           NUMBER(10),
+  PROC_NAME       VARCHAR2(200),
+  OFFENDER_ID      NUMBER(10),
+  OFFENDER_BOOK_ID NUMBER(10),
+  ID               VARCHAR2(200),
+  MSG              VARCHAR2(1000),
+  CREATE_DATETIME  TIMESTAMP(9) DEFAULT SYSTIMESTAMP 
+)
+tablespace TAG_DATA 
+  pctfree 10
+  initrans 1
+  maxtrans 255
+  storage
+  (
+    initial 2M
+    next 2M
+    minextents 1
+    maxextents unlimited
+    pctincrease 0
+  );
+ 
+
+
+-- Create/Recreate primary, unique and foreign key constraints 
+alter table CONV_LOGS
+  add constraint CONV_LOG_PK primary key (LOG_ID)
+  using index 
+  tablespace TAG_INDX 
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 2M
+    next 2M
+    minextents 1
+    maxextents unlimited
+    pctincrease 0
+  );
+
+COMMENT ON TABLE CONV_LOGS IS 'The table stores the conversion logs for data migration'; 
+
+-- Add comments to the columns 
+COMMENT ON COLUMN CONV_LOGS.LOG_ID IS 'Unique log key based on oracle sequence DM_CONV_LOG_SEQ';
+COMMENT ON COLUMN CONV_LOGS.PROC_NAME IS 'Package and/or procedure name creating the log';
+COMMENT ON COLUMN CONV_LOGS.ID IS 'Other key or information';
+COMMENT ON COLUMN CONV_LOGS.MSG  IS 'Error message or other message';

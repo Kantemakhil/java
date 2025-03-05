@@ -1,0 +1,38 @@
+
+
+OCUAOFFI_ADDSTAFF_FIND_STAFF_MEMBERS_V2 {
+select
+	HOURS_PER_WEEK,
+	SCHEDULE_TYPE,
+	DATE_TO,
+	role,
+	position,
+	FROM_DATE,
+	SAC_STAFF_ID,
+	CAL_AGY_LOC_ID,
+	BIRTHDATE,
+	FIRST_NAME,
+	LAST_NAME,
+	USER_ID,
+	STAFF_NAME,
+	SUSPENDED_FLAG
+from
+	STAFF_MEMBERS_V2
+where
+	(( not exists (
+	select
+		SM.STAFF_ID
+	from
+		STAFF_MEMBERS SM
+	where
+		SM.STAFF_ID = STAFF_MEMBERS_V2.SAC_STAFF_ID
+		and SM.SUPERVISOR_STAFF_ID =:STAFF_ID ))
+	or coalesce(:STAFF_ID::text ,'')='' )
+	and STAFF_MEMBERS_V2.CAL_AGY_LOC_ID = :AGY_LOC_ID::text
+	and coalesce (STAFF_MEMBERS_V2.DATE_TO::timestamp::text, '')= ''
+order by
+	LAST_NAME,
+	FIRST_NAME,
+	position,
+	role
+}

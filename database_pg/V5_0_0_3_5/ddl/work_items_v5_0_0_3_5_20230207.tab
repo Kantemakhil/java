@@ -1,0 +1,9 @@
+comment on table oms_owner.work_items is 'Associates an application event trigger with a specific automation business process, and allows for turning off triggers for insert, update, or delete events.';
+
+comment on column oms_owner.work_items.work_id is 'Unique internal key for the record. [sequence=work_items_work_id_seq]';
+comment on column oms_owner.work_items.business_function is '';
+comment on column oms_owner.work_items.process is 'The particular automation process and version that this trigger invokes.';
+comment on column oms_owner.work_items.add_trigger is 'A flag (Y/N) indicating whether this trigger can be invoked when a new record is added.';
+comment on column oms_owner.work_items.update_trigger is 'A flag (Y/N) indicating whether this trigger can be invoked when an existing record is updated.';
+comment on column oms_owner.work_items.delete_trigger is 'A flag (Y/N) indicating whether this trigger can be invoked when an existing record is deleted.';
+comment on column oms_owner.work_items.trigger_id is 'Identifies the particular application trigger.'; 

@@ -1,0 +1,20 @@
+CREATE OR REPLACE VIEW oms_owner.v_gang_affiliations
+AS SELECT vhb.offender_id,
+    vhb.last_name,
+    vhb.first_name,
+    vhb.offender_id_display,
+    vhb.offender_book_id,
+    vhb.active_flag,
+    vhb.living_unit_description,
+    vhb.root_offender_id,
+    COALESCE(gang.parent_gang_code, gang.gang_code) AS gang,
+        CASE
+            WHEN COALESCE(gang.parent_gang_code::text, ''::text) = ''::text THEN NULL::character varying
+            ELSE gang.gang_code
+        END AS faction,
+    off_ga.comment_text,
+    gang.gang_code
+   FROM v_header_block vhb,
+    offender_gang_affiliations off_ga,
+    gangs gang
+  WHERE vhb.offender_book_id = off_ga.offender_book_id AND off_ga.gang_code::text = gang.gang_code::text;

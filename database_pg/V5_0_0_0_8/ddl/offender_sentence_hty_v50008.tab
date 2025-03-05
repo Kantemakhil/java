@@ -1,0 +1,3 @@
+ALTER TABLE oms_owner.offender_sentence_hty  ADD comment_text VARCHAR(240);
+
+comment on column oms_owner.offender_sentence_hty.comment_text is 'This field is used to save the comment information when giving count';

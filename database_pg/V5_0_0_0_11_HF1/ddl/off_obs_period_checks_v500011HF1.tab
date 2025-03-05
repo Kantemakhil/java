@@ -1,0 +1,3 @@
+ALTER TABLE off_obs_period_checks ADD comment_text varchar(4000);
+
+comment on column off_obs_period_checks.comment_text is 'This field is used to store the comment text for period check';

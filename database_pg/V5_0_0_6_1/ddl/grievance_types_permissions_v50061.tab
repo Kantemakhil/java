@@ -1,0 +1,31 @@
+ create table oms_owner.grievance_types_permissions
+(role_id int8 not null,
+griev_type varchar(12) not null,
+griev_reason_code varchar(12) not null,
+create_amend_flag varchar(1) null,
+view_flag varchar(1) null,
+create_datetime timestamp(6) not null default CURRENT_TIMESTAMP,
+create_user_id varchar(32) not null,
+modify_datetime timestamp(6) null,
+modify_user_id varchar(32) null,
+seal_flag varchar(1) null
+) tablespace tag_data;
+
+alter table grievance_types_permissions add constraint grievance_types_permissions_pk primary key (role_id, griev_type, griev_reason_code) using index tablespace tag_indx;
+
+alter table grievance_types_permissions
+add constraint grievance_types_permissions_fk1 foreign key (role_id)
+references oms_roles(role_id) on delete no action not deferrable initially immediate;
+
+alter table grievance_types_permissions
+add constraint grievance_types_permissions_fk2 foreign key (griev_type, griev_reason_code)
+references grievance_reasons(griev_type, griev_reason_code) on delete no action not deferrable initially immediate;
+
+comment on table grievance_types_permissions is 'Maintains the user access for create, view and amend grievance type';
+
+comment on column grievance_types_permissions.role_id is 'Grievance type permission based role security from User Groups';
+comment on column grievance_types_permissions.griev_type is 'The grievance type.';
+
+comment on column grievance_types_permissions.griev_reason_code is 'The grievance reason.';
+comment on column grievance_types_permissions.create_amend_flag is 'Indicates create or amend privilege for grievance type';
+comment on column grievance_types_permissions.view_flag is 'Indicates view privilege for grievance type';

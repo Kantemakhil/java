@@ -1,0 +1,4 @@
+alter table oms_owner.offender_visits add visit_config_type varchar(12);
+update oms_owner.offender_visits set visit_config_type='SEC_LEVEL';
+alter table oms_owner.offender_visits alter column visit_config_type set not null;
+comment on column oms_owner.offender_visits.visit_config_type is 'Indicates whether the Visit type is security level or iep level [domain=VISIT_CONFIG]';

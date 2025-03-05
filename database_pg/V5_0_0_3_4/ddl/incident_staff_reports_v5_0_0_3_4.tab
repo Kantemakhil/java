@@ -1,0 +1,48 @@
+create table oms_owner.incident_staff_reports (
+	incident_report_id bigint NOT NULL,
+	agency_incident_id bigint NOT NULL,
+	party_seq int4 NOT NULL,
+	report_type varchar(12) NOT NULL,
+	report_time timestamp(6) NOT NULL,
+	report_details varchar(4000) NULL,
+	reporter_staff_id bigint NOT NULL,	
+    rep_complet_flag varchar(1) NOT NULL DEFAULT 'N',
+	lock_flag varchar(1) NOT NULL DEFAULT 'N',
+	locked_by int4 NULL,
+	lock_reference_time timestamp(6),
+	create_datetime timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	create_user_id varchar(32) NOT NULL,
+	modify_user_id varchar(32),
+	modify_datetime timestamp,
+	seal_flag varchar(1) NULL
+) tablespace tag_data;
+
+alter table oms_owner.incident_staff_reports 
+  add constraint incident_staff_reports_pk primary key (incident_report_id) 
+   using index tablespace tag_indx;
+    
+alter table oms_owner.incident_staff_reports 
+  add constraint incident_staff_reports_fk1 foreign key (agency_incident_id,party_seq) REFERENCES oms_owner.agency_incident_parties(agency_incident_id,party_seq) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE;
+
+alter table oms_owner.incident_staff_reports 
+  add constraint incident_staff_reports_fk2 foreign key (report_type) REFERENCES oms_owner.staff_reports_maint(report_type) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE;
+ 
+alter table oms_owner.incident_staff_reports 
+  add constraint incident_staff_reports_fk3 foreign key (reporter_staff_id) REFERENCES oms_owner.staff_members(staff_id) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE;
+ 
+alter table oms_owner.incident_staff_reports 
+  add constraint incident_staff_reports_fk4 foreign key (locked_by) REFERENCES oms_owner.staff_members(staff_id) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE;
+  
+comment on table oms_owner.incident_staff_reports is 'Agency incidents staff reports';
+
+comment on column oms_owner.incident_staff_reports.incident_report_id is 'Unique identified of the incident staff report [db sequence=incident_staff_reports_seq]';
+comment on column oms_owner.incident_staff_reports.agency_incident_id is 'Unique identifier of the agency incident'; 
+comment on column oms_owner.incident_staff_reports.party_seq is 'Together with agency_incident_id it represents the unique identifier of the staff incident party';
+comment on column oms_owner.incident_staff_reports.report_type is 'Incident staff report type [domain=STAFF_REPORT]';
+comment on column oms_owner.incident_staff_reports.report_time is 'Date and time of the report';
+comment on column oms_owner.incident_staff_reports.report_details is 'Report details, free text';
+comment on column oms_owner.incident_staff_reports.reporter_staff_id is 'The staff who records the report in the system';
+comment on column oms_owner.incident_staff_reports.rep_complet_flag is 'Indicates if the report is completed (N/Y)';
+comment on column oms_owner.incident_staff_reports.lock_flag is 'Indicates if the report is locked (N/Y)';
+comment on column oms_owner.incident_staff_reports.locked_by is 'The staff who locks the report';
+comment on column oms_owner.incident_staff_reports.lock_reference_time is 'The date and time when the report is locked';

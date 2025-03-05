@@ -1,0 +1,78 @@
+
+OCUMPVAV_CRSACT_FIND_COURSE_ACTIVITIES {
+ 	SELECT CRS_ACTY_ID, CODE, DESCRIPTION, SCHEDULE_START_DATE, SCHEDULE_END_DATE, PROGRAM_ID, CAPACITY, HOLIDAY_FLAG, SCHEDULE_NOTES, SEAL_FLAG FROM COURSE_ACTIVITIES  where  CRS_ACTY_ID = :crsActyId
+}
+OCUMPVAV_CRSSCHEDULERUL_FIND_COURSE_SCHEDULE_RULES {
+select
+	COURSE_SCHEDULE_RULE_ID,
+	CRS_ACTY_ID,
+	WEEK_NO,
+	MONDAY_FLAG,
+	TUESDAY_FLAG,
+	WEDNESDAY_FLAG,
+	THURSDAY_FLAG,
+	FRIDAY_FLAG,
+	SATURDAY_FLAG,
+	SUNDAY_FLAG,
+	START_TIME,
+	END_TIME,
+	SEAL_FLAG,
+	CAPACITY,
+	CREATE_DATETIME
+from
+	COURSE_SCHEDULE_RULES
+where
+	CRS_ACTY_ID = :crsActyId
+order by
+	tag_service_sort_earliest_weekday(monday_flag,
+	tuesday_flag,
+	wednesday_flag,
+	thursday_flag,
+	friday_flag,
+	saturday_flag,
+	sunday_flag) asc,
+	to_char(start_time, 'HH24:MI') asc
+}
+OCUMPVAV_CRSSCHEDULERUL_INSERT_COURSE_SCHEDULE_RULES {
+ insert into COURSE_SCHEDULE_RULES(COURSE_SCHEDULE_RULE_ID, CRS_ACTY_ID, WEEK_NO, MONDAY_FLAG, TUESDAY_FLAG, WEDNESDAY_FLAG, THURSDAY_FLAG, FRIDAY_FLAG, SATURDAY_FLAG, SUNDAY_FLAG, START_TIME, END_TIME, SEAL_FLAG, CAPACITY, create_user_id, create_datetime, modify_datetime, modify_user_id) values(:courseScheduleRuleId, :crsActyId, :weekNo, :mondayFlag, :tuesdayFlag, :wednesdayFlag, :thursdayFlag, :fridayFlag, :saturdayFlag, :sundayFlag, :startTime, :endTime, :sealFlag, :capacity, :createUserId, current_timestamp, null, null) 
+}
+
+OCUMPVAV_CRSSCHEDULERUL_UPDATE_COURSE_SCHEDULE_RULES {
+    update COURSE_SCHEDULE_RULES set MONDAY_FLAG = :mondayFlag, TUESDAY_FLAG = :tuesdayFlag, WEDNESDAY_FLAG = :wednesdayFlag, THURSDAY_FLAG = :thursdayFlag, FRIDAY_FLAG = :fridayFlag, SATURDAY_FLAG = :saturdayFlag, SUNDAY_FLAG = :sundayFlag, START_TIME = :startTime, END_TIME = :endTime, modify_user_id = :modifyUserId, modify_datetime = current_timestamp where COURSE_SCHEDULE_RULE_ID = :courseScheduleRuleId
+}
+
+OCUMPVAV_CRSSCHEDULERUL_DELETE_COURSE_SCHEDULE_RULES { 
+	DELETE FROM COURSE_SCHEDULE_RULES where COURSE_SCHEDULE_RULE_ID = :courseScheduleRuleId
+}
+
+OCUMPVAV_PROGRAM_SERVICES_FIND_DESCRIPTION{
+	SELECT DESCRIPTION FROM PROGRAM_SERVICES WHERE program_id = :programId
+}
+
+OCUMPVAV_CRS_ACT_POSTQUERY_ {
+	SELECT	PROVIDER_PARTY_ID FROM  COURSE_ACTIVITIES WHERE  CRS_ACTY_ID = :PCRSACTYID
+}
+
+OCUMPVAV_CRS_ACT_POSTQUERYc_course_provider_wr {
+	select
+	CORPORATE_NAME
+from
+	CORPORATES
+where
+	CORPORATE_ID = :P_PROVIDER_ID
+}
+
+OCUMPVAV_CRS_ACT_ONCHECKDELETEMASTER_ {
+	SELECT 1 FROM COURSE_SCHEDULE_RULES C WHERE C.CRS_ACTY_ID = :CRSACTYID
+}
+
+OCUMPVAV_HOLIDAY_FLAG_UPDATE_COURSE_ACTIVITIES{
+update
+	COURSE_ACTIVITIES
+set
+	HOLIDAY_FLAG =:holidayFlag,
+	MODIFY_DATETIME = current_timestamp ,
+	MODIFY_USER_ID = :modifyUserId
+where
+	CRS_ACTY_ID =:crsActyId
+}

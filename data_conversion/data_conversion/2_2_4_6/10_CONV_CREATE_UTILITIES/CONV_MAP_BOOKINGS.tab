@@ -1,0 +1,36 @@
+-- Create table 
+REM Creating table CONV_MAP_BOOKINGS to retain mapping of generated offender_book_id with the client data
+
+create table CONV_MAP_BOOKINGS 
+(
+   offender_book_id       NUMBER(10),
+   stage_offender_id_display    VARCHAR2(10),
+   stage_booking_begin_date     DATE,
+   stage_booking_end_date       DATE,
+   stage_booking_no             VARCHAR2(14)
+)
+tablespace TAG_DATA 
+  pctfree 10
+  initrans 1
+  maxtrans 255
+  storage
+  (
+    initial 2M
+    next 2M
+    minextents 1
+    maxextents unlimited
+    pctincrease 0
+  )
+LOGGING 
+NOCOMPRESS 
+NOCACHE
+NOPARALLEL
+MONITORING;
+
+COMMENT ON TABLE CONV_MAP_BOOKINGS IS 'Retain mapping of generated offender_book_id with the client data'; 
+
+CREATE UNIQUE INDEX CONV_MAP_BOOKINGS_UK1 
+    ON CONV_MAP_BOOKINGS(stage_offender_id_display, stage_booking_begin_date)
+       TABLESPACE TAG_INDX;
+
+

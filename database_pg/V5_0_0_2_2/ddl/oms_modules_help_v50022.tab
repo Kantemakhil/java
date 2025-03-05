@@ -1,0 +1,5 @@
+delete from oms_modules_help 
+ where module_name IN (select module_name from (select module_name, count(*) from oms_modules_help omh_3 group by module_name having count(*) > 1) help_duplicates) 
+  and row_id <> (select max(omh_2.row_id) from oms_modules_help omh_2 where omh_2.module_name = oms_modules_help.module_name); 
+
+alter table oms_owner.oms_modules_help add constraint oms_modules_help_pk primary key (module_name, help_type) using index tablespace tag_indx; 

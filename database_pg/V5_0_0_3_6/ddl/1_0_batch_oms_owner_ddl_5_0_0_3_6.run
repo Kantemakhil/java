@@ -1,0 +1,59 @@
+--echo everything (this eliminates the need to call psql -a)
+\set ECHO all
+
+--set the message level sent to client
+SET client_min_messages = warning;
+
+--print connection information
+\echo 'Database Information:'
+\conninfo
+
+--set client session behaviour
+\set AUTOCOMMIT on
+\timing on
+\set footer on
+\x auto
+\pset null <NULL>
+\set VERBOSITY verbose
+\pset pager off
+
+show search_path;
+
+select current_timestamp;
+
+--record scripts version
+call log_db_version_control('5', 'initial PostgreSql Elite db version ');
+call log_db_version_control_patches('5', '5_0_0_3_6', 'ddl set 1_0 of patch 5_0_0_3_6', '1_0_batch_oms_owner_ddl_5_0_0_3_6.run');
+
+--execute sql scripts
+
+\i addresses_v50035.tab
+\i ocdlegls_data_hty_v50035.tab
+\i ocdlegls_data_v50035.tab
+\i oms_asset_id_seq_v50035.seq
+\i oms_module_report_assets_v50035.tab
+\i oms_module_report_history_v50035.tab
+\i rp_other_occupants_v50035.tab
+\i v_offender_all_schedules_2_v50035.vew
+\i v_offender_all_schedules_v50035.vew
+\i drop_v_hot_page_alerts_v50035.vew
+\i drop_v_offender_alerts_v50035.vew 
+\i offender_alerts_v50035.tab
+\i v_offender_alerts_v50035.vew
+\i v_hot_page_alerts_v50035.vew
+\i drop_v_offender_case_notes_v50035.vew
+\i offender_case_notes_v50035.tab
+\i v_offender_case_notes_v50035.vew
+
+
+select current_timestamp;
+
+show search_path;
+
+ 
+ 
+
+
+
+
+

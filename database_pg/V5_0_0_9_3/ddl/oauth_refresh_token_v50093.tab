@@ -1,0 +1,7 @@
+CREATE TABLE oauth_refresh_token (
+	token_id varchar(255) NULL,
+	"token" bytea NULL,
+	authentication bytea NULL
+)
+TABLESPACE tag_data
+;

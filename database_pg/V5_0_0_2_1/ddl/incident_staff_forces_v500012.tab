@@ -1,0 +1,3 @@
+alter table incident_staff_forces add reason_force_used varchar(12);
+
+comment on column incident_staff_forces.reason_force_used is 'Reason for using force'; 

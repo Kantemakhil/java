@@ -1,0 +1,3 @@
+INSERT INTO system_labels (label_id, module_name, msg_key, msg_value, msg_type, create_datetime, create_user_id, modify_datetime, modify_user_id, seal_flag)
+SELECT nextval('lable_id_sequence'), 'OUMSYSET', 'oumsyset.landingPageConfig', 'Landing Page Configuration', 'LABEL', current_timestamp, 'OMS_OWNER', current_timestamp, 'OMS_OWNER',
+NULL WHERE NOT EXISTS (SELECT 1 FROM system_labels WHERE module_name = 'OUMSYSET' AND msg_key = 'oumsyset.landingPageConfig');

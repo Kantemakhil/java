@@ -1,0 +1,2 @@
+alter table offender_ind_schedules drop constraint offnder_ind_schedule_chk1;
+ALTER TABLE offender_ind_schedules ADD CONSTRAINT offnder_ind_schedule_chk1 CHECK (event_class in ('EXT_MOV', 'INT_MOV', 'COMM','DTE'));

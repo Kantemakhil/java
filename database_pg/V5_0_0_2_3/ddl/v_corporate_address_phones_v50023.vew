@@ -1,0 +1,15 @@
+CREATE OR REPLACE VIEW oms_owner.v_corporate_address_phones
+AS SELECT p.phone_id,
+    p.owner_class,
+    p.owner_id,
+    p.owner_seq,
+    p.owner_code,
+    corp_add.corporate_id,
+    corp_add.address_seq,
+    p.phone_type,
+    substr(p.phone_no::text, 1, 3) AS phone_area,
+    substr(p.phone_no::text, 4) AS phone_no,
+    p.ext_no
+   FROM phones p,
+    v_corporate_addresses corp_add
+  WHERE p.owner_class::text = 'ADDR'::text AND p.owner_id = corp_add.address_id OR p.owner_class::text = 'CORP'::text AND p.owner_id = corp_add.corporate_id;

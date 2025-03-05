@@ -1,0 +1,14 @@
+CREATE OR REPLACE VIEW oms_owner.v_route_locations
+AS SELECT f.route_name,
+    f.agy_loc_id AS from_agy_loc_id,
+    t.agy_loc_id AS to_agy_loc_id,
+    lpad(f.leg_id::character varying::text, 4, '0'::text) || lpad(f.leg_seq::character varying::text, 4, '0'::text) AS from_seq,
+    lpad(t.leg_id::character varying::text, 4, '0'::text) || lpad(t.leg_seq::character varying::text, 4, '0'::text) AS to_seq,
+    asl.segment_length
+   FROM route_stop_details f,
+    route_stop_details t,
+    agency_segment_lengths asl
+  WHERE f.route_name::text = t.route_name::text AND f.active_flag::text = 'Y'::text AND t.active_flag::text = 'Y'::text AND (lpad(t.leg_id::character varying::text, 4, '0'::text) || lpad(t.leg_seq::character varying::text, 4, '0'::text)) = (( SELECT min(lpad(rx.leg_id::character varying::text, 4, '0'::text) || lpad(rx.leg_seq::character varying::text, 4, '0'::text)) AS min
+           FROM route_stop_details rx
+          WHERE rx.route_name::text = t.route_name::text AND (lpad(rx.leg_id::character varying::text, 4, '0'::text) || lpad(rx.leg_seq::character varying::text, 4, '0'::text)) > (lpad(f.leg_id::character varying::text, 4, '0'::text) || lpad(f.leg_seq::character varying::text, 4, '0'::text)))) AND (f.agy_loc_id::text = asl.from_agy_loc_id::text AND t.agy_loc_id::text = asl.to_agy_loc_id::text OR f.agy_loc_id::text = asl.to_agy_loc_id::text AND t.agy_loc_id::text = asl.from_agy_loc_id::text)
+  ORDER BY f.route_name, (lpad(f.leg_id::character varying::text, 4, '0'::text) || lpad(f.leg_seq::character varying::text, 4, '0'::text)), (lpad(t.leg_id::character varying::text, 4, '0'::text) || lpad(t.leg_seq::character varying::text, 4, '0'::text));

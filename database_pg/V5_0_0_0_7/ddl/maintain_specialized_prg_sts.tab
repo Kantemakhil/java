@@ -1,0 +1,20 @@
+CREATE TABLE oms_owner.maintain_specialized_prg_sts(code     varchar(12) NOT NULL,
+													description           VARCHAR(40) NOT NULL,
+													update_flag           VARCHAR(1) NOT NULL,
+													update_reason_flag    VARCHAR(1) NOT NULL,
+													create_datetime       TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL ,
+													create_user_id        VARCHAR(32)NOT NULL ,
+													modify_datetime       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+													modify_user_id        VARCHAR(32),
+													seal_flag             VARCHAR(1)
+
+) tablespace tag_data;
+
+ALTER TABLE oms_owner.maintain_specialized_prg_sts 
+  ADD CONSTRAINT maintain_specialized_prg_sts_pk PRIMARY KEY (code)
+  USING index tablespace tag_indx;
+
+comment on column maintain_specialized_prg_sts.code  is 'Reference code';
+comment on column maintain_specialized_prg_sts.description  is 'Description of the code';
+comment on column maintain_specialized_prg_sts.update_flaG  is 'For restricting update when we check the flag.';
+comment on column maintain_specialized_prg_sts.update_reason_flag is 'For restricting update reason when we check the flag.';

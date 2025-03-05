@@ -1,0 +1,6 @@
+alter table offender_em_tag_details add em_tag_start_time timestamp(6);
+alter table offender_em_tag_details add em_tag_end_time timestamp(6);
+alter table offender_em_tag_details drop column em_daily_charging_period;
+
+comment on column offender_em_tag_details.em_tag_start_time is 'This field is used to save start time of em tag';
+comment on column offender_em_tag_details.em_tag_end_time is 'This field is used to save end time of em tag';

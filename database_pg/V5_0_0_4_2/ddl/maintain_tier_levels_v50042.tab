@@ -1,0 +1,27 @@
+CREATE TABLE maintain_tier_levels (
+tier_level_code varchar(12) NOT NULL,
+tier_level_desc varchar(40) NOT null,
+workload_value int8 NOT NULL,
+review_days int8 NOT NULL,
+list_seq int8 NULL,
+active_flag varchar(1) NOT NULL DEFAULT 'Y',
+expiry_date DATE NULL,
+default_intake_tier_flag varchar(1) NOT NULL DEFAULT 'N',
+create_datetime timestamp(6) NOT NULL DEFAULT systimestamp(),
+create_user_id varchar(32) NOT NULL,
+modify_datetime timestamp(6) NULL,
+modify_user_id varchar(32) NULL,
+seal_flag varchar(1) NULL,
+CONSTRAINT maintain_tier_levels_pk PRIMARY KEY (tier_level_code)
+) tablespace tag_data;
+
+comment on table maintain_tier_levels is 'Maintains community tier levels (effort level)';
+
+comment on column maintain_tier_levels.tier_level_code is 'Community tier level code';
+comment on column maintain_tier_levels.tier_level_desc is 'Community tier level description';
+comment on column maintain_tier_levels.workload_value is 'Workload unit value (numerical value)';
+comment on column maintain_tier_levels.review_days is 'The number of days after which the tier level must be reviewed';
+comment on column maintain_tier_levels.list_seq is 'Listing order';
+comment on column maintain_tier_levels.active_flag is 'Indicates if the tier level is active (Y, N value)';
+comment on column maintain_tier_levels.expiry_date is 'The expiry date';
+comment on column maintain_tier_levels.default_intake_tier_flag is 'Default intake tier (Y, N value)';

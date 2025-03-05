@@ -1,0 +1,3 @@
+ALTER TABLE court_evnt_appointment_outcome  DROP CONSTRAINT court_evnt_appoint_outcome_fk2;
+ALTER TABLE court_evnt_appointment_outcome RENAME TO court_evnt_sanctions_details;
+comment on table court_evnt_sanctions_details  is 'Court events sanctions details';

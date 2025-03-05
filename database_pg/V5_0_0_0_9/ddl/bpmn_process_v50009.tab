@@ -1,0 +1,1 @@
+alter table bpmn_process add common_process varchar(32);

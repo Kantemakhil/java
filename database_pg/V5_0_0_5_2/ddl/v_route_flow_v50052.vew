@@ -1,0 +1,21 @@
+CREATE OR REPLACE VIEW oms_owner.v_route_flow
+AS SELECT alias7.route_name,
+    alias7.leg_id,
+    alias7.leg_seq,
+    alias7.agy_loc_id,
+    alias7.from_ovnt_flag,
+    alias7.to_dtl,
+    substr(alias7.to_dtl, 1, "position"(alias7.to_dtl, '-'::text) - 1) AS to_agy,
+    substr(alias7.to_dtl, "position"(alias7.to_dtl, '-'::text) + 1, 1) AS count_flag,
+    substr(alias7.to_dtl, instr(alias7.to_dtl, '-'::text, 1::numeric, 2::numeric) + 1::numeric, 1::numeric) AS ovnt_flag
+   FROM ( SELECT rsd.route_name,
+            rsd.leg_id,
+            rsd.leg_seq,
+            rsd.agy_loc_id,
+            rsd.overnight_flag AS from_ovnt_flag,
+            ( SELECT (((route_stop_details.agy_loc_id::text || '-'::text) || route_stop_details.count_flag::text) || '-'::text) || route_stop_details.overnight_flag::text
+                   FROM route_stop_details
+                  WHERE route_stop_details.route_name::text = rsd.route_name::text AND (route_stop_details.leg_id * 1000 + route_stop_details.leg_seq) > (rsd.leg_id * 1000 + rsd.leg_seq) AND route_stop_details.active_flag::text = 'Y'::text
+                 LIMIT 1) AS to_dtl
+           FROM route_stop_details rsd
+          WHERE rsd.active_flag::text = 'Y'::text) alias7;	

@@ -1,0 +1,9 @@
+OFFENDER_OASYS_SECTIONS_T1_OFFENDER_OASYS_SECTIONS{
+SELECT OFFENDER_BOOK_ID,PLAN_SEQ,SECTION_CODE,RAW_SCORE,SUMMARY_RATIO,WEIGHTED_SCORE,CENTRELINE_GROUP,VERSION,CREATE_DATETIME,CREATE_USER_ID,MODIFY_DATETIME,MODIFY_USER_ID,SEAL_FLAG FROM OFFENDER_OASYS_SECTIONS WHERE OFFENDER_BOOK_ID=:offenderBookId AND PLAN_SEQ=:planSeq AND SECTION_CODE=:sectionCode
+}
+OFFENDER_OASYS_SECTIONS_T1_OASYS_TWO_SCORES{
+SELECT weighted_score  FROM   oasys_two_scores WHERE  section_code=:sectionCode AND  :rawScore BETWEEN lower_score AND upper_score
+}
+OFFENDER_OASYS_SECTIONS_T1_SUMMARY_RATIO{
+SELECT SUM(ratio)/2  summaryRatio FROM   (SELECT (CASE WHEN weighted_score <= :NEW.weighted_score THEN 'left' ELSE 'right' END) AS direction, RATIO_TO_REPORT(COUNT(*)) OVER(PARTITION BY scoring_group) ratio FROM   oasys_two_scores WHERE  section_code = :NEW.section_code GROUP BY scoring_group,(CASE WHEN weighted_score <= :NEW.weighted_score THEN 'left' ELSE 'right'END) ) WHERE direction = 'left'
+}

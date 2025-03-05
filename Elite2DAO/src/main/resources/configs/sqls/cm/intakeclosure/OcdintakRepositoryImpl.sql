@@ -1,0 +1,436 @@
+
+OCDINTAK_FIND_RGTOAGYLOC {
+	SELECT DESCRIPTION, AGY_LOC_ID CODE  FROM AGENCY_LOCATIONS  WHERE AGENCY_LOCATION_TYPE = (SELECT CASELOAD_TYPE   FROM CASELOADS    WHERE CASELOAD_ID =:caseloadId )  AND AGY_LOC_ID IN (SELECT AGY_LOC_ID    FROM CASELOAD_AGENCY_LOCATIONS   WHERE CASELOAD_ID = :caseloadId )  AND AGY_LOC_ID NOT IN (SELECT AGY_LOC_ID FROM OFFENDER_BOOKINGS WHERE OFFENDER_ID = :offenderId   AND ACTIVE_FLAG = 'Y'    AND BOOKING_TYPE = (SELECT CASELOAD_TYPE   FROM CASELOADS    WHERE CASELOAD_ID = :caseloadId )   )  AND DEACTIVATION_DATE IS NULL  ORDER BY LIST_SEQ , DESCRIPTION
+}
+
+OCDINTAK_FIND_RGINTAKETYPE {
+ 	SELECT
+  DESCRIPTION, CODE
+FROM REFERENCE_CODES
+WHERE
+  DOMAIN = 'INTAKE_TYPE' AND
+  (ACTIVE_FLAG = 'Y')
+ORDER BY
+  LIST_SEQ, DESCRIPTION
+
+
+}
+
+OCDINTAK_FIND_RGINTAKERSN {
+ 	SELECT
+  DESCRIPTION, CODE
+FROM REFERENCE_CODES
+WHERE
+  DOMAIN = 'INTAKE_RSN' AND
+  (ACTIVE_FLAG = 'Y') AND
+  PARENT_CODE='INTAKE'
+ORDER BY
+  LIST_SEQ, DESCRIPTION
+
+ 	}
+
+OCDINTAK_FIND_RGFROMAGYLOC {
+ 	select
+	DESCRIPTION ,
+	AGY_LOC_ID CODE
+from
+	AGENCY_LOCATIONS
+where
+	INTAKE_FLAG = 'Y'
+	and 
+	(coalesce(DEACTIVATION_DATE::text, '') = '')
+order by
+	LIST_SEQ ,
+	DESCRIPTION
+}
+
+OCDINTAK_OFFBKG_FIND_V_HEADER_BLOCK2 {
+ 	 SELECT OFFENDER_ID ,ALIAS_OFFENDER_ID ,OFFENDER_ID_DISPLAY ,LAST_NAME ,FIRST_NAME ,MIDDLE_NAME ,SUFFIX ,BIRTH_DATE ,OFFENDER_BOOK_ID ,BOOKING_NO ,BOOKING_BEGIN_DATE ,BOOKING_END_DATE ,AGY_LOC_ID ,AGENCY_IML_ID ,LIVING_UNIT_ID ,DISCLOSURE_FLAG ,ACTIVE_FLAG ,BOOKING_STATUS ,LIVING_UNIT_DESCRIPTION ,IN_OUT_STATUS ,STATUS_DISPLAY ,ROOT_OFFENDER_ID ,ASSIGNED_STAFF_ID ,AGY_LOC_TYPE ,CREATE_AGY_LOC_ID ,BOOKING_TYPE ,BOOKING_CREATED_DATE ,LOCATION_CODE ,STAFF_FIRST_NAME ,STAFF_LAST_NAME ,INTAKE_AGY_LOC_ID ,COMMUNITY_ACTIVE_FLAG ,CREATE_INTAKE_AGY_LOC_ID ,COMMUNITY_STATUS ,STATUS_REASON ,HEADER_STATUS   FROM V_HEADER_BLOCK2_FN(:userId) /* where  */
+}
+OCDINTAK_OFFBKGS_FIND_OFFENDER_BOOKINGS {
+ 	SELECT OFFENDER_BOOK_ID, BOOKING_BEGIN_DATE, BOOKING_END_DATE, BOOKING_NO, OFFENDER_ID, AGY_LOC_ID, LIVING_UNIT_ID, DISCLOSURE_FLAG, IN_OUT_STATUS, ACTIVE_FLAG, BOOKING_STATUS, YOUTH_ADULT_CODE, FINGER_PRINTED_STAFF_ID, SEARCH_STAFF_ID, PHOTO_TAKING_STAFF_ID, ASSIGNED_STAFF_ID, CREATE_AGY_LOC_ID, BOOKING_TYPE, BOOKING_CREATED_DATE, ROOT_OFFENDER_ID, AGENCY_IML_ID, SERVICE_FEE_FLAG, EARNED_CREDIT_LEVEL, EKSTRAND_CREDIT_LEVEL, INTAKE_AGY_LOC_ID, ACTIVITY_DATE, INTAKE_CASELOAD_ID, INTAKE_USER_ID, CASE_OFFICER_ID, CASE_DATE, CASE_TIME, COMMUNITY_ACTIVE_FLAG, CREATE_INTAKE_AGY_LOC_ID, COMM_STAFF_ID, COMM_STATUS, COMMUNITY_AGY_LOC_ID, NO_COMM_AGY_LOC_ID, COMM_STAFF_ROLE, AGY_LOC_ID_LIST, STATUS_REASON, TOTAL_UNEXCUSED_ABSENCES, REQUEST_NAME, RECORD_USER_ID, INTAKE_AGY_LOC_ASSIGN_DATE, CREATE_DATETIME, CREATE_USER_ID, MODIFY_DATETIME, MODIFY_USER_ID,(SELECT (LAST_NAME || ', ' || FIRST_NAME) dsp_last_name FROM staff_members WHERE STAFF_ID = ob.Assigned_staff_id) SEAL_FLAG 
+    FROM OFFENDER_BOOKINGS ob  where  ROOT_OFFENDER_ID = :rootOffenderId order by BOOKING_STATUS DESC, BOOKING_NO DESC
+}
+OCDINTAK_OFFBKGE_FIND_OFFENDER_BOOKING_EVENTS {
+ 	SELECT *  FROM OFFENDER_BOOKING_EVENTS  /* where  */
+}
+OCDINTAK_OFFBKGE_PRE_INSERT_OFFENDER_BOOKING_EVENTS {
+ select
+	REFERENCE_CODES1.CODE
+            ,
+	REFERENCE_CODES1.LIST_SEQ
+from
+	REFERENCE_CODES REFERENCE_CODES1
+where
+	REFERENCE_CODES1.DESCRIPTION = (
+	select
+		DESCRIPTION
+	from
+		REFERENCE_CODES
+	where
+		CODE =:DSP_DESCRIPTION5
+		limit 1)
+	and domain = 'INTAKE_TYPE'
+	and ((active_flag = 'Y'
+		and expired_date is null)
+      )
+}
+OCDINTAK_OFFBKGE_INSERT_OFFENDER_BOOKING_EVENTS {
+	insert into OFFENDER_BOOKING_EVENTS(OFFENDER_BOOK_ID, EVENT_SEQ, BOOKING_EVENT_CODE, REASON_CODE, FROM_AGY_LOC_ID, TO_AGY_LOC_ID, COMMENT_TEXT, EVENT_DATE, EVENT_TIME, EVENT_USER, CREATION_USER, CREATION_DATE, CREATE_DATETIME, CREATE_USER_ID, MODIFY_DATETIME, SEAL_FLAG) values(:offenderBookId, :eventSeq, :bookingEventCode, :intakeReason, :intakefrom, :intaketo, :commentText, :eventDate, :eventTime, :createUserId, :createUserId, :creationDate, current_timestamp, :createUserId, null, :sealFlag)
+}
+
+OCDINTAK_REPORTIN_FIND_OFFENDER_RESIDENCES {
+ 	SELECT *  FROM OFFENDER_RESIDENCES  /* where  */
+}
+OCDINTAK_REPORTIN_INSERT_OFFENDER_RESIDENCES {
+	INSERT INTO OFFENDER_RESIDENCES() VALUES(:)
+}
+
+OCDINTAK_SYSPFL_FIND_SYSTEM_PROFILES {
+ 	SELECT  *  FROM SYSTEM_PROFILES  /* where  */
+}
+
+OCDINTAK_CGFKCHK_OFF_BKGS_OFF_BKG_STAF_ {
+	SELECT STAFF.LAST_NAME ,STAFF.FIRST_NAME ,STAFF.MIDDLE_NAME FROM   STAFF_MEMBERS STAFF WHERE  STAFF.STAFF_ID = :ASSIGNEDSTAFFID
+}
+
+OCDINTAK_CGFKCHK_OFF_BKGS_OFF_BKG_REF__ {
+	SELECT REFERENCE_CODES.DESCRIPTION FROM   REFERENCE_CODES REFERENCE_CODES WHERE  REFERENCE_CODES.CODE = :BOOKINGSTATUS AND     DOMAIN = 'BOOK_STS'
+}
+
+OCDINTAK_CGFKCHK_OFF_BKGE_OFF_BKGE_AGY_ {
+	SELECT AGENCY_LOCATIONS.DESCRIPTION FROM   AGENCY_LOCATIONS AGENCY_LOCATIONS WHERE  AGENCY_LOCATIONS.AGY_LOC_ID = :TOAGYLOCID AND     AGENCY_LOCATION_TYPE = (SELECT CASELOAD_TYPE FROM   CASELOADS WHERE  CASELOAD_ID = :CASELOADID) AND AGY_LOC_ID IN (SELECT AGY_LOC_ID FROM   CASELOAD_AGENCY_LOCATIONS WHERE  CASELOAD_ID = :CASELOADID) AND AGY_LOC_ID NOT IN (SELECT AGY_LOC_ID FROM   OFFENDER_BOOKINGS WHERE  OFFENDER_ID = :OFFENDERID AND    ACTIVE_FLAG = 'Y' AND    BOOKING_TYPE = (SELECT CASELOAD_TYPE FROM   CASELOADS WHERE  CASELOAD_ID = :CASELOADID))
+}
+
+OCDINTAK_CGFKLKP_OFF_BKGE_OFF_BKGE_AGY_ {
+	SELECT AGENCY_LOCATIONS.AGY_LOC_ID FROM AGENCY_LOCATIONS AGENCY_LOCATIONS WHERE AGENCY_LOCATIONS.DESCRIPTION = :DSPDESCRIPTION AND AGENCY_LOCATION_TYPE = (SELECT CASELOAD_TYPE FROM CASELOADS WHERE CASELOAD_ID = :CASELOADID) AND AGY_LOC_ID IN (SELECT AGY_LOC_ID FROM CASELOAD_AGENCY_LOCATIONS WHERE CASELOAD_ID = :CASELOADID) AND AGY_LOC_ID NOT IN (SELECT AGY_LOC_ID FROM OFFENDER_BOOKINGS WHERE OFFENDER_ID = :OFFENDERID AND ACTIVE_FLAG = 'Y' AND BOOKING_TYPE = (SELECT CASELOAD_TYPE FROM CASELOADS WHERE CASELOAD_ID = :CASELOADID))
+}
+
+OCDINTAK_CGFKCHK_OFF_BKGE_OFF_BKGE_2_ {
+	SELECT AGENCY_LOCATIONS1.DESCRIPTION FROM   AGENCY_LOCATIONS AGENCY_LOCATIONS1 WHERE  AGENCY_LOCATIONS1.AGY_LOC_ID = :FROMAGYLOCID
+}
+
+OCDINTAK_CGFKLKP_OFF_BKGE_OFF_BKGE_2_ {
+	SELECT AGENCY_LOCATIONS1.AGY_LOC_ID FROM   AGENCY_LOCATIONS AGENCY_LOCATIONS1 WHERE  AGENCY_LOCATIONS1.DESCRIPTION = :DSPDESCRIPTION3
+}
+
+OCDINTAK_CGFKCHK_OFF_BKGE_OFF_BKGE_REF_ {
+	SELECT
+  REFERENCE_CODES2.DESCRIPTION, REFERENCE_CODES2.LIST_SEQ
+FROM REFERENCE_CODES REFERENCE_CODES2
+WHERE
+  REFERENCE_CODES2.CODE = :REASONCODE AND
+  DOMAIN = 'INTAKE_RSN' AND
+  ((ACTIVE_FLAG = 'Y' AND EXPIRED_DATE IS NULL))
+
+}
+
+OCDINTAK_CGFKLKP_OFF_BKGE_OFF_BKGE_REF_ {
+	SELECT
+  REFERENCE_CODES2.CODE, REFERENCE_CODES2.LIST_SEQ
+FROM REFERENCE_CODES REFERENCE_CODES2
+WHERE
+  REFERENCE_CODES2.DESCRIPTION = :DSPDESCRIPTION4 AND
+  DOMAIN = 'INTAKE_RSN' AND
+  ((ACTIVE_FLAG = 'Y' AND EXPIRED_DATE IS NULL))
+
+}
+
+OCDINTAK_CGFKCHK_OFF_BKGE_OFF_BKGE_3_ {
+	SELECT
+  REFERENCE_CODES1.DESCRIPTION, REFERENCE_CODES1.LIST_SEQ
+FROM REFERENCE_CODES REFERENCE_CODES1
+WHERE
+  REFERENCE_CODES1.CODE = :BOOKINGEVENTCODE AND
+  DOMAIN = 'INTAKE_TYPE' AND
+  ((ACTIVE_FLAG = 'Y' AND EXPIRED_DATE IS NULL))
+
+}
+
+OCDINTAK_CGFKLKP_OFF_BKGE_OFF_BKGE_3_ {
+	SELECT 
+  REFERENCE_CODES1.CODE, REFERENCE_CODES1.LIST_SEQ
+FROM REFERENCE_CODES REFERENCE_CODES1
+WHERE
+  REFERENCE_CODES1.DESCRIPTION = :DSPDESCRIPTION5 AND
+  DOMAIN = 'INTAKE_TYPE' AND
+  ((ACTIVE_FLAG = 'Y' AND EXPIRED_DATE IS NULL))
+}
+OCDINTAK_COMMUNITY_TRUST_CASELOAD_CASELOAD_ID {
+ SELECT coalesce (community_trust_caseload, caseload_id)
+             FROM caseloads
+             WHERE caseload_id = :caseloadId
+}
+OCDINTAK_CHECK_PREV_BOOKING {
+ select
+	MAX (OBE.EVENT_DATE) EVENT_DATE
+from
+	OFFENDER_BOOKING_EVENTS OBE
+where
+	FROM_AGY_LOC_ID is not null
+	and OBE.OFFENDER_BOOK_ID = (
+	select
+		MAX (OB.OFFENDER_BOOK_ID)
+	from
+		OFFENDER_BOOKINGS OB
+	where
+		OB.BOOKING_NO = :bookingNo)
+ }
+ OCDINTAK_CREATE_BOOKING_LOCATIONS_REC_EXIST_CUR {
+  SELECT 'Y' FROM
+   offender_booking_agy_locs
+   WHERE offender_book_id = :offenderBookId
+	       AND CASELOAD_ID = :caseloadId
+	       AND AGY_LOC_ID = :agyLocId
+	       AND ADDITION_DATE = :eventDate
+}
+CREATE_BOOKING_LOC_UPDATE_OFFENDER_BOOKING_AGY_LOCS {
+ UPDATE offender_booking_agy_locs
+	       SET removed_date = null,
+	           reason_code = 'INTAKE',
+	           addition_date = :eventDate,
+	           removed_reason_code = NULL,
+	           modify_datetime = current_timestamp,
+	           modify_user_id = :modifyUserId 
+	     WHERE offender_book_id = :offenderBookId
+	       AND CASELOAD_ID = :caseloadId
+	       AND AGY_LOC_ID = :agyLocId
+	       AND ADDITION_DATE = :eventDate
+} 
+OCDCLOSE_W_NEW_BLOCK_INSTANCE{
+SELECT OMS_MISCELLANEOUS_GET_PROFILE_VALUE( 'CLIENT', 'INTAKE_CASE') PROFILEVALUE FROM DUAL
+
+}
+CHECK_FOR_ACTIVE_BOOKING {
+ SELECT 1 FROM OFFENDER_BOOKINGS  WHERE ROOT_OFFENDER_ID = :rootOffenderId AND ACTIVE_FLAG = 'Y'
+}
+TAG_BOOKING_IS_COMM_ACTIVE_BOOKING_EXISTS {
+ select
+	'X'
+from
+	OFFENDER_BOOKINGS
+where
+	ROOT_OFFENDER_ID = :rootOffenderId
+	and coalesce ( COMMUNITY_ACTIVE_FLAG,
+	'N' ) = 'Y'
+            }
+OCDINTAKE_GET_PROFILE_VALUE {
+SELECT coalesce (OMS_MISCELLANEOUS_GET_PROFILE_VALUE ('CLIENT', 'REST_DUAL_BK'),'N') FROM DUAL
+
+}
+GET_DEFAULT_INTAKE_VALUES_COUNT_CUR {
+SELECT COUNT (*)
+FROM reference_codes
+WHERE
+  domain = :profileCode AND
+  list_seq = 1 AND
+  active_flag = 'Y'
+
+       }
+OCDINTAKE_GET_PROFILE_VALUE_CONSTANTS {
+SELECT coalesce (OMS_MISCELLANEOUS_GET_PROFILE_VALUE (:profileValue, :profileCode)) FROM DUAL
+
+}
+OCDINTAKE_GET_PROFILE_VALUE_CON_STS {
+	SELECT PROFILE_VALUE FROM System_profiles WHERE PROFILE_TYPE=:profileType and PROFILE_CODE=:profileCode
+}
+OCDINTAKE_REFERENCE_CODES {
+ SELECT CODE 
+        FROM REFERENCE_CODES
+       WHERE DOMAIN = :P_DOMAIN AND LIST_SEQ = 1 AND ACTIVE_FLAG = 'Y'
+       }
+OCDINTAKE_INTAKE_CASE_MULTIPLE_ACT_BKGS {
+       SELECT COUNT (ob.offender_book_id) FROM offender_bookings ob
+            WHERE ob.root_offender_id = :off_id
+              AND ob.booking_type = (SELECT caseload_type
+                                       FROM caseloads
+                                      WHERE caseload_id = :csld_id)
+              AND ob.active_flag = 'Y'
+              AND ob.intake_caseload_id = :csld_id
+  }
+  OCDINTAKE_INTAKE_CASE_MULTIPLE_NUM_OF_COM_AGY {
+   SELECT COUNT (ag.agy_loc_id)
+             FROM agency_locations ag
+            WHERE ag.agency_location_type = (SELECT caseload_type
+                                               FROM caseloads
+                                              WHERE caseload_id = :csld_id)
+              AND ag.agency_location_type != 'INST'
+              AND EXISTS (
+                     SELECT 1
+                       FROM caseload_agency_locations cal
+                      WHERE caseload_id = :csld_id
+                        AND cal.agy_loc_id = ag.agy_loc_id
+                        AND cal.agy_loc_id NOT IN ('OUT', 'TRN'))
+  }
+  OCDINTAKE_DSP_DESCRIPTION {
+  select oms_miscellaneous_getdesccode ('INTAKE_RSN','INTAKE') from dual
+
+  }
+  INTAKE_CASE_SINGLE_ACT_BKG_EXIST_FLAG {
+  SELECT DISTINCT 'Y'
+                      FROM offender_bookings
+                     WHERE root_offender_id = :rootOffenderId
+                       AND community_active_flag = 'Y'
+                       
+      }
+  OCDINTAK_TO_AGY_LOC {
+      SELECT AGENCY_LOCATIONS.AGY_LOC_ID
+             FROM AGENCY_LOCATIONS AGENCY_LOCATIONS
+            WHERE AGENCY_LOCATIONS.DESCRIPTION = :dspDescription
+              AND agency_location_type = (SELECT caseload_type
+                                            FROM caseloads
+                                           WHERE caseload_id = :CASELOAD_ID)
+              AND agy_loc_id IN (SELECT agy_loc_id
+                                   FROM caseload_agency_locations
+                                  WHERE caseload_id = :CASELOAD_ID)
+              AND agy_loc_id NOT IN (SELECT agy_loc_id 
+                                       FROM offender_bookings
+                                      WHERE offender_id = :offender_id
+                                        AND active_flag = 'Y'
+                                        AND booking_type = (SELECT caseload_type
+                                                              FROM caseloads
+                                                             WHERE caseload_id = :CASELOAD_ID))
+                                                             }
+  OLD_CONTACT_CHECK_BOOKING_CUR {
+SELECT BOOKING_TYPE FROM OFFENDER_BOOKINGS WHERE OFFENDER_BOOK_ID = :OFFENDER_BOOK_ID
+       }
+ OLD_CONTACT_LV_YEAR_CUR {
+  SELECT SUBSTR (TO_CHAR (SYSDATE(), 'DD-MON-YYYY'), 8) FROM DUAL
+ }
+ OLD_CONTACT_GET_STAFF_ID {
+ SELECT staff_id
+        FROM staff_members
+       WHERE user_id = :createUserId
+ }
+ OLD_CONTACT_P_BOOK_COUNT {
+ SELECT COUNT (*) FROM OFFENDER_BOOKING_EVENTS
+          WHERE OFFENDER_BOOK_ID IN (SELECT OFFENDER_BOOK_ID  FROM OFFENDER_BOOKINGS
+                                      WHERE ROOT_OFFENDER_ID = :ROOT_OFFENDER_ID)
+   }
+   OLD_CONTACT_GET_EVENT_SEQ {
+    SELECT coalesce (MAX (EVENT_SEQ), 0) + 1
+        FROM OFFENDER_BOOKING_EVENTS
+       WHERE OFFENDER_BOOK_ID = :OFFENDER_BOOK_ID
+   }
+   CHK_PACKAGE_FAILURE_GET_NVL_PROFILE_VAL{
+   select
+	coalesce (OMS_MISCELLANEOUS_GET_PROFILE_VALUE ('CLIENT',
+	'BKG_GEN'),
+	'N') profileval
+from
+	DUAL
+   }
+   OIDADMIS_GET_NEW_BOOKING_NO {
+   SELECT OIDADMIS_GET_NEW_BOOKING_NO() FROM DUAL
+
+   }
+   
+   CREATE_BOOKING_LOCATIONS_PROFILEVAL{
+   SELECT (OMS_MISCELLANEOUS_GET_PROFILE_VALUE ('CLIENT', 'BOOKING_NO')) profileval  FROM DUAL
+
+   }
+  GET_NEW_BOOK_ID {
+   SELECT NEXTVAL('offender_book_id')
+        FROM DUAL
+        }
+OLD_CONTACT_GET_LATEST_BOOKING {
+SELECT MAX (offender_book_id)
+     FROM V_HEADER_BLOCK_FN(:USERID) v_header_block
+    WHERE root_offender_id = :rootOffenderId
+    }
+ OIDADMIS_LABEL_INTAKE_NEWFL {
+    SELECT OMS_MISCELLANEOUS_get_profile_value ('LABEL', 'INTAKE_NEWFL') FROM  dual
+
+}
+OCDINTAK_LABEL_COM_FIN_BOX {
+       SELECT OMS_MISCELLANEOUS_get_profile_value ('LABEL', 'COM_FIN_BOX') FROM  dual
+
+}
+OCDINTAK_LV_BOOKING_NO{
+SELECT  concat(RTRIM (:LVYEAR),'-',LPAD (:LVYEAR, 2, '0'))
+FROM DUAL
+
+}
+
+NEW_CONTACT_CAS_CUR {
+
+SELECT CASELOAD_TYPE
+FROM CASELOADS
+WHERE
+  CASELOAD_ID =
+    (SELECT WORKING_CASELOAD_ID
+     FROM STAFF_MEMBERS
+     WHERE
+       USER_ID = upper(:USER_ID))
+
+}
+
+NEW_CONTACT_CAS_CUR_CHECK_BOOKING_CUR {
+SELECT COUNT (offender_book_id)  FROM offender_booking_events   WHERE offender_book_id IN (SELECT offender_book_id
+   FROM offender_bookings
+ WHERE root_offender_id = :rootOffenderId)
+ }
+ NEW_CONTACT_LV_COMM_STATUS1 {
+  SELECT (OMS_MISCELLANEOUS_GET_PROFILE_VALUE ('CLIENT', 'PROB_STATUS1'))
+FROM DUAL
+
+  }
+   NEW_CONTACT_LV_COMM_STATUS2 {
+   SELECT (OMS_MISCELLANEOUS_GET_PROFILE_VALUE ('CLIENT', 'PROB_STATUS2'))  FROM DUAL
+
+   }
+    NEW_CONTACT_LV_SEQUENCE {
+   SELECT coalesce (:p_kount, 0) + 1 from dual
+
+}
+OCDINTAK_UPDATE_FEE_ACCOUNTS {
+UPDATE OFF_FEE_ACCOUNT_PROFILE SET FEE_ACT_STATUS = :feeActStatus , STATUS_EFFECTIVE_DATE = current_timestamp, EFFECTIVE_DATE= current_timestamp, modify_datetime = current_timestamp, modify_user_id = :modifyUserId  WHERE OFFENDER_FEE_ID =:offenderFeeId
+}
+
+OCDINTAK_GET_COM_ADM_BKDT_SYS_PROF_VAL{
+SELECT PROFILE_VALUE FROM SYSTEM_PROFILES WHERE PROFILE_CODE = 'COM_ADM_BKDT' AND PROFILE_TYPE = 'CLIENT'
+}
+
+OCDINTAK_GET_BILLABLE_FLAG_VALUE {
+  SELECT * FROM REFERENCE_CODES WHERE DOMAIN = 'SUP_STATUS' AND CODE = :CODE
+}
+
+OCDINTAK_GET_CUSTODY_STATUS {
+	select status_code from legal_custody_statuses where intake_flag = 'Y'
+}
+
+OCDINTAK_GET_SENTENCES {
+	select form_info_json from ocdleglo_data where form_identifier = :formIdentifier
+}
+
+OCDINTAK_GET_CUSTODY_STATUS_FOR_ORDER {
+	select custody_status from sentence_custody_status where sentence_order_status = :orderStatus and sentence_calc_type = :sentenceCalcType
+}
+
+OCDINTAK_GET_LEGAL_CUSTODY_STATUSES {
+	select status_code, status_rank, always_display_flag from legal_custody_statuses where status_code in (:orderStatusList) order by 	always_display_flag desc, status_rank
+}
+
+OCDINTAK_INSERT_CUSTODY_STATUS {
+	insert into ocdlegls_data (id, form_identifier, form_info_json, custody_status, create_datetime, create_user_id, modify_datetime) values (nextval('ocdlegls_data_id_seq'), :formIdentifier, :formInfoJsonBlob, :custodyStatus, current_timestamp, :createUserId, null)
+}
+
+OCDINTAK_UPDATE_CUSTODY_STATUS {
+	update ocdlegls_data set custody_status = :custodyStatus, modify_datetime = current_timestamp, modify_user_id = :modifyUserId where form_identifier = :formIdentifier
+}
+
+OCDINTAK_INSERT_CUSTODY_STATUS {
+	insert into offender_custody_status  (offender_book_id, custody_status, custody_status_datetime, create_datetime, create_user_id) values (:offenderBookId, :custodyStatus, current_timestamp, current_timestamp, :createUserId)
+}
+
+OCDINTAK_UPDATE_CUSTODY_STATUS {
+	update offender_custody_status set custody_status = :custodyStatus, modify_datetime = current_timestamp, modify_user_id = :modifyUserId where offender_book_id = :offenderBookId
+}
+
+OCDINTAK_GET_OLDOFFENDER_BOOK_ID {
+	SELECT OFFENDER_BOOK_ID FROM OFFENDER_BOOKINGS WHERE ROOT_OFFENDER_ID = :rootOffenderId AND booking_begin_date = (SELECT MAX(booking_begin_date) FROM OFFENDER_BOOKINGS WHERE ROOT_OFFENDER_ID = :rootOffenderId);
+}
+
+OCDINTAK_GET_LEGALSUMNMARY_DATA {
+	select form_identifier, form_info_json as form_info_json_blob from ocdlegls_data od where form_identifier = :formIdentifier
+}

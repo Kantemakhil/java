@@ -1,0 +1,3 @@
+alter table oms_owner.offender_ind_schedules add column event_purpose varchar(12) null;
+
+comment on column oms_owner.offender_ind_schedules.event_purpose is 'The event purpose  [domain=TAP_PURPOSE], used for events of type TAP (domain MOVE_TYPE) as a child purpose of the event reason ( aka event sub type, domain MOVE_RSN) '; 

@@ -1,0 +1,22 @@
+CREATE TABLE oms_owner.oms_module_report_history (
+	report_id int8 NOT NULL,
+	module_name varchar(100) NOT NULL,
+	report_body bytea NOT NULL,
+	report_file_name varchar(100) NOT NULL,
+	report_version int8 NOT NULL,
+	version_id int8 NOT NULL,
+	create_datetime timestamp not null default current_timestamp,
+	create_user_id varchar(32) not NULL,
+	modify_datetime timestamp NULL,
+	modify_user_id varchar(32) NULL,
+	seal_flag varchar(1) 
+)tablespace tag_data;
+
+
+comment on table oms_owner.oms_module_report_history is 'It stores the Jasper report templates history as bytea for each report module.';	
+
+COMMENT ON COLUMN oms_owner.oms_module_report_history.report_id IS 'Unique number assigned to each report.';
+COMMENT ON COLUMN oms_owner.oms_module_report_history.module_name IS 'The code used to uniquely identify the name of the module.';
+COMMENT ON COLUMN oms_owner.oms_module_report_history.report_body IS 'Content of the report';
+COMMENT ON COLUMN oms_owner.oms_module_report_history.report_file_name IS 'File name of the inserted report';
+COMMENT ON COLUMN oms_owner.oms_module_report_history.report_version IS 'Version upgraded every time the report is updated';

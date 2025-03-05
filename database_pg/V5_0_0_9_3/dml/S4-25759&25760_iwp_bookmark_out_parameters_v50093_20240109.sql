@@ -1,0 +1,1 @@
+update iwp_bookmark_out_parameters set parameter_desc ='Expiry Date',modify_datetime =current_timestamp ,modify_user_id ='OMS_OWNER' where bookmark_name ='CRT_ACT_ORDR' and parameter_name ='LEG_CAOEXP';

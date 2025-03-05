@@ -1,0 +1,10 @@
+---***** ddl subfolder - V5_0_0_7_1_customTasmania_tobeappliedafterv50071product oms_owner  
+psql --no-psqlrc -U oms_owner  -d  dbname -h hostname -f 1_0_batch_oms_owner_ddl_custom_Tasmania_5_0_0_7_1.run >> 1_0_batch_oms_owner_ddl_custom_Tasmania_5_0_0_7_1.log 2>&1  & type  1_0_batch_oms_owner_ddl_custom_Tasmania_5_0_0_7_1.log
+
+---*****import_processes subfolder
+--Actions
+Actions_S4_23959.zip
+--CommonProcess
+CmnProcesses_S4_23959.zip
+--Process
+Processes_S4_23959.zip

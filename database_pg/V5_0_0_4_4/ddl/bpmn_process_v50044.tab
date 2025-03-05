@@ -1,0 +1,5 @@
+alter table bpmn_process  add  column timer_process varchar(1) default 'N';
+update bpmn_process set timer_process = 'N', modify_datetime = current_timestamp, modify_user_id = 'OMS_OWNER';
+alter table bpmn_process alter column timer_process SET NOT NULL;
+
+comment on column bpmn_process.timer_process is 'Indicates if the process is a timer process.';

@@ -1,0 +1,21 @@
+UPDATE offender_program_profiles 
+   SET offender_sent_condition_id = NULL
+      ,sentence_seq = NULL  
+ WHERE offender_sent_condition_id IS NOT NULL or sentence_seq IS NOT NULL; 
+ 
+truncate table offender_interested_parties; 
+truncate table ocdlegls_data_hty; 
+truncate table ocdlegls_data; 
+truncate table ocuchgou_data; 
+truncate table ocdchgsu_data;  
+truncate table ocdleglo_sanction_hty; 
+truncate table offender_action_plans;
+truncate table offender_case_conditions cascade;
+truncate table offender_sent_conditions cascade; 
+truncate table ocdleglo_data; 
+
+
+create unique index ocdchgsu_data_uk on ocdchgsu_data((cast(form_identifier as json)->>'offenderBookId'));
+create unique index ocdleglo_data_uk on ocdleglo_data((cast(form_identifier as json)->>'offenderBookId'),(cast(form_identifier as json)->>'orderType'));
+create unique index ocdlegls_data_uk on ocdlegls_data((cast(form_identifier as json)->>'offenderBookId'));
+create unique index ocuchgou_data_uk on ocuchgou_data((cast(form_identifier as json)->>'offenderBookId'));

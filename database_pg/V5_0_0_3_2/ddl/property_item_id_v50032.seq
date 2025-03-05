@@ -1,0 +1,9 @@
+DO
+$body$
+DECLARE seq_array int;
+	i int;
+begin
+seq_array:=(select coalesce(MAX(property_item_id)+1,1) from property_group_items a);
+execute 'create sequence property_item_id_seq  start with '|| seq_array ||' increment by 1';
+END;
+$body$

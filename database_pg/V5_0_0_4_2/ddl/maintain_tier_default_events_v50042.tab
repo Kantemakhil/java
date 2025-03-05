@@ -1,0 +1,20 @@
+CREATE TABLE maintain_tier_default_events (
+tier_level_code varchar(12) NOT NULL,
+schedule_type varchar(12) NOT NULL,
+schedule_sub_type varchar(12) NOT NULL,
+ui_rules varchar(1000) NOT NULL,
+create_datetime timestamp(6) NOT NULL DEFAULT systimestamp(),
+create_user_id varchar(32) NOT NULL ,
+modify_datetime timestamp(6) NULL ,
+modify_user_id varchar(32) NULL,
+seal_flag varchar(1) NULL,
+CONSTRAINT maintain_tier_default_events_pk PRIMARY KEY ( tier_level_code ,schedule_type, schedule_sub_type),
+CONSTRAINT maintain_tier_default_events_fk1 FOREIGN KEY (tier_level_code) REFERENCES oms_owner.maintain_tier_levels(tier_level_code)
+)TABLESPACE tag_data;
+
+comment on table maintain_tier_default_events is 'Maintains default recurring community events for a tier level (effort levels)';
+
+comment on column maintain_tier_default_events.tier_level_code is 'Community tier level code';
+comment on column maintain_tier_default_events.schedule_type is 'Type of an event, [reference_domain= EVENTS]';
+comment on column maintain_tier_default_events.schedule_sub_type is 'Category within an event type, [reference_domain=EVENTS and parent_code = EVENT_TYPE]';
+comment on column maintain_tier_default_events.ui_rules is 'Recurrence rule output formula ';

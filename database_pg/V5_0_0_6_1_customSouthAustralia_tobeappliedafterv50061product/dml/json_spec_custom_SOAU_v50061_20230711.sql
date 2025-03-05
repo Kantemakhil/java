@@ -1,0 +1,18 @@
+update
+	json_spec
+set
+	json_specs = '[{"operation":"shift","spec":{"userDetails":{"*":{"first_name":"header.intUser.intUserName","user_id":"header.intUser.intUserId","date_time":["header.intDatetime","body.trailer.responseDatetime"]}},"correlationId":"header.intCorrelationId"}},{"operation":"default","spec":{"header":{"intId":"SAPOLOffenderDetail"},"body":{"trailer":{"respCode":"Error","errMsg":"The prisoner does not Exist in Elite"}}}}]',
+	modify_datetime = current_timestamp,
+	modify_user_id = 'OMS_OWNER'
+where
+	spec_key = 'TRANSFORM_ERROR';
+	
+	
+update
+	json_spec
+set
+	json_specs = '[{"operation":"shift","spec":{"correlationId":"header.intCorrelationId","nameDetails":{"*":{"offender_id_display":"body.personDetails.imprisonmentDetails.pin","first_name":"body.personDetails.demographics.firstName","last_name":"body.personDetails.demographics.surName","sex_code":"body.personDetails.demographics.gender","birth_date":"body.personDetails.demographics.dob"}},"aliasDetails":{"*":{"givenname":"body.personDetails.alias[#2].firstName","eliteoffenderid":"body.personDetails.alias[#2].offenderId","familyname":"body.personDetails.alias[#2].lastname","dateofbirth":"body.personDetails.alias[#2].dob"}},"warningDetails":{"*":{"description":"body.personDetails.alerts[#2].alertCode","alert_type":"body.personDetails.alerts[#2].alertType","createdate":"body.personDetails.alerts[#2].alertStartDate","expirydate":"body.personDetails.alerts[#2].alertEndDate","comment_text":"body.personDetails.alerts[#2].alertComment"}},"residenceDetails":{"*":{"streetnumber":"body.personDetails.address.road.roadNumber","streetname":"body.personDetails.address.road.roadName","city":"body.personDetails.address.localityName","state":"body.personDetails.address.stateOrTerritoryCode","country":"body.personDetails.address.countryName","postal":"body.personDetails.address.postCode","address":"body.personDetails.address.unstructuredAddressLine","recordeddate":"body.personDetails.address.recordedDate"}},"occupation":{"*":{"occupation":"body.personDetails.demographics.occupation"}},"userDetails":{"*":{"first_name":"header.intUser.intUserName","user_id":"header.intUser.intUserId","date_time":["header.intDatetime","body.trailer.responseDatetime"]}}}},{"operation":"modify-default-beta","spec":{"body":{}}},{"operation":"default","spec":{"header":{"intId":"SAPOLOffenderDetail"},"body":{"trailer":{"respCode":"Success","errMsg":""},"personDetails":{"imprisonmentDetails":[],"demographics":[],"address":[],"alerts":[],"alias":[],"wanted":[]}}}}]',
+	modify_datetime = current_timestamp,
+	modify_user_id = 'OMS_OWNER'
+where
+	spec_key = 'TRANSFORM_EXTERNAL';

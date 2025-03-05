@@ -1,0 +1,15 @@
+CREATE OR REPLACE VIEW oms_owner.v_trip_segments
+AS SELECT rsd1.route_name,
+    rsd1.from_agy,
+    rsd1.from_seq,
+    rsd2.agy_loc_id AS to_agy,
+    rsd1.to_seq
+   FROM ( SELECT a.route_name,
+            a.agy_loc_id AS from_agy,
+            a.leg_id * 1000 + a.leg_seq AS from_seq,
+            ( SELECT min(b.leg_id * 1000 + b.leg_seq) AS min
+                   FROM route_stop_details b
+                  WHERE a.route_name::text = b.route_name::text AND (b.leg_id * 1000 + b.leg_seq) > (a.leg_id * 1000 + a.leg_seq)) AS to_seq
+           FROM route_stop_details a) rsd1,
+    route_stop_details rsd2
+  WHERE rsd1.to_seq IS NOT NULL AND rsd1.to_seq::text <> ''::text AND rsd1.route_name::text = rsd2.route_name::text AND rsd1.to_seq = (rsd2.leg_id * 1000 + rsd2.leg_seq);

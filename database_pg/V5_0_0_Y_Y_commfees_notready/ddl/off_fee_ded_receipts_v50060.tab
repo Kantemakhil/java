@@ -1,0 +1,29 @@
+CREATE TABLE oms_owner.off_fee_ded_receipts (
+	off_fee_ded_receipt_id int8 NOT NULL,
+	offender_fee_id int8 NOT NULL,
+	receipt_txn_type varchar(6) NOT NULL,
+	receipt_percent int8 NULL,
+	flat_rate int8 NULL,
+	minimum_trust_balance_flag bpchar(1) NULL,
+	list_seq int8 NULL,
+	create_datetime timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	create_user_id varchar(32) NOT NULL,
+	modify_datetime timestamp(6) NULL,
+	modify_user_id varchar(32) NULL,
+	seal_flag varchar(1) NULL,
+	CONSTRAINT off_fee_ded_receipts_pk PRIMARY KEY (off_fee_ded_receipt_id),
+	CONSTRAINT off_fee_ded_receipts_uk1 UNIQUE (offender_fee_id, receipt_txn_type),
+	CONSTRAINT off_fee_ded_receipts_fk1 FOREIGN KEY (offender_fee_id) REFERENCES oms_owner.off_fee_account_profile(offender_fee_id),
+	CONSTRAINT off_fee_ded_receipts_fk2 FOREIGN KEY (receipt_txn_type) REFERENCES oms_owner.transaction_types(txn_type)
+)
+TABLESPACE tag_data
+;
+
+COMMENT ON TABLE OMS_OWNER.OFF_FEE_DED_RECEIPTS  IS 'Offender fee account deduction details';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_DED_RECEIPTS.OFF_FEE_DED_RECEIPT_ID IS 'Unique record id [sequence=OFF_FEE_DED_RECEIPT_ID]';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_DED_RECEIPTS.OFFENDER_FEE_ID IS 'Offender fee account id';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_DED_RECEIPTS.RECEIPT_TXN_TYPE IS 'The receipt type, as defined in TRANSACTION_TYPES table with TXN_USAGE = R';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_DED_RECEIPTS.RECEIPT_PERCENT IS 'The percentage of the receipt amount that will be deducted';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_DED_RECEIPTS.FLAT_RATE IS 'The flat rate amount that will be collected against the receipt amount';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_DED_RECEIPTS.MINIMUM_TRUST_BALANCE_FLAG IS 'Minimum trust balance flag';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_DED_RECEIPTS.LIST_SEQ IS 'Controls the screen display order';

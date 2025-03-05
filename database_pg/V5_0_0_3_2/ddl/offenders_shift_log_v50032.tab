@@ -1,0 +1,29 @@
+create table offenders_shift_log
+(shift_log_seq    bigint not null,
+offender_book_id    bigint not null,
+reason    varchar(12) not null,
+CREATE_DATETIME    TIMESTAMP(6) default current_timestamp not null,
+CREATE_USER_ID    VARCHAR(32) not null,
+MODIFY_DATETIME    TIMESTAMP(6),
+MODIFY_USER_ID    VARCHAR(32)) tablespace tag_data;
+
+alter table offenders_shift_log 
+ add constraint offenders_shift_log_pk primary key(shift_log_seq, offender_book_id) 
+  using index tablespace tag_indx;
+
+alter table offenders_shift_log 
+  add constraint offenders_shift_log_fk1 foreign key (shift_log_seq) references agency_shift_logs(shift_log_seq) 
+   on delete no action not deferrable initially immediate;
+
+alter table offenders_shift_log 
+  add constraint offenders_shift_log_fk2 foreign key(offender_book_id) references Offender_bookings(offender_book_id) 
+    on delete no action not deferrable initially immediate;
+
+comment on table offenders_shift_log is 'The Table Displays Related Offenders to a Shift Log Record';
+comment on column offenders_shift_log.shift_log_seq is 'Unique identifier for Shift Log Seq';
+comment on column offenders_shift_log.offender_book_id is 'System identifier for offender booking';
+comment on column offenders_shift_log.reason is 'Reason  [domain=ACT_OFFREA]';
+comment on column offenders_shift_log.CREATE_DATETIME is 'The timestamp when the record is created ';
+comment on column offenders_shift_log.CREATE_USER_ID is 'The user who created  the record';
+comment on column offenders_shift_log.MODIFY_DATETIME is 'The timestamp when the record is modified ';
+comment on column offenders_shift_log.MODIFY_USER_ID is 'The user who modifies the record'; 

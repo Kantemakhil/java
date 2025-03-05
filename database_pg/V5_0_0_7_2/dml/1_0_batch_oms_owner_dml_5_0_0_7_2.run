@@ -1,0 +1,46 @@
+--echo everything (this eliminates the need to call psql -a)
+\set ECHO all
+
+--set the message level sent to client
+SET client_min_messages = warning;
+
+--print connection information
+\echo 'Database Information:'
+\conninfo
+
+--set client session behaviour
+\set AUTOCOMMIT on
+\timing on
+\set footer on
+\x auto
+\pset null <NULL>
+\set VERBOSITY verbose
+\pset pager off
+
+show search_path;
+
+select current_timestamp;
+
+--record scripts version
+call log_db_version_control('5', 'initial PostgreSql Elite db version ');
+call log_db_version_control_patches('5', '5_0_0_7_2', 'dml set 1_0 of patch 5_0_0_7_2', '1_0_batch_oms_owner_dml_5_0_0_7_2.run');
+
+--execute sql scripts
+\i module_triggers_v50072_20230824.sql
+\i iwp_bookmarks_S4-24541_v50072_20230824.sql
+\i iwp_bookmark_parameters_S4-24541_v50072_20230824.sql
+\i system_labels_v50072_20230824.sql
+\i legal_settings_v50072_20230825.sql
+
+
+select current_timestamp;
+
+show search_path;
+
+ 
+ 
+
+
+
+
+

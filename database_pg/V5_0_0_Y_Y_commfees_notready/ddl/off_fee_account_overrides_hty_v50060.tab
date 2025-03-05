@@ -1,0 +1,32 @@
+CREATE TABLE off_fee_account_overrides_hty (
+        off_fee_override_id bigint NOT NULL,
+        offender_fee_id bigint NOT NULL,
+        record_datetime timestamp,
+        override_type varchar(12) NOT NULL,
+        override_start_date timestamp NOT NULL,
+        override_end_date timestamp,
+        override_amount decimal(11,2) NOT NULL,
+        comment_text varchar(240),
+        priority_indicator smallint,
+        added_by_staff_id bigint,
+        added_date timestamp,
+        bill_generated_flag varchar(1),
+        create_datetime timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        create_user_id varchar(32) NOT NULL,
+        modify_datetime timestamp,
+        modify_user_id varchar(32),
+        seal_flag varchar(1),
+        operation varchar(3) NOT NULL DEFAULT 'INS'
+)  TABLESPACE TAG_DATA;
+COMMENT ON COLUMN off_fee_account_overrides_hty.added_by_staff_id IS E'The staff who created the override';
+COMMENT ON COLUMN off_fee_account_overrides_hty.added_date IS E'The date and time when the override was created';
+COMMENT ON COLUMN off_fee_account_overrides_hty.bill_generated_flag IS E'This field indicates that the bill is generated or not for this fee override amount';
+COMMENT ON COLUMN off_fee_account_overrides_hty.comment_text IS E'Comment text of the override';
+COMMENT ON COLUMN off_fee_account_overrides_hty.off_fee_override_id IS E'Parent OFF_FEE_OVERRIDE_ID (identifying the OFF_FEE_OVERRIDE_ID to which this record belongs).';
+COMMENT ON COLUMN off_fee_account_overrides_hty.offender_fee_id IS E'Offender fee account id';
+COMMENT ON COLUMN off_fee_account_overrides_hty.override_amount IS E'Amount of the fee override';
+COMMENT ON COLUMN off_fee_account_overrides_hty.override_end_date IS E'End date of the fee override';
+COMMENT ON COLUMN off_fee_account_overrides_hty.override_start_date IS E'Start date of the fee override';
+COMMENT ON COLUMN off_fee_account_overrides_hty.override_type IS E'Override type [domain=CF_FOV_TYP]';
+COMMENT ON COLUMN off_fee_account_overrides_hty.priority_indicator IS E'Priority of the fee override';
+COMMENT ON COLUMN off_fee_account_overrides_hty.record_datetime IS E'Date and time when the history record was created';

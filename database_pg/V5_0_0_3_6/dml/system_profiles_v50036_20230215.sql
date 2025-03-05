@@ -1,0 +1,2 @@
+insert into system_profiles(profile_type,profile_code,description,profile_value,profile_value_2,create_datetime,create_user_id) 
+ values('CLIENT','OBS_PER_BDTE','Backdating Created Observation Periods','Y',30,current_timestamp,'OMS_OWNER');

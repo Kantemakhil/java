@@ -1,0 +1,29 @@
+CREATE table oms_owner.case_note_permissions (
+	role_id bigint NOT NULL,
+	work_id bigint NOT NULL,
+	create_flag varchar(1),
+	view_flag varchar(1),
+	create_datetime timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	create_user_id varchar(32) NOT NULL,
+	modify_datetime timestamp(6) DEFAULT CURRENT_TIMESTAMP,
+	modify_user_id varchar(32) NULL,
+	seal_flag varchar(1) NULL 
+) tablespace tag_data;
+
+alter table oms_owner.case_note_permissions    
+  add constraint case_note_permissions_pk PRIMARY KEY (role_id, work_id)
+  using index tablespace tag_indx;
+  
+alter table oms_owner.case_note_permissions 
+	add constraint case_note_permissions_fk1 foreign key (role_id) 
+	references oms_owner.oms_roles(role_id) on delete no action not deferrable initially immediate;	
+	
+alter table oms_owner.case_note_permissions 
+	add constraint case_note_permissions_fk2 foreign key (work_id) 
+	references oms_owner.works(work_id) on delete no action not deferrable initially immediate;		
+ 
+comment on table oms_owner.case_note_permissions is 'Maintains the user access for create, view and amend case notes';
+comment on column oms_owner.case_note_permissions.role_id is 'Case note permission based role security from User Groups';
+comment on column oms_owner.case_note_permissions.work_id is 'Case note permission based on work item';
+comment on column oms_owner.case_note_permissions.create_flag is 'Indicates create privilege for case notes';
+comment on column oms_owner.case_note_permissions.view_flag is 'Indicates view privilege for case notes';

@@ -1,0 +1,31 @@
+-- Create table
+create table db_version_control_patches
+(
+  database_version               varchar(100) not null,
+  database_patch_version   varchar(100) not null,
+  db_patch_notes                  varchar(1000) not null,
+  batch_run_file_name         varchar(250) not null,
+  create_datetime                 timestamp default CURRENT_TIMESTAMP not null,
+  create_user_id                    varchar(32) default user not null 
+) tablespace  tag_setup_data; 
+
+-- Add comments to the table 
+comment on table db_version_control_patches 
+  is 'Logs Syscon database batch files run against the database.';
+
+-- Add comments to the columns 
+comment on column db_version_control_patches.database_version
+  is 'The Syscon database version, ex. V5.3.';
+
+comment on column db_version_control_patches.database_patch_version
+  is 'Syscon database Patch Version, possibly corresponding to maple/database subfolders for V4.';
+comment on column db_version_control_patches.db_patch_notes
+  is 'The Syscon database patch notes, ex. community financials data model + base configuration for community financials';
+comment on column db_version_control_patches.batch_run_file_name
+  is 'The batch file name including timestamp, ex. 1_0_BATCH_OMS_2_2_4_14.log.';
+
+-- Create/Recreate primary, unique and foreign key constraints 
+alter table db_version_control_patches 
+  add constraint db_patch_vr_ctrl_f1 foreign key (database_version)
+  references db_version_control (database_version)
+  deferrable;

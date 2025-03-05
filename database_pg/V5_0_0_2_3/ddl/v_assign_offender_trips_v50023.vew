@@ -1,0 +1,50 @@
+CREATE OR REPLACE VIEW oms_owner.v_assign_offender_trips
+AS SELECT st.scheduled_trip_id,
+    sch.event_id,
+    sch.event_status,
+    sch.offender_book_id,
+    o.root_offender_id,
+    o.offender_id,
+    o.sex_code,
+    sch.offender_id_display,
+    sch.offender_last_name,
+    sch.offender_first_name,
+    sch.event_type,
+    sch.event_sub_type,
+    sch.lu_level_1_code,
+        CASE
+            WHEN ob.agy_loc_id::text = sch.agy_loc_id::text THEN ((((((((sch.agy_loc_id::text || '-'::text) || sch.lu_level_1_code) ||
+            CASE
+                WHEN COALESCE(sch.lu_level_2_code, ''::text) = ''::text THEN NULL::text
+                ELSE '-'::text
+            END) || sch.lu_level_2_code) ||
+            CASE
+                WHEN COALESCE(sch.lu_level_3_code, ''::text) = ''::text THEN NULL::text
+                ELSE '-'::text
+            END) || sch.lu_level_3_code) ||
+            CASE
+                WHEN COALESCE(sch.lu_level_4_code, ''::text) = ''::text THEN NULL::text
+                ELSE '-'::text
+            END) || sch.lu_level_4_code)::character varying
+            ELSE sch.agy_loc_id
+        END AS from_location,
+    sch.agy_loc_id,
+    sch.to_agy_loc_id,
+    sch.event_date,
+    sch.start_time,
+    sch.event_class,
+    sch.record_source,
+    lpad(rsd_from.leg_id::character varying::text, 4, '0'::text) || lpad(rsd_from.leg_seq::character varying::text, 4, '0'::text) AS from_seq
+   FROM v_offender_all_schedules sch,
+    offenders o,
+    offender_bookings ob,
+    scheduled_trips st,
+    movement_reasons mr,
+    route_stop_details rsd_from,
+    route_stop_details rsd_to
+  WHERE (sch.record_source = ANY (ARRAY['SCH'::text, 'COURT'::text])) AND sch.event_class::text = 'EXT_MOV'::text AND sch.offender_id = o.offender_id AND sch.offender_book_id = ob.offender_book_id AND sch.event_type::text = mr.movement_type::text AND sch.event_sub_type::text = mr.movement_reason_code::text AND mr.transportation_flag::text = 'Y'::text AND COALESCE(sch.scheduled_trip_id::text, ''::text) = ''::text AND COALESCE(sch.event_status, ' '::character varying)::text = 'SCH'::text AND st.route_name::text = rsd_from.route_name::text AND st.route_name::text = rsd_to.route_name::text AND rsd_from.active_flag::text = 'Y'::text AND rsd_to.active_flag::text = 'Y'::text AND sch.agy_loc_id::text = rsd_from.agy_loc_id::text AND sch.to_agy_loc_id::text = rsd_to.agy_loc_id::text AND (lpad(rsd_from.leg_id::character varying::text, 4, '0'::text) || lpad(rsd_from.leg_seq::character varying::text, 4, '0'::text)) < (lpad(rsd_to.leg_id::character varying::text, 4, '0'::text) || lpad(rsd_to.leg_seq::character varying::text, 4, '0'::text)) AND (lpad(rsd_from.leg_id::character varying::text, 4, '0'::text) || lpad(rsd_from.leg_seq::character varying::text, 4, '0'::text)) = (( SELECT max(lpad(rsdx_from.leg_id::character varying::text, 4, '0'::text) || lpad(rsdx_from.leg_seq::character varying::text, 4, '0'::text)) AS max
+           FROM route_stop_details rsdx_from,
+            route_stop_details rsdx_to
+          WHERE rsdx_from.route_name::text = st.route_name::text AND rsdx_to.route_name::text = st.route_name::text AND rsdx_from.active_flag::text = 'Y'::text AND rsdx_to.active_flag::text = 'Y'::text AND rsdx_to.leg_id = rsd_to.leg_id AND rsdx_to.leg_seq = rsd_to.leg_seq AND rsdx_from.agy_loc_id::text = sch.agy_loc_id::text AND rsdx_to.agy_loc_id::text = sch.to_agy_loc_id::text AND (lpad(rsdx_from.leg_id::character varying::text, 4, '0'::text) || lpad(rsdx_from.leg_seq::character varying::text, 4, '0'::text)) < (lpad(rsdx_to.leg_id::character varying::text, 4, '0'::text) || lpad(rsdx_to.leg_seq::character varying::text, 4, '0'::text)) AND (lpad(rsdx_to.leg_id::character varying::text, 4, '0'::text) || lpad(rsdx_to.leg_seq::character varying::text, 4, '0'::text)) = (( SELECT max(lpad(rsdy_to.leg_id::character varying::text, 4, '0'::text) || lpad(rsdy_to.leg_seq::character varying::text, 4, '0'::text)) AS max
+                   FROM route_stop_details rsdy_to
+                  WHERE rsdy_to.route_name::text = st.route_name::text AND rsdy_to.active_flag::text = 'Y'::text AND rsdy_to.agy_loc_id::text = sch.to_agy_loc_id::text))));

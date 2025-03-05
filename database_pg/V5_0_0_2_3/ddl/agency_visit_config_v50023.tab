@@ -1,0 +1,23 @@
+create table oms_owner.agency_visit_config
+(agy_loc_id        varchar(6) not null,
+visit_config_type  varchar(12)  not null,
+create_datetime    timestamp(6)  not null default current_timestamp,
+create_user_id     varchar(32)  not null,
+modify_datetime    timestamp(6),
+modify_user_id     varchar(32), 
+seal_flag          varchar(1)
+) tablespace tag_data;
+
+
+alter table oms_owner.agency_visit_config    
+  add constraint agency_visit_config_uk1 UNIQUE (agy_loc_id)
+  using index tablespace tag_indx;
+
+
+alter table oms_owner.agency_visit_config 
+	add constraint agency_visit_config_fk1 foreign key (agy_loc_id) 
+	references agency_locations(agy_loc_id) on delete no action not deferrable initially immediate;	
+
+comment on table oms_owner.agency_visit_config is 'Maintains the type of current Security /IEP Level configuration';
+comment on column oms_owner.agency_visit_config.agy_loc_id is 'The agency location';
+comment on column oms_owner.agency_visit_config.visit_config_type is 'The  value of iep security level [domain=VISIT_CONFIG]';

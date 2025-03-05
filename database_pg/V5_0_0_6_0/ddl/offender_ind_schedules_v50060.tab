@@ -1,0 +1,7 @@
+ALTER TABLE offender_ind_schedules ADD sch_version_id int8 null;
+
+comment on column offender_ind_schedules.sch_version_id is 'Schedule version id (used for tier default events schedules versioning)';
+
+ALTER TABLE offender_ind_schedules ADD CONSTRAINT off_ind_sch_tier_df_events_fk FOREIGN KEY (sch_version_id)
+REFERENCES maintain_tier_default_events (tier_event_sch_version_id) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE;
+

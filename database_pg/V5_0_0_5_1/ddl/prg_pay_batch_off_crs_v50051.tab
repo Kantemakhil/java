@@ -1,0 +1,32 @@
+CREATE TABLE prg_pay_batch_off_crs (
+batch_id bigint NOT NULL,
+offender_book_id int8  NOT NULL,
+crs_acty_id int8 NOT NULL,
+crs_pay_amount  numeric(11,2)  NOT NULL,
+create_datetime timestamp(6) NOT NULL DEFAULT current_timestamp,
+create_user_id varchar(32) NOT NULL ,
+modify_datetime timestamp(6) NULL ,
+modify_user_id varchar(32) NULL,
+seal_flag varchar(1) NULL
+) tablespace tag_data;
+
+alter table prg_pay_batch_off_crs  add constraint prg_pay_batch_off_crs_pk primary key(batch_id, offender_book_id, crs_acty_id) using index tablespace tag_indx;
+
+ALTER TABLE prg_pay_batch_off_crs
+ADD CONSTRAINT prg_pay_batch_off_crs_fk1 FOREIGN KEY (batch_id)
+REFERENCES prg_pay_batches(batch_id) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE prg_pay_batch_off_crs
+ADD CONSTRAINT prg_pay_batch_off_crs_fk2 FOREIGN KEY (offender_book_id)
+REFERENCES offender_bookings(offender_book_id) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE prg_pay_batch_off_crs
+ADD CONSTRAINT prg_pay_batch_off_crs_fk3 FOREIGN KEY (crs_acty_id)
+REFERENCES course_activities(crs_acty_id) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE;
+
+comment on table prg_pay_batch_off_crs  is 'Programs and Services pay settings';
+
+comment on column prg_pay_batch_off_crs.batch_id is 'Unique identifier for the pay batch';
+comment on column prg_pay_batch_off_crs.offender_book_id  is 'Unique surrogate identifier for the offender booking';
+comment on column prg_pay_batch_off_crs.crs_acty_id is 'Unique surrogate identifier for the course, actual course not phase or module';
+comment on column prg_pay_batch_off_crs.crs_pay_amount is 'Sum of all pay attendances for a given course included in the batch';

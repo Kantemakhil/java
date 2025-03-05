@@ -1,0 +1,24 @@
+CREATE TABLE oms_owner.ocdlegls_data_pending_calculation (
+	id bigint,
+	form_identifier varchar(1000),
+	calc_engine_input bytea,
+	calc_reason varchar(2000),
+	module_name varchar(20),
+	action_type varchar(32),
+	create_datetime timestamp(6) not null DEFAULT current_timestamp,
+	create_user_id varchar(32) not NULL,
+	modify_datetime timestamp(6),
+	modify_user_id varchar(32),
+	seal_flag varchar(1)
+)
+TABLESPACE tag_data
+;
+
+alter table ocdlegls_data_pending_calculation add constraint ocdlegls_data_pending_calculation_pk primary key(id);
+
+comment on table ocdlegls_data_pending_calculation is 'To maintain failed sentence calculation events';
+comment on column ocdlegls_data_pending_calculation.calc_engine_input is 'Input for Sentence calculation enigine.';
+comment on column ocdlegls_data_pending_calculation.form_identifier is 'Form Identifier';
+comment on column ocdlegls_data_pending_calculation.module_name is 'To maintain module name where event is emitted.';
+comment on column ocdlegls_data_pending_calculation.action_type is 'Action type';
+comment on column ocdlegls_data_pending_calculation.calc_reason is 'Calculation reason';

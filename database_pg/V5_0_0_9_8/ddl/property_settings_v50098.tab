@@ -1,0 +1,17 @@
+CREATE TABLE oms_owner.property_settings (
+setting_code varchar(50) NOT NULL,
+setting_description varchar(50) NOT NULL,
+setting_value bytea NOT NULL,
+create_datetime timestamp(6) NOT NULL,
+create_user_id varchar(32) NOT NULL,
+modify_datetime timestamp(6) NULL,
+modify_user_id varchar(32) NULL,
+seal_flag varchar(1) NULL,
+CONSTRAINT property_settings_pk PRIMARY KEY (setting_code )
+) TABLESPACE tag_data;
+
+comment on table oms_owner.property_settings is 'Property module specific maintenance settings ';
+
+comment on column oms_owner.property_settings.setting_code is 'Property setting code that is system dependent [ possible values are: PROP_CON_ID is used to drive the container label display information ]';
+comment on column oms_owner.property_settings.setting_description is 'Property setting description';
+comment on column oms_owner.property_settings.setting_value is 'Property setting values [ code PROP_CON_ID has possible values: DEFAULT, NONE, LOCATION ]';

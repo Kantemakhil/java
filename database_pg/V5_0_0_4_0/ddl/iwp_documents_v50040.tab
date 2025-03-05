@@ -1,0 +1,1 @@
+alter table iwp_documents alter column offender_book_id drop not null;

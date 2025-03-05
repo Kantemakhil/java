@@ -1,0 +1,1 @@
+alter table oms_owner.oic_sanction_limits add row_id bigserial;

@@ -1,0 +1,4 @@
+alter table ocdlegls_data add column sentence_mail_flag VARCHAR(1) default 'N' not null check (sentence_mail_flag in ('Y', 'N')) ;
+
+comment on
+column ocdlegls_data.sentence_mail_flag is 'Indicates whether the mail for sentence over 6 months has been sent to staff for that particular booking';

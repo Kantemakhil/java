@@ -1,0 +1,41 @@
+create table oms_owner.external_system_response(
+
+int_correlation_id int8 not null,
+
+module_name varchar(32) not null,
+
+action varchar(32) not null,
+
+request_payload bytea null,
+
+response_payload bytea null,
+
+action_performed_by varchar(32) not null,
+
+request_sent timestamp(6) null,
+
+response_received timestamp(6) null,
+
+CONSTRAINT external_system_response_pk PRIMARY KEY (int_correlation_id)
+
+)
+
+tablespace tag_data;
+
+comment on table oms_owner.external_system_response is 'To store external system response data.';
+
+comment on column oms_owner.external_system_response.int_correlation_id is 'Unique record identifier across the table.';
+
+comment on column oms_owner.external_system_response.module_name is 'It indicates data inserted from which module..?';
+
+comment on column oms_owner.external_system_response.request_payload is 'To store json request.';
+
+comment on column oms_owner.external_system_response.response_payload is 'To store json response.';
+
+comment on column oms_owner.external_system_response.action is 'To store the action of request and response.';
+
+comment on column oms_owner.external_system_response.action_performed_by is 'The user who creates the record.';
+
+comment on column oms_owner.external_system_response.request_sent is 'To store when the request sent.';
+
+comment on column oms_owner.external_system_response.response_received is 'To store when the response received sent.';

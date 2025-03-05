@@ -1,0 +1,19 @@
+alter table offender_course_attendances add pay_system_unit  varchar(12),  
+ add pay_system_rate  numeric(11, 2),   
+ add pay_hours numeric(5,2), 
+ add pay_actual_unit  varchar(12),    
+ add pay_actual_rate  numeric(11, 2),   
+ add pay_actual_amount numeric(11,2), 
+ add pay_batch_id   int8 ;
+
+ ALTER TABLE offender_course_attendances 
+ADD CONSTRAINT off_crs_att_prg_pay_fk FOREIGN KEY (pay_batch_id)
+REFERENCES prg_pay_batches  (batch_id) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE;
+
+comment on column offender_course_attendances.pay_system_unit is 'The pay unit as configured in the system when the attendance is recorded [domain= UNIT with parent code PS_PAY]';
+ comment on column offender_course_attendances.pay_system_rate is 'The pay rate as configured in the system when the attendance is recorded';
+ comment on column offender_course_attendances.pay_hours is 'The worked hours calculated as a difference of end and start time';
+ comment on column offender_course_attendances.pay_actual_unit is 'The actual pay unit when the payment is overwritten/confirmed/generated. Same as system unit when attendance is initially recorded [domain= UNIT with parent code PS_PAY]’';
+ comment on column offender_course_attendances.pay_actual_rate is 'The actual pay rate when the payment is overwritten/confirmed/generated. Same as system rate when attendance is initially recorded';
+ comment on column offender_course_attendances.pay_actual_amount is 'The actual amount when the rate is overwritten or payment is generated/processed. Based on system rate and pay hours when attendance is initially  recorded';
+ comment on column offender_course_attendances.pay_batch_id is 'The pay batch identifier when the attendance record was processed successfully as part of a pay batch. Empty when attendance is recorded and prior to confirming/generating payment';

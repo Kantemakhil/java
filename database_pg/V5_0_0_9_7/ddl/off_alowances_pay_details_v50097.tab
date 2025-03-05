@@ -1,0 +1,50 @@
+create table oms_owner.off_alowances_pay_details (
+	detail_id serial not null,
+	offender_book_id int8 not null,
+	off_allowance_id int8 not null, 
+	off_allowance_day date not null,
+	allowance_type varchar(12) not null,
+	version_no int8 not null,
+	allowance_version_unit varchar(12) not null,  
+	allowance_version_max_unit varchar(12) not null, 
+	allowance_version_rate numeric(11,2) not null, 
+	pay_actual_rate numeric(11,2) null,
+	pay_actual_amount numeric(11,2) null,
+    batch_id int8 null,
+    pay_flag varchar(1) not null default 'N'::character varying,
+    comment_text varchar(240) null,
+	create_datetime timestamp not null,
+	create_user_id varchar(32) not null,
+	modify_datetime timestamp null,
+	modify_user_id varchar(32) null,
+	seal_flag varchar(1) null 
+) tablespace tag_data;
+
+alter table oms_owner.off_alowances_pay_details add	constraint off_alowances_pay_details_pk primary key (detail_id);
+alter table oms_owner.off_alowances_pay_details add	constraint off_alowances_pay_details_uk1 unique (offender_book_id,off_allowance_id,off_allowance_day);
+  	
+alter table oms_owner.off_alowances_pay_details add	constraint off_alowances_pay_details_fk1 foreign key (offender_book_id) 
+  references oms_owner.offender_bookings(offender_book_id) on delete no action not deferrable initially immediate;
+alter table oms_owner.off_alowances_pay_details add	constraint off_alowances_pay_details_fk2 foreign key (off_allowance_id) 
+  references oms_owner.offender_allowances(off_allowance_id) on delete no action not deferrable initially immediate;
+alter table oms_owner.off_alowances_pay_details add	constraint off_alowances_pay_details_fk3 foreign key (allowance_type,version_no) 
+  references oms_owner.allowance_types(allowance_type,version_no) on delete no action not deferrable initially immediate;
+alter table oms_owner.off_alowances_pay_details add	constraint off_alowances_pay_details_fk4 foreign key (batch_id) 
+  references oms_owner.prg_pay_batches(batch_id) on delete no action not deferrable initially immediate;
+
+comment on table oms_owner.off_alowances_pay_details is 'Offender allowances payment details (day level)';
+
+comment on column oms_owner.off_alowances_pay_details.detail_id is 'Unique record identifier'; 
+comment on column oms_owner.off_alowances_pay_details.offender_book_id is 'Unique identifier for the offender booking'; 
+comment on column oms_owner.off_alowances_pay_details.off_allowance_id is 'Unique identifier for the offender assigned allowance'; 
+comment on column oms_owner.off_alowances_pay_details.off_allowance_day is 'The offender allowance date/day that needs to be paid'; 
+comment on column oms_owner.off_alowances_pay_details.allowance_type is 'Allowance type, together with version_no indicates the allowance version used to establish days and rates for payment'; 
+comment on column oms_owner.off_alowances_pay_details.version_no is 'Version number for a given allowance type, together with version_no indicates the allowance version usedto establish days and rates for payment'; 
+comment on column oms_owner.off_alowances_pay_details.allowance_version_unit is 'The unit corresponding to the allowance version'; 
+comment on column oms_owner.off_alowances_pay_details.allowance_version_max_unit is 'The max unit corresponding to the allowance version'; 
+comment on column oms_owner.off_alowances_pay_details.allowance_version_rate is 'The rate corresponding to the allowance version'; 
+comment on column oms_owner.off_alowances_pay_details.pay_actual_rate is 'The actual rate indicated when confirming payment'; 
+comment on column oms_owner.off_alowances_pay_details.pay_actual_amount is 'The actual amount based calculated using the actual rate'; 
+comment on column oms_owner.off_alowances_pay_details.batch_id is 'The unique batch identifier that includes the payment for the offender allowance date/day'; 
+comment on column oms_owner.off_alowances_pay_details.pay_flag is 'Indicates if the payment was generated'; 
+comment on column oms_owner.off_alowances_pay_details.comment_text is 'Offender allowances day payment details comment'; 

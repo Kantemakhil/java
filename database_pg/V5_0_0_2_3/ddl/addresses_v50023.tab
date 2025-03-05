@@ -1,0 +1,18 @@
+ALTER TABLE oms_owner.addresses ALTER COLUMN city_code TYPE varchar(64) USING city_code::varchar;
+
+ALTER TABLE oms_owner.addresses ALTER COLUMN prov_state_code TYPE varchar(64) USING prov_state_code::varchar;
+
+ALTER TABLE addresses ADD longitude numeric(16, 4);
+comment on column addresses.longitude is 'The longitude of address';
+
+ALTER TABLE addresses ADD latitude numeric(16, 4);
+comment on column addresses.latitude is 'The latitude of address';
+
+ALTER TABLE addresses ADD mesh_block numeric(16, 4);
+comment on column addresses.mesh_block is 'The mesh block of address';
+
+ALTER TABLE addresses ADD is_address_valid varchar(1);
+comment on column addresses.is_address_valid is 'NULL=validation was not preformed, Y=validation was performed and the address is valid, N=validation was performed but the address is invalid';
+
+ALTER TABLE addresses ADD address_line1 varchar(128);
+comment on column addresses.address_line1 is 'Full address information that includes street number, street, street direction';

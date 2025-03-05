@@ -1,0 +1,50 @@
+--echo everything (this eliminates the need to use -a)
+\set ECHO all
+
+--set the message level sent to client
+SET client_min_messages = warning;
+
+--print connection information
+\echo 'Database Information:'
+\conninfo
+
+--set client session behaviour
+\set AUTOCOMMIT on
+\timing on
+\set footer on
+\x auto
+\pset null <NULL>
+\set VERBOSITY verbose
+\pset pager off
+
+show search_path;
+
+select current_timestamp;
+
+--record scripts version
+call log_db_version_control('5', 'initial PostgreSql Elite db version ');
+call log_db_version_control_patches('5', '5_0_0_9_7', 'ddl set 1_0 of patch 5_0_0_9_7', '1_0_batch_oms_owner_ddl_5_0_0_9_7.run');
+
+--execute sql scripts in the Elite database
+\i incentives_earn_privs_v50097.tab
+\i offender_assessments_v50097.tab
+\i pay_batch_off_allowances_v50097.tab
+\i off_alowances_pay_details_v50097.tab
+\i offender_ind_schedules_v50097.tab
+\i v_offender_all_schedules_2_v50097.vew
+\i v_offender_all_schedules_v50097.vew
+\i programs_pay_settings_v50097.tab
+\i workflow_screens_v50097.tab
+
+
+select current_timestamp;
+
+show search_path;
+
+ 
+ 
+
+
+
+
+

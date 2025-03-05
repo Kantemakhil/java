@@ -1,0 +1,2 @@
+INSERT INTO MODULE_TRIGGERS(MODULE_NAME, DTO_NAME, MODULE_DESCRIPTION, TRIGGER_NAME, TRIGGER_ID) 
+ VALUES('OUMUSERS', 'net.syscon.s4.common.beans.StaffMembers','Maintain User Accounts', 'Reset Password', '84');

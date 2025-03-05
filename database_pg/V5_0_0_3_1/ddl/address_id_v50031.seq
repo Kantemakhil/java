@@ -1,0 +1,11 @@
+drop sequence oms_owner.address_id;
+
+DO
+$body$
+DECLARE seq_array int;
+i int;
+begin
+seq_array:=(select MAX(address_id)+1 from addresses a);
+execute 'create sequence oms_owner.address_id start with '|| seq_array ||' increment by 1';
+END;
+$body$

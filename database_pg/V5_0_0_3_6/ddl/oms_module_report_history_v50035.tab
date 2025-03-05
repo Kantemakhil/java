@@ -1,0 +1,2 @@
+ALTER TABLE oms_module_report_history ADD COLUMN version_date timestamp(6) null;
+ALTER TABLE oms_module_report_history drop COLUMN version_id;

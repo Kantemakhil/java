@@ -1,0 +1,47 @@
+create table stage_addresses
+(    owner_class          varchar2(12)    not null
+   , offender_id_display  varchar2(10)  
+   , city                 varchar2(12)
+   , country              varchar2(12)
+   , primary_flag         varchar2(1)     not null
+   , mail_flag            varchar2(1)     not null
+   , comment_text         varchar2(240) 
+   , nfa_flag             varchar2(1) 
+   , start_date           date
+   , end_date             date
+   , prov_state_code      varchar2(12)
+   , street               varchar2(160)
+   , zip_postal_code      varchar2(12)
+   , suite_number         varchar2(30)
+   , street_number        varchar2(12)
+   , street_direction     varchar2(12)
+   , address_type1        varchar2(12)
+   , address_type2        varchar2(12)
+   , address_type3        varchar2(12)
+   , invalid_reason       varchar2(256)
+   , invalid_flag         varchar2(1) 
+)
+tablespace tag_data;
+
+comment on column stage_addresses.owner_class is 'Classification of the address owner. Owner class OFF - Offender.';
+comment on column stage_addresses.offender_id_display is 'The user facing unique identifier of an offender. Required if owner_class ''OFF'', ''OFF_EDU'', or ''OFF_EMP''. If padding is turned on, the value should be ten characters long, padded left with zeroes.';
+comment on column stage_addresses.city is 'Code that represents the address city. Reference domain ( CITY )';
+comment on column stage_addresses.country is 'Code that represents the country of the address. Reference domain ( COUNTRY )';
+comment on column stage_addresses.primary_flag is 'Indicates (Y/N) this address is the primary residence of this owner. Only one address should be marked as the primary address for an owner.';
+comment on column stage_addresses.mail_flag is 'Indicates (Y/N) this address is a mailing address for this owner. Only one addres should be marked as the mailing address for an owner.';
+comment on column stage_addresses.comment_text is 'Free text notes associated with this address + owner record.';
+comment on column stage_addresses.nfa_flag is 'Indicates (Y/N) if selected owner has no fixed address. NFAs are stored as address records in their own right.';
+comment on column stage_addresses.start_date is 'Date (MM/YYYY) this owner began use of this address. Date should be stored with the day portion truncated.';
+comment on column stage_addresses.end_date is 'Date (MM/YYYY) this owner ended use of this address. Date should be stored with the day portion truncated.';
+comment on column stage_addresses.prov_state_code is 'Code that represents the province or state of the address. Reference domain ( PROV_STATE )';
+comment on column stage_addresses.street is 'Address street name.';
+comment on column stage_addresses.zip_postal_code is 'Address zip or postal code.';
+comment on column stage_addresses.suite_number is 'Address suite / apartment number.';
+comment on column stage_addresses.street_number is 'Address street number.';
+comment on column stage_addresses.street_direction is 'Code that represents the street direction. Reference domain ( STREET_DIR )';
+comment on column stage_addresses.address_type1 is 'Code that represents the type or function (usage) of the selected address. Each usage is stored against the address. Reference domain ( ADDRESS_TYPE )';
+comment on column stage_addresses.address_type2 is 'Code that represents the type or function (usage) of the selected address. Each usage is stored against the address. Reference domain ( ADDRESS_TYPE )';
+comment on column stage_addresses.address_type3 is 'Code that represents the type or function (usage) of the selected address. Each usage is stored against the address. Reference domain ( ADDRESS_TYPE )';
+comment on column stage_addresses.invalid_reason is 'The reason the record will be skipped during conversion.';
+comment on column stage_addresses.invalid_flag is 'A flag to indicate whether the record should be processed. Records marked with ''N'' will be skipped during conversion.';
+comment on table stage_addresses is 'Stores addresses for many sources - offenders, staff, agencies, and corporations. One record for each address + owner combination. E.g., two offenders at the same address would have two address records, one for each owner.';

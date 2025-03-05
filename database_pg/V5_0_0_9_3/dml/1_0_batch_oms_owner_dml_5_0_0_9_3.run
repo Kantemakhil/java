@@ -1,0 +1,56 @@
+--echo everything (this eliminates the need to call psql -a)
+\set ECHO all
+
+--set the message level sent to client
+SET client_min_messages = warning;
+
+--print connection information
+\echo 'Database Information:'
+\conninfo
+
+--set client session behaviour
+\set AUTOCOMMIT on
+\timing on
+\set footer on
+\x auto
+\pset null <NULL>
+\set VERBOSITY verbose
+\pset pager off
+
+show search_path;
+
+select current_timestamp;
+
+--record scripts version
+call log_db_version_control('5', 'initial PostgreSql Elite db version ');
+call log_db_version_control_patches('5', '5_0_0_9_3', 'dml set 1_0 of patch 5_0_0_9_3', '1_0_batch_oms_owner_dml_5_0_0_9_3.run');
+
+--execute sql scripts
+\i dynamic_grid_config_v50093_20240102.sql
+\i S4-25738_iwp_bookmarks_v50093_20240102.sql
+\i oms_modules_v50093_20240102.sql
+\i reference_domains_v50093_20240102.sql
+\i system_labels_v50093_20240102.sql
+\i module_call_form_relation_v50093_20240109.sql
+\i module_triggers_v50093_20240109.sql
+\i offender_api_specific_modules_v50093_20240109.sql
+\i reference_codes_v50093_20240109.sql
+\i S4-25760_iwp_bookmarks_v50093_20240109.sql
+\i S4_25760_iwp_bookmark_parameters_v50093_20240109.sql
+\i S4_25760_iwp_bookmark_out_parameters_v50093_20240109.sql
+\i S4-25759&25760_iwp_bookmark_out_parameters_v50093_20240109.sql
+\i S4-25762_iwp_bookmarks.sql
+\i S4-25762_iwp_bookmark_parameters.sql
+\i S4_25762_iwp_bookmark_out_parameters.sql
+
+select current_timestamp;
+
+show search_path;
+
+ 
+ 
+
+
+
+
+

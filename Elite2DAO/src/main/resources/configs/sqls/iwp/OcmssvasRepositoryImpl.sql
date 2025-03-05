@@ -1,0 +1,30 @@
+
+OCMSSVAS_FIND_RGAREACLASS {
+ 	SELECT REF_CODE.DESCRIPTION ,        REF_CODE.CODE FROM   REFERENCE_CODES REF_CODE WHERE   Domain = 'AREA_CLASS' AND code in ('AREA','REGION') AND  ( Active_Flag = 'Y' and Expired_Date IS NULL ) 
+}
+
+OCMSSVAS_FIND_RGAREAREGION {
+ 	SELECT DESCRIPTION ,AREA_CODE CODE, CASE WHEN ((( AREA_TYPE =:areaType AND AREA_CLASS=:areaClass ) OR ( AREA_TYPE IS NULL AND AREA_CLASS=:areaClass AND AREA_CLASS = 'REGION' ) ) AND ( ACTIVE_FLAG = 'Y' AND EXPIRY_DATE IS NULL )) THEN 'Y' ELSE 'N' END ACTIVE_FLAG FROM AREAS ORDER BY LIST_SEQ , DESCRIPTION ,AREA_CODE
+}
+OCMSSVAS_FIND_RGAREACLASS_ONE {
+ 	SELECT DESCRIPTION  ,AREA_CODE CODE, AREA_CLASS FROM   AREAS WHERE   (( AREA_TYPE =:areaType AND AREA_CODE=:areaCod  ) OR ( AREA_TYPE IS NULL AND AREA_CODE=:areaCod AND AREA_CLASS = 'REGION' ) ) AND ( ACTIVE_FLAG = 'Y' AND EXPIRY_DATE IS NULL  ) ORDER BY LIST_SEQ , DESCRIPTION ,AREA_CODE
+}
+
+OCMSSVAS_CACTA_FIND_COURSE_ACTIVITY_AREAS {
+ 	SELECT CRS_ACTY_ID,AREA_CODE,CREATE_DATETIME,CREATE_USER_ID,MODIFY_DATETIME,MODIFY_USER_ID,SEAL_FLAG  FROM COURSE_ACTIVITY_AREAS WHERE CRS_ACTY_ID =:crsActyId order by AREA_CODE DESC
+}
+OCMSSVAS_CACTA_INSERT_COURSE_ACTIVITY_AREAS {
+insert into COURSE_ACTIVITY_AREAS(CRS_ACTY_ID, AREA_CODE, CREATE_DATETIME, CREATE_USER_ID, MODIFY_DATETIME, SEAL_FLAG) values (:crsActyId, :areaCode, current_timestamp, :createUserId, null, :sealFlag)
+}
+
+OCMSSVAS_CACTA_UPDATE_COURSE_ACTIVITY_AREAS {
+	 update COURSE_ACTIVITY_AREAS set CRS_ACTY_ID =:crsActyId, AREA_CODE =:areaCode, MODIFY_DATETIME = current_timestamp, MODIFY_USER_ID =:modifyUserId, SEAL_FLAG =:sealFlag
+}
+
+OCMSSVAS_CACTA_DELETE_COURSE_ACTIVITY_AREAS { 
+	DELETE FROM COURSE_ACTIVITY_AREAS WHERE CRS_ACTY_ID=:crsActyId AND AREA_CODE=:areaCode
+}
+
+OCMSSVAS_CONSTRAINT_VALIDATIONS {
+ select tc.table_name from information_schema.table_constraints as tc join information_schema.key_column_usage as kcu on tc.constraint_name = kcu.constraint_name and tc.table_schema = kcu.table_schema join information_schema.constraint_column_usage as ccu on ccu.constraint_name = tc.constraint_name and ccu.table_schema = tc.table_schema where tc.constraint_type = 'FOREIGN KEY' and upper(ccu.table_name)= 'COURSE_ACTIVITY_AREAS' and upper(tc.CONSTRAINT_NAME)= :CONSTRAINTNAME and upper(tc.constraint_schema)= 'OMS_OWNER'
+}

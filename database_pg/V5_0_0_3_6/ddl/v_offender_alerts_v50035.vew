@@ -1,0 +1,18 @@
+CREATE OR REPLACE VIEW oms_owner.v_offender_alerts
+AS SELECT offender_alerts.alert_date,
+    offender_alerts.offender_book_id,
+    offender_alerts.root_offender_id,
+    offender_alerts.alert_seq,
+    offender_alerts.alert_type,
+    offender_alerts.alert_code,
+    offender_alerts.authorize_person_text,
+    offender_alerts.create_date,
+    offender_alerts.alert_status,
+    offender_alerts.verified_flag,
+    offender_alerts.expiry_date,
+    offender_alerts.comment_text,
+    offender_alerts.caseload_id,
+    offender_alerts.modify_user_id,
+    offender_alerts.modify_datetime,
+    offender_alerts.caseload_type
+   FROM offender_alerts;

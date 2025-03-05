@@ -1,0 +1,18 @@
+delete from oms_owner.offender_mail_logs;
+
+alter table oms_owner.offender_mail_logs add contact_type varchar(12) not null;  
+
+comment on column oms_owner.offender_mail_logs.contact_type is 'Identifies the contact type [domain=CONTACT_TYPE]';
+
+comment on column oms_owner.offender_mail_logs.mail_type is 'Identifies the mail type [domain=MAIL_TYPE]';
+
+alter table oms_owner.offender_mail_logs drop column confidential_flag;
+
+alter table oms_owner.offender_mail_logs drop column contraband_flag;
+
+alter table oms_owner.offender_mail_logs add column log_seq bigint not null;	
+
+comment on column oms_owner.offender_mail_logs.log_seq is 'Log counter for each booking';
+
+alter table oms_owner.offender_mail_logs add constraint  offender_mail_logs_pk primary key (offender_book_id, log_seq)
+ using index tablespace tag_indx;; 

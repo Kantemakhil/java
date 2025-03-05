@@ -1,0 +1,18 @@
+---*****dml subfolder - oms_owner 
+psql --no-psqlrc -U oms_owner  -d  dbname -h hostname -f 1_0_batch_oms_owner_dml_custom_SOAU_5_0_0_9_7.run >> 1_0_batch_oms_owner_dml_custom_SOAU_5_0_0_9_7.log 2>&1  & type 1_0_batch_oms_owner_dml_custom_SOAU_5_0_0_9_7.log 
+
+---*****import_processes subfolder
+--Actions
+Actions_S4-24028.zip
+Actions_S4-25029.zip
+Actions_S4-25247.zip
+Actions_S4-26232.zip
+Actions_S4-26261.zip
+Actions_S4-26449.zip
+Actions_S4-26550.zip
+Actions_S4-26191.zip
+--Processes
+Processes_S4-21682.zip
+Processes_S4-25029.zip
+Processes_S4-25247.zip
+Processes_S4-26449.zip

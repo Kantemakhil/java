@@ -1,0 +1,3 @@
+alter table oms_owner.incentives_earn_privs alter column review_days drop not null;
+
+comment on column oms_owner.incentives_earn_privs.review_days is 'Review time period in days (mandatory/optional based on system profile = IEP_MAN_REV)';

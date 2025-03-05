@@ -1,0 +1,4 @@
+alter table ASSESSMENTS add Required_Flag varchar(1) not null default 'N';
+comment on column ASSESSMENTS.Required_Flag is 'Mandatory questions flag';
+
+comment on column offender_assessments.assess_status is 'Assessment status, Reference(ASSESS_STATS) ie. A-Active, P-Pending, I-Inactive, D-Draft';

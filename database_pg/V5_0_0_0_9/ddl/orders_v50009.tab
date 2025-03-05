@@ -1,0 +1,11 @@
+alter table orders  add requesting_officer varchar(100);
+alter table orders  add team_id varchar(100);
+alter table orders  add status_date date;
+alter table orders  add staff_member_id varchar(100);
+alter table orders  add defence_solicitor varchar(100);
+
+comment on column orders.defence_solicitor is 'This coulmn is used to maintain defence solicitor';
+comment on column orders.requesting_officer is 'This coulmn is used to maintain request officer';
+comment on column orders.team_id is 'This indicates that the report assign to the particular team';
+comment on column orders.status_date is 'Capturing status updation';
+comment on column orders.staff_member_id is 'This indicates that the report assign to the particular staff member';

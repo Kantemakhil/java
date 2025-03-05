@@ -1,0 +1,6 @@
+CREATE OR REPLACE VIEW oms_owner.v_audit_bkg_details (offender_book_id, booking_no, offender_id, root_offender_id, offender_id_display  ) 
+AS 
+ SELECT oms_owner.offender_bookings.offender_book_id, oms_owner.offender_bookings.booking_no
+      , oms_owner.offenders.offender_id, oms_owner.offenders.root_offender_id, oms_owner.offenders.offender_id_display 
+   FROM oms_owner.offender_bookings, oms_owner.offenders 
+  WHERE oms_owner.offender_bookings.offender_id = oms_owner.offenders.offender_id; 

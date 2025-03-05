@@ -1,0 +1,4 @@
+ALTER TABLE  PERSON_EMPLOYMENTS  ADD FORMAT varchar(32);
+update  PERSON_EMPLOYMENTS set FORMAT ='LOC';
+alter table PERSON_EMPLOYMENTS alter column FORMAT set not null;
+comment on column PERSON_EMPLOYMENTS.FORMAT is 'It Indicates that Phone Number Format'; 

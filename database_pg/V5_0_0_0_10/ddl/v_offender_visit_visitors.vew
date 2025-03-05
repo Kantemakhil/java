@@ -1,0 +1,18 @@
+CREATE OR REPLACE VIEW oms_owner.v_offender_visit_visitors
+AS SELECT NULL::text AS offender_visit_order_id,
+    ov.offender_visit_id,
+    ov.offender_book_id AS visit_offender_book_id,
+    ovv.offender_visit_visitor_id,
+    ovv.offender_book_id,
+    ovv.person_id,
+    ovv.group_leader_flag,
+    ovv.comment_text,
+    ovv.event_outcome,
+    ovv.outcome_reason_code,
+    ovv.event_id,
+    ovv.event_status,
+    ovv.create_datetime,
+    ovv.modify_datetime
+   FROM offender_visit_visitors ov,
+    offender_visit_visitors ovv
+  WHERE ov.offender_book_id IS NOT NULL AND ov.offender_book_id::text <> ''::text AND ov.offender_visit_id = ovv.offender_visit_id;

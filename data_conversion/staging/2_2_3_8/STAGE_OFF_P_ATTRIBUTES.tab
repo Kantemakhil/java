@@ -1,0 +1,28 @@
+create table stage_off_p_attributes
+(    offender_id_display  varchar2(10)    not null 
+   , booking_begin_date   date            not null
+   , height_ft            number(6)
+   , height_in            number(6)
+   , height_cm            number(6)
+   , weight_lb            number(6)
+   , weight_kg            number(6)
+   , invalid_reason       varchar2(256)
+   , invalid_flag         varchar2(1) 
+)
+tablespace tag_data;
+
+ALTER TABLE stage_off_p_attributes
+  ADD CONSTRAINT stage_off_p_attributes UNIQUE(offender_id_display, booking_begin_date)
+  USING index tablespace TAG_INDX;
+
+
+comment on column stage_off_p_attributes.offender_id_display is 'The user facing unique identifier of an offender. If padding is turned on, the value should be ten characters long, padded left with zeroes.';
+comment on column stage_off_p_attributes.booking_begin_date is 'The start date of the incarceration period.';
+comment on column stage_off_p_attributes.height_ft is 'Height of the offender in feet. If populated, height_in should also be populated. The two values are combined to define the height.';
+comment on column stage_off_p_attributes.height_in is 'Height of the offender in inches. If populated, height_ft should also be populated. The two values are combined to define the height.';
+comment on column stage_off_p_attributes.height_cm is 'Height of the offender in cm. If populated, and height_in and height_ft populated, the value will not be validated for consistency, but they should match.';
+comment on column stage_off_p_attributes.weight_lb is 'Weight of the offender in lb.';
+comment on column stage_off_p_attributes.weight_kg is 'Weight of the offender in kg. If populated, and weight_lb is populated, the value will not be validated for consistency, but they should match.';
+comment on column stage_off_p_attributes.invalid_reason is 'The reason the record will be skipped during conversion.';
+comment on column stage_off_p_attributes.invalid_flag is 'A flag to indicate whether the record should be processed. Records marked with ''N'' will be skipped during conversion.';
+comment on table stage_off_p_attributes is 'Stores the height and weight of the offender for the associated incarcaration period.';

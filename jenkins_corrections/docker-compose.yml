@@ -1,0 +1,12 @@
+version: '3.6'
+services:
+  automation-service:
+    image: akhilkantem/sysconbackend:latest
+    container_name: akhil_automation_tasmqa1
+    shm_size: '512m'
+    env_file:
+      - .env
+    environment:
+      - DB_CONNECTIONS=${DB_CONNECTIONS:-500}  
+    ports:
+      - "4500:8080"

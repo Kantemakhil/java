@@ -1,0 +1,3 @@
+ALTER TABLE offender_ind_schedules DROP COLUMN email_sent_flag;
+ALTER TABLE offender_ind_schedules DROP COLUMN  sms_sent_flag;
+alter table offender_ind_schedules add proposed_mvmnt_seq bigint;

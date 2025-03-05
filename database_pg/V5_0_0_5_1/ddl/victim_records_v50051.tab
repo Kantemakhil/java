@@ -1,0 +1,27 @@
+create table victim_records (
+victim_id int8  not null,
+person_id int8 not null,
+preferred_contact_method varchar(12) null,
+active_flag varchar(1) not null default 'N',
+registered_datetime timestamp(6) null,
+deactivated_datetime timestamp(6) null,
+note varchar(400) null,
+create_datetime timestamp(6) not null default current_timestamp,
+create_user_id varchar(32) not null,
+modify_datetime timestamp(6),
+modify_user_id varchar(32),
+seal_flag varchar(1)
+) tablespace tag_data;
+
+alter table oms_owner.victim_records  add constraint victim_records_pk primary key (victim_id);
+alter table oms_owner.victim_records  add constraint victim_records_fk1 foreign key (person_id) references oms_owner.persons(person_id) on delete no action not deferrable initially immediate;
+
+comment on table victim_records is 'Stores victims recorded in the system';
+
+comment on column victim_records.victim_id is 'Unique identifier for the victim [db sequence=victim_id_seq]';
+comment on column victim_records.person_id is 'Unique person identifier';
+comment on column victim_records.preferred_contact_method is 'Preferred contact method [domain=CONT_METH]';
+comment on column victim_records.active_flag is 'Active flag, it indicates if the victim is managed/registered within the system (Y/N)';
+comment on column victim_records.registered_datetime is ' The datetime when the victim is registered in the system';
+comment on column victim_records.deactivated_datetime is 'The datetime when the victim is de-activated in the system';
+comment on column victim_records.note is 'Free text';

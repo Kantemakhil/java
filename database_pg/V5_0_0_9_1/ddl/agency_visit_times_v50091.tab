@@ -1,0 +1,5 @@
+ALTER TABLE oms_owner.agency_visit_times DROP CONSTRAINT agency_visit_times_uk;
+
+CREATE UNIQUE INDEX agency_visit_times_uk1 ON oms_owner.agency_visit_times (agy_loc_id, week_day, start_time, end_time) 
+  TABLESPACE tag_indx   
+    WHERE active_flag = 'Y';

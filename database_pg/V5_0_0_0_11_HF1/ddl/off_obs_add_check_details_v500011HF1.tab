@@ -1,0 +1,3 @@
+ALTER TABLE off_obs_add_check_details RENAME COLUMN detail TO  characteristics_code;
+ALTER TABLE off_obs_add_check_details RENAME COLUMN detail_type TO  characteristics_type;
+ALTER TABLE off_obs_add_check_details ALTER COLUMN characteristics_code  TYPE varchar(12);

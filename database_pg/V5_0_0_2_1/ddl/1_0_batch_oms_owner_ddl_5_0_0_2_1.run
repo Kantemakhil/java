@@ -1,0 +1,74 @@
+--echo everything (this eliminates the need to call psql -a)
+\set ECHO all
+
+--set the message level sent to client
+SET client_min_messages = warning;
+
+--print connection information
+\echo 'Database Information:'
+\conninfo
+
+--set client session behaviour
+\set AUTOCOMMIT on
+\timing on
+\set footer on
+\x auto
+\pset null <NULL>
+\set VERBOSITY verbose
+\pset pager off
+
+show search_path;
+
+select current_timestamp;
+
+--record scripts version
+call log_db_version_control('5', 'initial PostgreSql Elite db version ');
+call log_db_version_control_patches('5', '5_0_0_2_1', 'ddl set 1_0 of patch 5_0_0_2_1', '1_0_batch_oms_owner_ddl_5_0_0_2_1.run');
+
+--execute sql scripts
+
+--drop objects scripts
+\i drop_views_v500012.sql 
+\i drop_tables_v500012.sql
+
+-- 
+\i obs_type_version_id_seq.seq
+\i obs_period_id_seq.seq 
+\i check_id_seq.seq  
+
+--
+\i community_conditions_v500012.tab
+--
+\i iwp_bookmark_out_parameters.tab 
+\i iwp_documents_v500012.tab
+\i iwp_templates_v500012.tab 
+
+--offender observations maintenance tables phase 1
+\i offender_observation_types_v500012.tab 
+\i off_obs_add_details_v500012.tab 
+\i offender_observation_zones_v500012.tab 
+\i off_obs_zone_details_v500012.tab 
+
+
+--offender observations offender/booking specific tables phase 1
+\i off_observation_periods_v500012.tab 
+\i off_obs_period_checks_v500012.tab 
+\i off_obs_add_check_details_v500012.tab 
+
+--added 24OCT2022
+\i automation_api_query_v500012.tab 
+\i bpmn_process_v500012.tab 
+\i dmn_process_v500012.tab 
+\i incident_staff_forces_v500012.tab 
+ 
+select current_timestamp;
+
+show search_path;
+
+ 
+ 
+
+
+
+
+

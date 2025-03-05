@@ -1,0 +1,19 @@
+alter table oms_owner.assessments add bookmark_condition varchar(12);
+comment on column oms_owner.assessments.bookmark_condition is 'Identifies the bookmark answer type [domain=BOOKMRK_COND]';
+
+alter table oms_owner.assessments add column bookmark_name varchar(12);
+comment on column oms_owner.assessments.bookmark_name is 'The bookmark name associated with the answer.';
+
+alter table oms_owner.assessments add column min_value bigint;
+comment on column oms_owner.assessments.min_value is 'The minimum value of the bookmark answer';
+
+alter table oms_owner.assessments add max_value bigint;
+comment on column oms_owner.assessments.max_value is 'The maximum value of the bookmark answer';
+
+alter table oms_owner.assessments add enforce_min_max_flag varchar(1) default 'N' not null;
+comment on column oms_owner.assessments.enforce_min_max_flag is 'Indicates if the assessment Min/Max score range is enforced (Y/N)';
+
+--
+alter table oms_owner.offender_assessments add override_score numeric(6,2);
+comment on column oms_owner.offender_assessments.override_score is 'The assessment override score';
+

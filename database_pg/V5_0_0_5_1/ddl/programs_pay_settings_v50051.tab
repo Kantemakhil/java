@@ -1,0 +1,30 @@
+CREATE TABLE programs_pay_settings (
+pay_flag varchar(1) NOT NULL DEFAULT 'Y',
+pay_system_code varchar(12) ,
+pay_cycle_start_day  varchar(12),
+inst_act_default_att_code varchar(12),
+inst_act_max_scheduled_hours int8 ,
+acp_att_code bytea,
+inst_act_att_code bytea ,
+iep_level_code varchar(12),
+create_datetime timestamp(6) NOT NULL DEFAULT current_timestamp,
+create_user_id varchar(32) NOT NULL ,
+modify_datetime timestamp(6) NULL ,
+modify_user_id varchar(32) NULL,
+seal_flag varchar(1) NULL
+) tablespace tag_data;
+
+ALTER TABLE programs_pay_settings
+ADD CONSTRAINT programs_pay_settings_fk1 FOREIGN KEY (iep_level_code)
+REFERENCES incentives_earn_privs(iep_level_code) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE;
+
+comment on table programs_pay_settings is 'Programs and Services pay settings';
+
+comment on column programs_pay_settings.pay_flag is 'Identifies if the Programs and Services module can generate pay [domain=PS_PAY]';
+comment on column programs_pay_settings.pay_system_code is 'Identifies if programs and services pay is to be posted into Elite Financials or to an external Financial system [domain=PS_PAY]';
+comment on column programs_pay_settings.pay_cycle_start_day   is 'The pay cycle start day [domain=WEEK_DAY]';
+comment on column programs_pay_settings.inst_act_default_att_code  is 'The default attendance value for institutional activities [domain= PS_PA_OC]';
+comment on column programs_pay_settings.inst_act_max_scheduled_hours is 'The maximum number of hours per day that an institutional activity can be paid for[0 to 24]';
+comment on column programs_pay_settings.acp_att_code is 'A list of attendance codes that triggers offender payment for accredited programs [domain= OUTCOME]';
+comment on column programs_pay_settings.inst_act_att_code is 'A list of attendance codes that triggers offender payment for institutional activities [domain= PS_PA_OC]';
+comment on column programs_pay_settings.iep_level_code is 'The IEP level code used for segregation (for manual suspension of institutional activities)';

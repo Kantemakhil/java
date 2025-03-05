@@ -1,0 +1,16 @@
+--table module_tab_columns is not curently used in V5 
+--the data in this table is also not entirely correct, therefore the table data is being deleted
+--the object is being retained in case future V5 use of the table will be required
+
+DELETE FROM module_tab_columns;
+
+--table module_tables should have a unique key on columns object_name + module_name
+
+--delete duplicates
+WITH no_duplicates AS (SELECT object_name, module_name, MIN(module_tab_id)  as min_module_tab_id
+                       FROM oms_owner.module_tables 
+                       GROUP BY object_name, module_name 
+                     ) 
+DELETE FROM oms_owner.module_tables 
+ WHERE module_tab_id NOT IN (SELECT min_module_tab_id FROM no_duplicates);
+  

@@ -1,0 +1,3 @@
+INSERT_AGY_INT_LOC_AMENDMENTS{
+insert into AGY_INT_LOC_AMENDMENTS( AGY_INT_LOC_AMENDMENT_ID, INTERNAL_LOCATION_ID, ACTION_CODE, AMEND_USER_ID, AMEND_DATE, COLUMN_NAME, OLD_VALUE, NEW_VALUE, DEACTIVATE_REASON_CODE, CREATE_DATETIME , MODIFY_DATETIME, create_user_id, modify_user_id) values ( NEXTVAL('agy_int_loc_amendment_id'), :internalLocationId, :actionCode, :amendUserId, current_timestamp, :columnName, :oldValue, :newValue, :deactivateReasonCode , current_timestamp , null, :createUserId, null) 
+}

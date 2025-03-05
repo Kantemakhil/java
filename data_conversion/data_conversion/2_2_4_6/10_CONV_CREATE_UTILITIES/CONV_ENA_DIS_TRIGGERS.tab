@@ -1,0 +1,25 @@
+REM Creating table CONV_ENA_DIS_TRIGGERS to retain the enabled triggers prior to data migration activities
+
+create table CONV_ENA_DIS_TRIGGERS 
+(
+  trigger_name varchar2(64)
+)
+tablespace TAG_DATA 
+  pctfree 10
+  initrans 1
+  maxtrans 255
+  storage
+  (
+    initial 2M
+    next 2M
+    minextents 1
+    maxextents unlimited
+    pctincrease 0
+  )
+LOGGING 
+NOCOMPRESS 
+NOCACHE
+NOPARALLEL
+MONITORING;
+
+COMMENT ON TABLE CONV_ENA_DIS_TRIGGERS IS 'Retain the enabled triggers prior to data migration activities'; 

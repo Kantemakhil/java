@@ -1,0 +1,1 @@
+Alter table oms_owner.oms_users_list rename column modified_datetime to modify_datetime;

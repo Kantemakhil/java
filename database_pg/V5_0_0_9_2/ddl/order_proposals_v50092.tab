@@ -1,0 +1,9 @@
+ALTER TABLE oms_owner.order_proposals
+ADD COLUMN not_suitable_flag VARCHAR(1) DEFAULT 'N'  NOT NULL CHECK (not_suitable_flag  IN ('Y', 'N')) ,
+ADD COLUMN not_suitable_reason VARCHAR(12),
+ADD COLUMN comment_text VARCHAR(240);
+
+
+COMMENT ON COLUMN oms_owner.order_proposals.not_suitable_flag IS 'Indicates non-suitability, Y= NOT suitable, N= suitable';
+COMMENT ON COLUMN oms_owner.order_proposals.not_suitable_reason IS 'Non suitability reason, populated only when not_suitable_flag = Y  [reference_domain= CRT_REP_UNS]';
+COMMENT ON COLUMN oms_owner.order_proposals.comment_text IS 'Comment, free text';

@@ -1,0 +1,75 @@
+CREATE TABLE oms_owner.offender_cond_transfer
+   (con_transfer_id                  BIGINT NOT NULL,
+    offender_book_id                 BIGINT NOT NULL,
+    offender_sent_condition_id       BIGINT NOT NULL,
+    staff_id                         BIGINT,
+    team_id                          BIGINT,
+    team_member_id                   BIGINT,
+    agy_loc_id                       VARCHAR(6),
+    to_team_id                       BIGINT,
+    to_agy_loc_id                    VARCHAR(6),
+    condi_status                     VARCHAR(12) NOT NULL,
+    to_staff_id                      BIGINT,
+    to_team_member_id                BIGINT,
+    parent_con_transfer_id           BIGINT,
+    sentence_seq                     BIGINT NOT NULL, 	
+	create_datetime       			TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL ,
+	create_user_id        			VARCHAR(32)NOT NULL ,
+	modify_datetime       			TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	modify_user_id        			VARCHAR(32),
+	seal_flag             			VARCHAR(1)	
+   ) tablespace tag_data;
+   
+   
+alter table oms_owner.offender_cond_transfer 
+  add constraint offender_cond_transfer_sts_pk primary key (con_transfer_id)
+  using index tablespace tag_indx;
+  
+  
+alter table oms_owner.offender_cond_transfer 
+	add constraint offender_cond_transfer_fk1 foreign key (offender_book_id) 
+	references oms_owner.offender_bookings(offender_book_id) on delete no action not deferrable initially immediate;
+ 
+alter table offender_cond_transfer  
+  add constraint offender_cond_transfer_fk2 foreign key (offender_sent_condition_id)
+  references oms_owner.offender_sent_conditions(offender_sent_condition_id) on delete no action not deferrable initially immediate;
+  
+alter table offender_cond_transfer  
+  add constraint offender_cond_transfer_fk3 foreign key (staff_id)
+  references oms_owner.staff_members(staff_id) on delete no action not deferrable initially immediate;  
+  
+alter table offender_cond_transfer  
+  add constraint offender_cond_transfer_fk4 foreign key (team_id)
+  references oms_owner.automation_teams(team_id) on delete no action not deferrable initially immediate;
+  
+alter table offender_cond_transfer  
+  add constraint offender_cond_transfer_fk5 foreign key (to_staff_id)
+  references oms_owner.staff_members(staff_id) on delete no action not deferrable initially immediate;  
+
+alter table offender_cond_transfer  
+  add constraint offender_cond_transfer_fk6 foreign key (to_team_member_id)
+  references TEAM_STAFF_MEMBERS(TEAM_MEMBER_ID) on delete no action not deferrable initially immediate;
+  
+alter table offender_cond_transfer  
+  add constraint offender_cond_transfer_fk7 foreign key (parent_con_transfer_id)
+  references oms_owner.offender_cond_transfer(con_transfer_id) on delete no action not deferrable initially immediate; 
+  
+alter table OFFENDER_COND_TRANSFER
+  add constraint OFFENDER_COND_TRANSFER_FK8 foreign key (TEAM_MEMBER_ID)
+  references TEAM_STAFF_MEMBERS(TEAM_MEMBER_ID) on delete no action not deferrable initially immediate;    
+
+comment on column OFFENDER_COND_TRANSFER.CON_TRANSFER_ID is 'A sequence number used to uniquely identify the conditonal transfer of ownership. Incremented starting at 1 within each transfer.';
+comment on column OFFENDER_COND_TRANSFER.OFFENDER_BOOK_ID is 'Parent OFFENDER_BOOK_ID (identifying the offender to whom this record belongs).';
+comment on column OFFENDER_COND_TRANSFER.OFFENDER_SENT_CONDITION_ID is 'Condition Which is Transferred';
+comment on column OFFENDER_COND_TRANSFER.STAFF_ID is 'By Whom the condition is being assigned to the staff';
+comment on column OFFENDER_COND_TRANSFER.TEAM_ID is 'By Whom the condition is being assigned to the Team';
+comment on column OFFENDER_COND_TRANSFER.TO_TEAM_ID is 'Condition which was tranfered from the TEAM_ID to TO_TEAM_ID';
+comment on column OFFENDER_COND_TRANSFER.TEAM_MEMBER_ID is 'By Whom the condition is being assigned to the Team Member';
+comment on column OFFENDER_COND_TRANSFER.AGY_LOC_ID is 'To Identify where the condition is located';
+comment on column OFFENDER_COND_TRANSFER.TO_AGY_LOC_ID is 'To Identify where the condition is transfer to';
+comment on column OFFENDER_COND_TRANSFER.CONDI_STATUS is 'This Field is used to Store The Condition Is awiting or Transfer or Cancelled State';
+comment on column OFFENDER_COND_TRANSFER.TO_STAFF_ID is 'Condition which was tranfered from the STAFF_ID/TEAM_ID to TO_STAFF_ID';
+comment on column OFFENDER_COND_TRANSFER.TO_TEAM_MEMBER_ID is 'Condition which was tranfered from the TEAM_MEMBER_ID to TO_TEAM_MEMBER_ID';
+COMMENT ON COLUMN offender_cond_transfer.PARENT_CON_TRANSFER_ID    IS 'Refers to  where the Previous condition is assigned';
+COMMENT ON COLUMN offender_cond_transfer.SENTENCE_SEQ    IS 'To Identify the sentence related to the particular condition';
+

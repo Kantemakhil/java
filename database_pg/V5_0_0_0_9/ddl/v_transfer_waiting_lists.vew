@@ -1,0 +1,18 @@
+CREATE OR REPLACE VIEW oms_owner.v_transfer_waiting_lists
+AS SELECT sch.offender_book_id,
+    off.offender_id_display,
+    off.last_name,
+    wl.event_id,
+    sch.to_agy_loc_id AS agency_location_to,
+    sch.active_flag,
+    wl.request_date AS requested_date,
+    wl.wait_list_status,
+    wl.transfer_priority,
+    wl.outcome_reason_code,
+    wl.approved_flag,
+    tag_schedule_check_sum(COALESCE(wl.modify_datetime, wl.create_datetime)) AS check_sum
+   FROM v_offender_all_schedules sch,
+    offender_ind_sch_wait_lists wl,
+    offenders off,
+    offender_bookings bkg
+  WHERE sch.event_id = wl.event_id AND sch.offender_book_id = bkg.offender_book_id AND bkg.offender_id = off.offender_id;

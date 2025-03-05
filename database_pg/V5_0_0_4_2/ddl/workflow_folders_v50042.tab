@@ -1,0 +1,12 @@
+alter table workflow_folders add column active_flag varchar(1);
+
+update workflow_folders set active_flag = 'Y';
+
+alter table workflow_folders alter column active_flag set not null;
+alter table workflow_folders alter column active_flag set default 'Y';
+
+comment on column workflow_folders.active_flag is 'Indicates the item is active or inactive (Y, N).';
+
+alter table workflow_folders add column expiry_date timestamp(6);
+
+comment on column workflow_folders.expiry_date is 'Set to date on which the menu becomes inactive';

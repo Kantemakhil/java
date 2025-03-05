@@ -1,0 +1,41 @@
+-- oms_owner.module_tab_columns definition
+
+-- Drop table
+
+-- DROP TABLE oms_owner.module_tab_columns;
+
+CREATE TABLE oms_owner.module_tab_columns (
+	module_tab_id int8 NOT NULL,
+	module_tab_seq int4 NOT NULL DEFAULT 1,
+	column_name varchar(30) NOT NULL,
+	"domain" varchar(12) NULL,
+	ref_tables varchar(30) NULL,
+	setup_module varchar(20) NULL,
+	lov_item_name varchar(61) NULL,
+	modify_user_id varchar(32) NULL DEFAULT 'USER'::character varying,
+	modify_datetime timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+	create_datetime timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	create_user_id varchar(32) NOT NULL DEFAULT 'user'::character varying,
+	seal_flag varchar(1) NULL,
+	CONSTRAINT module_tab_columns_pk PRIMARY KEY (module_tab_id, module_tab_seq),
+	CONSTRAINT mod_tabc_mod_tabs_fk1 FOREIGN KEY (module_tab_id) REFERENCES oms_owner.module_tables(module_tab_id),
+	CONSTRAINT mod_tabc_oms_mod_fk1 FOREIGN KEY (setup_module) REFERENCES oms_owner.oms_modules(module_name)
+)
+TABLESPACE tag_setup_data
+;
+CREATE INDEX mod_tabc_oms_mod_fk1 ON oms_owner.module_tab_columns USING btree (setup_module);
+
+Columns for tag modules, used to map some features, such as configuration keys, to form objects.
+
+The unique identifier of the parent module record.
+Part of the unique identifier of this module object.
+The name of the module item on the associated module block. Uniquely identifies a GUI item / column.
+Identifies the maintenance reference domain for update through the configuration key (supersedes setup module).
+The name of the configuration table associated with the item.
+The short name that identifies the associated maintenance form for update through the configuration key.
+The name of the associated LOV for a code driven field.
+The user account that last modified the record
+The timestamp when the record was last modified 
+The timestamp when the record was created
+The user account that created the record
+Flag to indicate whether the record has been sealed or not (Y/N).

@@ -1,0 +1,19 @@
+CREATE table oms_owner.tables_audit(
+object_name         varchar(64) not null,
+audit_flag          varchar(1) DEFAULT 'N' NOT NULL,
+create_datetime     TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP NOT NULL ,
+create_user_id      VARCHAR(32) NOT NULL ,
+modify_datetime     TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
+modify_user_id      VARCHAR(32),
+seal_flag           VARCHAR(1) 	
+) tablespace tag_data;
+
+
+alter table oms_owner.tables_audit   
+  add constraint tables_audit_pk primary key (object_name)
+  using index tablespace tag_indx;
+
+comment on table oms_owner.tables_audit is 'List of tables being audited or audited in the past (not the entire set of tables available in the database)';
+
+comment on column oms_owner.tables_audit.object_name is 'The table name being audited or audited in the past';
+comment on column oms_owner.tables_audit.audit_flag is 'Indicates if the table is being audited';

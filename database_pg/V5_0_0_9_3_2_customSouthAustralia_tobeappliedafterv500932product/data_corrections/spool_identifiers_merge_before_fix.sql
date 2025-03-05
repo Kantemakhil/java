@@ -1,0 +1,1 @@
+\copy (select offender_id, offender_id_seq, identifier_type, identifier from offender_identifiers where identifier_type = (select profile_value from system_profiles where profile_type = 'PRODUCT' AND profile_code = 'MERGE_ID') and identifier <> LTRIM(identifier, '0')) TO 'identifiers_merge_before_fix.csv' (format CSV);	

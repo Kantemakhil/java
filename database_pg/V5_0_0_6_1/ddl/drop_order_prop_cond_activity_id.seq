@@ -1,0 +1,1 @@
+drop sequence  order_prop_cond_activity_id;

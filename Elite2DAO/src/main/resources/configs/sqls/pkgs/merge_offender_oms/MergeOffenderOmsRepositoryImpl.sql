@@ -1,0 +1,286 @@
+MERGE_OFFENDER_OMS_LOCK_OFF_NON_ASSOCIATIONS{
+select * from OFFENDER_NON_ASSOCIATIONS where OFFENDER_ID = :offenderId
+}
+MERGE_OFFENDER_OMS_LOCK_OFFENDER_NA_DETAILS{
+SELECT * FROM OFFENDER_NA_DETAILS WHERE OFFENDER_ID = :offenderId
+}
+MERGE_OFFENDER_OMS_LOCK_OFF_NA_DETAILS_NS{
+SELECT * FROM OFFENDER_NA_DETAILS WHERE NS_OFFENDER_ID = :rootOffenderId
+}
+MERGE_OFFENDER_OMS_LOCK_OFF_NON_ASSOCIATIONS_NS{
+SELECT * FROM OFFENDER_NON_ASSOCIATIONS WHERE NS_OFFENDER_ID = :rootOffenderId
+}
+MERGE_OFFENDER_OMS_LOCK_OFF_FILE_TRANSACTIONS{
+SELECT * FROM OFFENDER_FILE_TRANSACTIONS WHERE OFFENDER_ID = :rootOffenderId
+}
+MERGE_OFFENDER_OMS_LOCK_OFF_FILE_DELIVERIES{
+SELECT * FROM OFFENDER_FILE_DELIVERIES WHERE OFFENDER_ID = :rootOffenderId
+}
+MERGE_OFFENDER_OMS_LOCK_OFFENDERS{
+SELECT * FROM OFFENDERS WHERE ROOT_OFFENDER_ID = :rootOffenderId
+}
+
+
+
+
+MERGE_OFFENDER_OMS_MERGE_NON_ASSOC_1{
+SELECT OFFENDER_ID, NS_OFFENDER_ID FROM OFFENDER_NON_ASSOCIATIONS WHERE OFFENDER_ID = :rootOffenderIdFrom
+}
+
+MERGE_OFFENDER_OMS_MERGE_NON_ASSOC_2{
+SELECT OFFENDER_ID, NS_OFFENDER_ID FROM OFFENDER_NON_ASSOCIATIONS WHERE NS_OFFENDER_ID = :rootOffenderIdFrom
+}
+
+MERGE_OFFENDER_OMS_GET_LATEST_BOOKING{
+select OFFENDER_BOOK_ID from OFFENDER_BOOKINGS where OFFENDER_ID in (:fromRootOffenderId, :toRootOffenderId) and BOOKING_BEGIN_DATE = ( select MAX (BOOKING_BEGIN_DATE) from OFFENDER_BOOKINGS where OFFENDER_ID in (:fromRootOffenderId, :toRootOffenderId)) order by OFFENDER_BOOK_ID desc
+}
+
+MERGE_OFFENDER_OMS_UPDATE_OFFENDER_NON_ASSOCIATIONS{
+update OFFENDER_NON_ASSOCIATIONS set OFFENDER_ID = :pRootOffenderIdTo, MODIFY_USER_ID = :modifyUserId, MODIFY_DATETIME = CURRENT_TIMESTAMP where OFFENDER_ID = :offenderId and NS_OFFENDER_ID = :nsOffenderId
+}
+
+MERGE_OFFENDER_OMS_UPDATE_OFFENDER_NA_DETAILS{
+ UPDATE OFFENDER_NA_DETAILS set OFFENDER_ID = :pRootOffenderIdTo, MODIFY_USER_ID = :modifyUserId, MODIFY_DATETIME = CURRENT_TIMESTAMP where OFFENDER_ID = :offenderId and NS_OFFENDER_ID = :nsOffenderId
+}
+
+MERGE_OFFENDER_OMS_DELETE_OFFENDER_NA_DETAILS{
+DELETE FROM OFFENDER_NA_DETAILS WHERE OFFENDER_ID = :offenderId AND NS_OFFENDER_ID = :nsOffenderId
+}
+
+MERGE_OFFENDER_OMS_DELETE_OFFENDER_NON_ASSOCIATIONS{
+DELETE FROM OFFENDER_NON_ASSOCIATIONS WHERE OFFENDER_ID = :offenderId AND NS_OFFENDER_ID = :nsOffenderId
+}
+
+MERGE_OFFENDER_OMS_UPDATE_OFFENDER_NA_DETAILS1{
+UPDATE OFFENDER_NA_DETAILS SET OFFENDER_BOOK_ID = :lvLatestBookingId WHERE OFFENDER_ID = :pRootOffenderIdTo AND NS_OFFENDER_ID = :nsOffenderId
+}
+
+MERGE_OFFENDER_OMS_UPDATE_OFFENDER_NON_ASSOCIATIONS1{
+UPDATE OFFENDER_NON_ASSOCIATIONS SET OFFENDER_BOOK_ID = :lvLatestBookingId WHERE OFFENDER_ID = :pRootOffenderIdTo AND NS_OFFENDER_ID = :nsOffenderId
+}
+
+
+
+
+MERGE_OFFENDER_OMS_UPDATE_OFFENDER_NON_ASSOCIATIONS2{
+update OFFENDER_NON_ASSOCIATIONS set NS_OFFENDER_ID = :pRootOffenderIdTo, ,MODIFY_USER_ID = :modifyUserId, MODIFY_DATETIME = CURRENT_TIMESTAMP where OFFENDER_ID = :offenderId and NS_OFFENDER_ID = :nsOffenderId
+}
+
+MERGE_OFFENDER_OMS_UPDATE_OFFENDER_NA_DETAILS2{
+ UPDATE OFFENDER_NA_DETAILS set NS_OFFENDER_ID = :pRootOffenderIdTo, ,MODIFY_USER_ID = :modifyUserId, MODIFY_DATETIME = CURRENT_TIMESTAMP where OFFENDER_ID = :offenderId and NS_OFFENDER_ID = :nsOffenderId
+}
+
+MERGE_OFFENDER_OMS_DELETE_OFFENDER_NA_DETAILS2{
+DELETE FROM OFFENDER_NA_DETAILS WHERE OFFENDER_ID = :offenderId AND NS_OFFENDER_ID = :nsOffenderId
+}
+
+MERGE_OFFENDER_OMS_DELETE_OFFENDER_NON_ASSOCIATIONS2{
+DELETE FROM OFFENDER_NON_ASSOCIATIONS WHERE OFFENDER_ID = :offenderId AND NS_OFFENDER_ID = :nsOffenderId
+}
+
+MERGE_OFFENDER_OMS_UPDATE_OFFENDER_NA_DETAILS21{
+UPDATE OFFENDER_NA_DETAILS SET OFFENDER_BOOK_ID = :lvLatestBookingId, MODIFY_USER_ID = :modifyUserId, MODIFY_DATETIME = CURRENT_TIMESTAMP WHERE OFFENDER_ID = :offenderId AND NS_OFFENDER_ID = :pRootOffenderIdTo
+}
+
+MERGE_OFFENDER_OMS_UPDATE_OFFENDER_NON_ASSOCIATIONS21{
+UPDATE OFFENDER_NON_ASSOCIATIONS SET OFFENDER_BOOK_ID = :lvLatestBookingId WHERE OFFENDER_ID = :offenderId AND NS_OFFENDER_ID = :pRootOffenderIdTo
+}
+
+
+MERGE_OFFENDER_OMS_GET_NEXT_FILE_SEQ {
+SELECT COALESCE(MAX (OFFENDER_FILE_SEQ), 0) + 1 
+           FROM OFFENDER_COMMUNITY_FILES
+          WHERE OFFENDER_ID = :lvRootOffIdTo
+}
+
+MERGE_OFFENDER_OMS_OLD_OFFENDER_FILES_PAPER_CURSER_DATA {
+SELECT     OFFENDER_ID, OFFENDER_FILE_SEQ, OFFENDER_FILE_NUM,
+                    VOLUME_SEQ, FILE_TYPE, FILE_SUB_TYPE, FILE_REFERENCE,
+                    FILE_CREATE_DATE, HOLDING_AGY_LOC_ID, HOLDING_STAFF_ID,
+                    NON_OFFICER_STATUS, STORAGE, RESUBMISSION_DATE,
+                    CREATION_DATE, CREATION_USER, CASELOAD_TYPE,
+                    CLOSE_FILE_NO, TRANS_COMMENT_TEXT
+               FROM OFFENDER_COMMUNITY_FILES
+              WHERE OFFENDER_ID = :lvRootOffIdFrom
+           ORDER BY OFFENDER_FILE_SEQ,
+                    OFFENDER_FILE_NUM,
+                    FILE_TYPE,
+                    FILE_SUB_TYPE,
+                    VOLUME_SEQ
+         FOR UPDATE
+}
+
+MERGE_OFFENDER_OMS_GET_NEXT_FILE_NUMBER {
+SELECT OFFENDER_FILE_NUM
+           FROM OFFENDER_COMMUNITY_FILES
+          WHERE OFFENDER_ID = :lvRootOffIdTo
+            AND FILE_TYPE = :fileType
+            AND FILE_SUB_TYPE = :fileSubType
+}
+MERGE_OFFENDER_OMS_GET_NEXT_FILE_NUMBER_CURSER {
+SELECT COALESCE (MAX (OFFENDER_FILE_NUM), 0) + 1
+           FROM OFFENDER_COMMUNITY_FILES
+          WHERE OFFENDER_ID = :lvRootOffIdTo
+}
+
+MERGE_OFFENDER_OMS_GET_NEXT_VOLUME_SEQ_CURSER {
+SELECT COALESCE (MAX (VOLUME_SEQ), 0) + 1
+           FROM OFFENDER_COMMUNITY_FILES
+          WHERE OFFENDER_FILE_NUM = :lvNxtOfn
+            AND OFFENDER_ID = :lvRootOffIdTo
+}
+
+MERGE_OFFENDER_OMS_INSERT_OFFENDER_COMMUNITY_FILES {
+INSERT INTO OFFENDER_COMMUNITY_FILES (OFFENDER_ID, OFFENDER_FILE_SEQ, OFFENDER_FILE_NUM,VOLUME_SEQ, FILE_TYPE,FILE_SUB_TYPE, FILE_REFERENCE,FILE_CREATE_DATE, HOLDING_AGY_LOC_ID,
+                      HOLDING_STAFF_ID, NON_OFFICER_STATUS,STORAGE, RESUBMISSION_DATE,CREATION_DATE, CREATION_USER,CASELOAD_TYPE, CLOSE_FILE_NO,TRANS_COMMENT_TEXT, MODIFY_DATETIME
+                     )
+              VALUES (:offenderId, :offenderFileSeq, :offenderFileNum,:volumeSeq, :fileType,:fileSubType, :fileReference,
+                      :fileCreateDate, :holdingAgyLocId,:holdingStaffId, :nonOfficerStatus,:storage, :resubmissionDate,
+                      :creationDate, :creationUser,:caseloadType, :closeFileNo,:transCommentText, null
+                     )
+}
+
+MERGE_OFFENDER_OMS_UPDATE_OFFENDER_FILE_TRANSACTION {
+UPDATE OFFENDER_FILE_TRANSACTIONS
+            SET OFFENDER_ID = :lvRootOffIdTo,
+                OFFENDER_FILE_SEQ = :longValue,
+                MODIFY_USER_ID = :modifyUserId, 
+                MODIFY_DATETIME = CURRENT_TIMESTAMP
+          WHERE OFFENDER_ID = :lvRootOffIdFrom
+            AND OFFENDER_FILE_SEQ = :offenderFileSeq
+}
+
+MERGE_OFFENDER_OMS_UPDATE_OFFENDER_FILE_DELIVIRIES {
+UPDATE OFFENDER_FILE_DELIVERIES
+            SET OFFENDER_ID = :lvRootOffIdTo,
+                OFFENDER_FILE_SEQ = :longValue
+                MODIFY_USER_ID = :modifyUserId, 
+                MODIFY_DATETIME = CURRENT_TIMESTAMP
+          WHERE OFFENDER_ID = :lvRootOffIdFrom
+            AND OFFENDER_FILE_SEQ = :offenderFileSeq
+}
+
+MERGE_OFFENDER_OMS_DELETE_OFFENDER_COMMUNITY_FILES {
+delete from OFFENDER_COMMUNITY_FILES where OFFENDER_ID=:offenderId and OFFENDER_FILE_SEQ=:offFileSeq
+}
+
+MERGE_OFFENDER_OMS_GET_OFF_IDEN_CURSER {
+SELECT PROFILE_VALUE
+           FROM SYSTEM_PROFILES
+          WHERE PROFILE_TYPE = 'PRODUCT' AND PROFILE_CODE = 'MERGE_ID'
+}
+MERGE_OFFENDER_OMS_GET_LV_OFF_ID_SEQ {
+SELECT COALESCE (MAX (CAST(OFFENDER_ID_SEQ AS INT)), 0) + 1
+           FROM OFFENDER_IDENTIFIERS
+          WHERE OFFENDER_ID = :offenderIdTo
+}
+
+MERGE_OFFENDER_OMS_GET_CASELOAD_TYPE_ON_USER {
+SELECT CASELOAD_TYPE
+           FROM CASELOADS CL, STAFF_MEMBERS SM
+          WHERE CL.CASELOAD_ID = SM.WORKING_CASELOAD_ID AND SM.USER_ID = :userId
+}
+
+MERGE_OFFENDER_OMS_INSERT_OFFENDER_IDENTIFIERS {
+INSERT INTO OFFENDER_IDENTIFIERS
+                        (OFFENDER_ID, OFFENDER_ID_SEQ, IDENTIFIER_TYPE, IDENTIFIER,
+                         ROOT_OFFENDER_ID, CASELOAD_TYPE, CREATE_USER_ID, CREATE_DATETIME,
+                         VERIFIED_FLAG, MODIFY_DATETIME
+                        )
+                 VALUES (:offenderId, :offenderIdSeq, :identifierType, :identifier,
+                         :rootOffenderId, :caseloadType, :createUserId, current_timestamp,
+                         'Y', null
+                        )
+}
+
+MERGE_OFFENDER_OMS_DELETE_OFFENDER_IDENTIFIERS {
+DELETE FROM OFFENDER_IDENTIFIERS
+                     WHERE IDENTIFIER_TYPE = :lvIdentType AND ROOT_OFFENDER_ID = :lvRootOffIdTo
+}
+
+MERGE_OFFENDER_OMS_GET_OFFENDER_ADDRESS_DATA {
+SELECT *
+        FROM ADDRESSES A
+       WHERE UPPER(A.OWNER_CLASS) ='OFF' 
+         AND A.OWNER_ID           = :lvRootOffId
+         FOR UPDATE NOWAIT
+}
+MERGE_OFFENDER_OMS_CHECK_OFF_STATUS_CURSER {
+SELECT COUNT(1) 
+        FROM OFFENDER_BOOKINGS OB
+       WHERE OB.ROOT_OFFENDER_ID      = :lvRootOffId
+         AND UPPER(OB.ACTIVE_FLAG)    = 'Y'
+         AND UPPER(OB.BOOKING_STATUS) = 'O'
+}
+MERGE_OFFENDER_OMS_CHECK_OFF_PRE_FLAG_CURSER {
+SELECT COUNT(1) 
+        FROM ADDRESSES A 
+       WHERE UPPER(A.OWNER_CLASS)  ='OFF' 
+         AND A.OWNER_ID            = :lvRootOffId
+         AND UPPER(A.PRIMARY_FLAG) = 'Y'
+}
+MERGE_OFFENDER_OMS_UPDATE_OFFENDER_ADDRESS_DATA {
+UPDATE ADDRESSES A
+                   SET A.PRIMARY_FLAG = 'N'
+                   MODIFY_USER_ID = :modifyUserId, 
+                   MODIFY_DATETIME = CURRENT_TIMESTAMP
+                 WHERE UPPER(A.OWNER_CLASS)  = 'OFF'
+                   AND UPPER(A.PRIMARY_FLAG) = 'Y'
+                   AND A.OWNER_ID            = :lvRootOffIdTo
+                   }
+                   
+                   
+            
+                   
+MERGE_OFFENDER_OMS_GET_OFFENDER_ID_DISPLAY{
+select OFFENDER_ID_DISPLAY from OFFENDERS where ROOT_OFFENDER_ID = :lvRootOffIdTo limit 1
+}
+         
+MERGE_OFFENDER_OMS_UPDATE_OFFENDERS{
+update OFFENDERS set ROOT_OFFENDER_ID = :lvRootOffIdTo, ALIAS_OFFENDER_ID = :lvRootOffIdTo, OFFENDER_ID_DISPLAY = :lvOffIdDisplay, MODIFY_USER_ID = :modifyUserId, MODIFY_DATETIME = CURRENT_TIMESTAMP where ROOT_OFFENDER_ID = :lvRootOffIdFrom
+}
+                   
+
+
+MERGE_OFFENDER_OMS_GET_OLD_OFFENDER_IDENTIFIER_DET{
+SELECT * FROM offender_identifiers oi where offender_id = :offenderIdTo 
+}
+
+MERGE_OFFENDER_OMS_GET_ADDRESS_DATA{
+ SELECT * FROM addresses a where owner_id  = :offenderIdTo and OWNER_CLASS = 'OFF'
+}
+
+MERGE_OFFENDER_OMS_GET_OFFENDERS_DATA{
+SELECT * FROM offenders o  where offender_id  = :offenderIdTo 
+}
+
+
+
+MERGE_OFFENDER_OMS_GET_OFFENDER_NON_ASSOCIATIONS_DATA{
+select * from OFFENDER_NON_ASSOCIATIONS where offender_id = :nsOffenderId
+}
+
+MERGE_OFFENDER_OMS_GET_OFFENDER_NA_DETAILS_DATA{
+select * from OFFENDER_NA_DETAILS where offender_id = :nsOffenderId
+}
+
+MERGE_OFFENDER_OMS_INSERT_OFFENDER_NON_ASSOCIATIONS_DATA{
+insert into offender_non_associations (offender_id, ns_offender_id,offender_book_id,ns_offender_book_id,ns_reason_code,ns_level_code,internal_location_flag,
+transport_flag,recip_ns_reason_code,create_datetime, create_user_id, modify_datetime, modify_user_id, seal_flag) 
+values (:offenderId, :nsOffenderId, :offenderBookId, :nsOffenderBookId, :nsReasonCode, :nsLevelCode, :internalLocationFlag,
+:transportFlag, :recipNsReasonCode, CURRENT_TIMESTAMP, :createUserId, NULL, NULL, :sealFlag)
+}
+
+MERGE_OFFENDER_OMS_INSERT_OFFENDER_NA_DETAILS_DATA{
+insert into offender_na_details (offender_id, ns_offender_id,offender_book_id,ns_offender_book_id,type_seq,ns_reason_code,ns_level_code,ns_type, 
+ns_effective_date,ns_expiry_date,authorized_staff,comment_text,recip_ns_reason_code,  create_datetime, create_user_id, modify_datetime, modify_user_id, seal_flag) 
+values (:offenderId, :nsOffenderId, :offenderBookId, :nsOffenderBookId, :typeSeq, :nsReasonCode, :nsLevelCode, :nsType, :nsEffectiveDate,
+:nsExpiryDate, :authorizedStaff, :commentText, :recipNsReasonCode, CURRENT_TIMESTAMP, :createUserId, null, :modifyUserId, :sealFlag)
+}
+
+
+MERGE_OFFENDER_OMS_UPDATE_OFFENDER_IDENTIFIERS{
+update offender_identifiers set identifier_type = :identifierType , modify_datetime = current_timestamp , modify_user_id = :modifyUserId where offender_id = :offenderId and offender_id_seq = :offenderIdSeq 
+}
+     
+                  

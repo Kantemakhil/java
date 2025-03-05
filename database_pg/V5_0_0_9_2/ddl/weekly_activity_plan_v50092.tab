@@ -1,0 +1,62 @@
+comment on
+table weekly_activity_plan is 'Table is used to store the weekly activity plan data';
+
+comment on
+column weekly_activity_plan.offender_book_id is 'The system generated identifier for an offender booking.';
+
+comment on
+column weekly_activity_plan.activity_date is 'Indicates Date of the activity under the plan';
+
+comment on
+column weekly_activity_plan.wap_start_date is 'Indicates Weekly Activity Start Date';
+
+comment on
+column weekly_activity_plan.wap_end_date is 'Indicates Weekly Activity End Date';
+
+comment on
+column weekly_activity_plan.wap_end_date is 'Indicates Weekly Activity End Date';
+
+comment on
+column weekly_activity_plan.activity_id is 'Stores the activity id for system generated schedules with the type of schedule';
+
+comment on
+column weekly_activity_plan.activity_id is 'Stores the activity id for system generated schedules with the type of schedule';
+
+comment on
+column weekly_activity_plan.activity is 'Stores the activity description for system generated schedules. manually created schedules Wap Activity [ref domain=WAP_ACTIVITY]';
+
+comment on
+column weekly_activity_plan.activity_address is 'Stores the Address which is entered for  manually created schedules under the week';
+
+comment on
+column weekly_activity_plan.depart_start_time is 'Stores the depart start time  for  manually created schedules under the week';
+
+comment on
+column weekly_activity_plan.activity_start is 'Stores the activity start time or event start time of the schedules which are available under the week';
+
+comment on
+column weekly_activity_plan.activity_finish is 'Stores the activity finish time or event end time of the schedules which are available under the week';
+
+comment on
+column weekly_activity_plan.activity_finish is 'Stores the activity finish time or event end time of the schedules which are available under the week';
+
+comment on
+column weekly_activity_plan.return_time is 'Stores the return value of the schedules which are created manually under the week';
+
+comment on
+column weekly_activity_plan.return_time is 'Stores the return value of the schedules which are created manually under the week';
+
+comment on
+column weekly_activity_plan.mode_of_transport is 'Mode of Transport [ref domain=TA_TRANSPORT]';
+
+comment on
+column weekly_activity_plan.update_indicator is 'Update Indicator[ref domain= WAP_UPD_IND]';
+
+comment on
+column weekly_activity_plan.not_for_offender_flag is 'If this flag is checked will exclude the data of that offender under the report';
+
+comment on
+column weekly_activity_plan.finalized is 'This flag is set to Y when finalized the data under the week';
+
+comment on
+column weekly_activity_plan.version_no is 'This field saves the version data to maintain the history of the week';

@@ -1,0 +1,1 @@
+alter table ocdlegls_data_hty alter column action_type type VARCHAR(32);

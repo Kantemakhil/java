@@ -1,0 +1,27 @@
+CREATE TABLE oms_owner.incident_reportable_details (
+    incident_reportable_id  int8 NOT null,
+	agency_incident_id int8 NOT NULL,
+	party_seq int4 NOT NULL,
+	reportable_incident_type varchar(12) NOT NULL,
+	comment_text varchar(240) NULL,
+	reportable_staff_id int8 NOT null,
+	reportable_datetime timestamp(6) NOT NULL,
+	create_datetime timestamp(6) NOT NULL default current_timestamp,
+	create_user_id varchar(32) NOT NULL,
+	modify_user_id varchar(32) NULL,
+	modify_datetime timestamp(6) NULL,
+	seal_flag varchar(1) NULL,
+	CONSTRAINT incident_reportable_details_pk PRIMARY KEY (incident_reportable_id),
+	CONSTRAINT incident_reportable_details_fk1 FOREIGN KEY (agency_incident_id,party_seq) REFERENCES oms_owner.agency_incident_parties(agency_incident_id,party_seq),
+	CONSTRAINT incident_reportable_details_fk2 FOREIGN KEY (reportable_staff_id) REFERENCES oms_owner.staff_members(staff_id),
+	CONSTRAINT incident_reportable_details_uk1 UNIQUE (agency_incident_id, party_seq, reportable_incident_type)
+) TABLESPACE tag_data;
+
+comment on table oms_owner.incident_reportable_details is 'Staff/Offender Incident Involvement - Reportable Incident Details';
+comment on column incident_reportable_details.incident_reportable_id is 'Unique identified of the incident reportable_id [db sequence=incident_reportable_id_seq]';
+comment on column incident_reportable_details.agency_incident_id is 'Unique identifier of the agency incident';
+comment on column incident_reportable_details.party_seq is 'Together with agency_incident_id it represents the unique identifier of the staff incident party';
+comment on column incident_reportable_details.reportable_incident_type is 'Reportable incident type [reference_domain= REPINCTYP]';
+comment on column incident_reportable_details.comment_text is 'Reportable incident type comment text information';
+comment on column incident_reportable_details.reportable_staff_id is 'The staff who records the Reportable Incident Details in the system';
+comment on column incident_reportable_details.reportable_datetime is 'Date and time of the Reportable Incident Details enters';

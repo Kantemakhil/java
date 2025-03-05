@@ -1,0 +1,1 @@
+ALTER TABLE offender_bookings ALTER COLUMN comm_status TYPE varchar(32);

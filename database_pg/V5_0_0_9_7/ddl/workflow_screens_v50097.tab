@@ -1,0 +1,1 @@
+alter table oms_owner.workflow_screens add column tool_tip varchar(100) null;

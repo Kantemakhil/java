@@ -1,0 +1,27 @@
+create table stage_housing
+(    offender_id_display  varchar2(10)    not null 
+   , booking_begin_date   date            not null
+   , bed_location         varchar2(40)    not null
+   , assignment_date      date            not null
+   , assignment_time      date            not null
+   , assignment_reason    varchar2(12)    
+   , invalid_reason       varchar2(256)
+   , invalid_flag         varchar2(1) 
+)
+tablespace tag_data;
+
+ALTER TABLE stage_housing
+  ADD CONSTRAINT stage_housing_uk UNIQUE(offender_id_display, booking_begin_date, assignment_date, assignment_time)
+  USING index tablespace TAG_INDX
+;
+
+
+comment on column stage_housing.offender_id_display is 'The user facing unique identifier of an offender. If padding is turned on, the value should be ten characters long, padded left with zeroes.';
+comment on column stage_housing.booking_begin_date is 'The start date of the incarceration period.';
+comment on column stage_housing.bed_location is 'Description of the housing location in format [FACILITY CODE]-[UNIT LEVEL 1 CODE]-[UNIT LEVEL 2 CODE]-[UNIT LEVEL 3 CODE]-[UNIT LEVEL 4 CODE] where the facility code matches the offender assigned facility. The location must be a leaf node (i.e., if beds are defined to the bed level, you cannot assign to the cell or wing level).';
+comment on column stage_housing.assignment_date is 'The date the housing was assigned.';
+comment on column stage_housing.assignment_time is 'The time the housing was assigned.';
+comment on column stage_housing.assignment_reason is 'A code indicating the reason for the housing assignment. Reference domain ( CHG_HOUS_RSN )';
+comment on column stage_housing.invalid_reason is 'The reason the record will be skipped during conversion.';
+comment on column stage_housing.invalid_flag is 'A flag to indicate whether the record should be processed. Records marked with ''N'' will be skipped during conversion.';
+comment on table stage_housing is 'Historical information on institutional housing assignments. Housing must be defined for admission, and for the admission movement against a transfer.';

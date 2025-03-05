@@ -1,0 +1,5 @@
+ALTER TABLE offence_code_groupings DROP CONSTRAINT ofn_cg_ofn_f1;
+ALTER TABLE offence_indicators DROP CONSTRAINT  off_ind_offence_fk1;
+ALTER TABLE offender_charges_hty DROP CONSTRAINT  off_chgh_ofn_f1;
+ALTER TABLE offender_charges DROP CONSTRAINT  off_chg_ofn_fk;
+ALTER TABLE allowable_offence_types DROP CONSTRAINT allow_ot_ofn_f1;

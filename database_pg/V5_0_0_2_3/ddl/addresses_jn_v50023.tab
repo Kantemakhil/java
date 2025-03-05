@@ -1,0 +1,12 @@
+ALTER TABLE oms_owner.addresses_jn ALTER COLUMN city_code TYPE varchar(64) USING city_code::varchar;
+ALTER TABLE oms_owner.addresses_jn ALTER COLUMN prov_state_code TYPE varchar(64) USING prov_state_code::varchar;
+
+ALTER TABLE addresses_jn ADD longitude numeric(16, 4);
+
+ALTER TABLE addresses_jn ADD latitude numeric(16, 4);
+
+ALTER TABLE addresses_jn ADD mesh_block numeric(16, 4);
+
+ALTER TABLE addresses_jn ADD is_address_valid varchar(1);
+
+ALTER TABLE addresses_jn ADD address_line1 varchar(128);

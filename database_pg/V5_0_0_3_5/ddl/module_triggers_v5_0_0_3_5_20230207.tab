@@ -1,0 +1,7 @@
+comment on table oms_owner.module_triggers is 'The list of application triggers that have been associated with business automation processes.';
+
+comment on column oms_owner.module_triggers.module_name is 'The short name of the application module.';
+comment on column oms_owner.module_triggers.dto_name is 'The name of the underlying data transfer object responsible for the triggering event.';
+comment on column oms_owner.module_triggers.trigger_name is 'The name of the trigger. Required for modules with multiple triggering events, to differentiate the specific triggering events on the module.';
+comment on column oms_owner.module_triggers.module_description is 'The module description.';
+comment on column oms_owner.module_triggers.trigger_id is 'The unique identifier of the trigger.'; 

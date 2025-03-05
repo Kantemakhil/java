@@ -1,0 +1,34 @@
+create table stage_offenders
+(    last_name            varchar2(35)    not null 
+   , first_name           varchar2(35)    
+   , middle_name          varchar2(35)
+   , birth_date           date            not null
+   , gender               varchar2(12)    not null
+   , suffix               varchar2(12)   
+   , country              varchar2(12)
+   , offender_id_display  varchar2(10)    not null
+   , caseload_type        varchar2(12)               
+   , name_type            varchar2(12) 
+   , ethnicity            varchar2(12)  
+   , birth_state          varchar2(12)
+   , invalid_reason       varchar2(256)
+   , invalid_flag         varchar2(1) 
+)
+tablespace tag_data;
+
+
+comment on column stage_offenders.last_name is 'Last name of the offender';
+comment on column stage_offenders.first_name is 'Indicates the first name of the offender.';
+comment on column stage_offenders.middle_name is 'Indicates middle name of the offender.';
+comment on column stage_offenders.birth_date is 'The birthdate of the offender.';
+comment on column stage_offenders.gender is 'A code that identifies the gender of the offender. Codes defined on Reference Domain ( SEX ).';
+comment on column stage_offenders.suffix is 'A code that identifies the offender name suffix (ie JR or III). Codes defined on Reference Domain ( SUFFIX ).';
+comment on column stage_offenders.country is 'A code identifying the birth country of the offender. Codes defined on Reference Domain ( COUNTRY )';
+comment on column stage_offenders.offender_id_display is 'The visible unique identifier number for the offender.';
+comment on column stage_offenders.caseload_type is 'The type of caseload (INST or COMM) the user is signed into when creating the offender name record. Generally, this would be populated with INST for prison populations and COMM for community populations, and would typically be defaulted to one or the other based on the data source (prison or community data).';
+comment on column stage_offenders.name_type is 'A code that qualifies the type of name. E.g., working name, given name, alias, moniker, gang name. Codes defined on Reference Domain ( NAME_TYPE ). For conversion, ensure only one name per person (set of records with identical OFFENDER_ID_DISPLAY) is identified as the WORKING name, as this value will be used to indicate the working name on bookings.';
+comment on column stage_offenders.ethnicity is 'A code that identifies the race of the offender. Codes defined on Reference Domain ( ETHNICITY ).';
+comment on column stage_offenders.birth_state is 'A code indicating the birth state of the offender. Codes defined on Reference Domain ( PROV_STATE )';
+comment on column stage_offenders.invalid_reason is 'The reason the record will be skipped during conversion.';
+comment on column stage_offenders.invalid_flag is 'A flag to indicate whether the record should be processed. Records marked with ''N'' will be skipped during conversion.';
+comment on table stage_offenders is 'Master offender names table, holding one record for every name associated with an offender. A person''s names are the set of records that share the same OFFENDER_ID_DISPLAY. For each person, exactly one name should have a name type of ''WORKING'', indicating that it is the legal name that will display in the header.';

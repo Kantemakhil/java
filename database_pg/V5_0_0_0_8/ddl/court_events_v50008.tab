@@ -1,0 +1,12 @@
+ALTER TABLE oms_owner.court_events 
+   ADD sentence_seq BIGINT
+  ,ADD order_type VARCHAR(100) 
+  ,ADD recommended_sanction_count BIGINT
+  ,ADD recommended_reward_count BIGINT
+  ,ADD additional_counts_comment VARCHAR(4000);
+
+comment on column oms_owner.court_events.sentence_seq is 'This field is used to save the Sentence number';
+comment on column oms_owner.court_events.order_type is 'This Field is used to save the Sentence order type ';
+comment on column oms_owner.court_events.recommended_sanction_count is 'This field is used to save the recommended sanction count for court event';
+comment on column oms_owner.court_events.recommended_reward_count is 'This field is used to save the recommended reward count for court event';  
+comment on column oms_owner.court_events.additional_counts_comment is 'This field is used to store the Additional comment which is entered for sanction or reward';

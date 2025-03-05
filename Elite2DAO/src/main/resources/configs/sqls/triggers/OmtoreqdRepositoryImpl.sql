@@ -1,0 +1,6 @@
+OMTOREQD_GET{
+SELECT OFFENDER_BOOK_ID,CHARGE_SEQ,REQUEST_SEQ,ORDER_TYPE,ORDER_CODE,REQUEST_STATUS,DESCRIPTION,START_DATE,SENTENCE_EXPIRY_DATE,DATE_TO_BE_FIXED,CREATION_USER,CREATION_DATE,REPORT_DUE_DATE,COMMENT_TEXT,DISCHARGE_COMMENT,DISCHARGE_DATE,DISCHARGE_REASON,DISCHARGE_AUTHORITY,TRANSCRIPT_DUE_DATE,COURT_DELIVERY_DATE,CASELOAD_TYPE,CREATE_DATETIME,CREATE_USER_ID,MODIFY_DATETIME,MODIFY_USER_ID,SEAL_FLAG FROM OFFENDER_REQUESTS WHERE OFFENDER_BOOK_ID=:offenderBookId AND CHARGE_SEQ=:chargeSeq AND REQUEST_SEQ=:requestSeq
+}
+OMTOREQD_INSERT{
+INSERT INTO offender_requests_hty (request_event_id, request_seq, offender_book_id, charge_seq, order_type, order_code, request_status, description, start_date, sentence_expiry_date, date_to_be_fixed, creation_user, creation_date, report_due_date, comment_text, discharge_comment, discharge_date, discharge_reason, discharge_authority,create_datetime,modify_datetime,create_user_id )  VALUES ( sentence_event_id.nextval, :requestSeq, :offenderBookId, :chargeSeq, :orderType, :orderCode, :requestStatus, :description, :startDate, :sentenceExpiryDate, :dateToBeFixed, :creationUser, :creationDate, :reportDueDate, :commentText, :dischargeComment, :dischargeDate , :dischargeReason, :dischargeAuthority,:createDatetime,:modifyDatetime,:createUserId )
+}

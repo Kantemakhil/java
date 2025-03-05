@@ -1,0 +1,45 @@
+CREATE OR REPLACE VIEW oms_owner.v_living_unit_rolls_2
+AS WITH bed_reservations AS (
+         SELECT reserve_bed_locations.living_unit_id,
+            COALESCE(count(*), 0::bigint) AS no_of_reservations
+           FROM reserve_bed_locations
+          WHERE reserve_bed_locations.reserve_until_date >= date_trunc('day'::text, LOCALTIMESTAMP)
+          GROUP BY reserve_bed_locations.living_unit_id
+        )
+ SELECT ail.agy_loc_id,
+    ail.internal_location_id AS living_unit_id,
+    ail.parent_internal_location_id AS parent_living_unit_id,
+    sum(
+        CASE
+            WHEN COALESCE(bkg.living_unit_id::text, ''::text) = ''::text THEN 0
+            ELSE 1
+        END) AS bkg_allocated,
+    sum(
+        CASE
+            WHEN COALESCE(bkg.agency_iml_id::text, ''::text) = ''::text THEN
+            CASE
+                WHEN bkg.in_out_status::text = 'IN'::text THEN 1
+                ELSE 0
+            END
+            ELSE 0
+        END) AS bkg_in_living_units,
+    sum(
+        CASE
+            WHEN COALESCE(bkg.agency_iml_id::text, ''::text) = ''::text THEN 0
+            ELSE
+            CASE
+                WHEN bkg.in_out_status::text = 'IN'::text THEN 1
+                ELSE 0
+            END
+        END) AS bkg_out_of_living_units,
+    sum(
+        CASE
+            WHEN bkg.in_out_status::text = 'OUT'::text THEN 1
+            ELSE 0
+        END) AS bkg_out_of_agy,
+    max(COALESCE(bed_reservations.no_of_reservations, 0::bigint)) AS bkg_reserved_beds
+   FROM agency_internal_locations ail
+     LEFT JOIN offender_bookings bkg ON ail.internal_location_id = bkg.living_unit_id AND ail.agy_loc_id::text = bkg.agy_loc_id::text
+     LEFT JOIN bed_reservations ON ail.internal_location_id = bed_reservations.living_unit_id
+  WHERE ail.unit_type IS NOT NULL AND ail.unit_type::text <> ''::text
+  GROUP BY ail.agy_loc_id, ail.internal_location_id, ail.parent_internal_location_id;

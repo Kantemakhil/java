@@ -1,0 +1,10 @@
+ALTER TABLE offence_indicators ADD COLUMN offence_id int8;
+update offence_indicators oi set offence_id = (select offence_id from offences off where oi.offence_code = off.offence_code and oi.statute_code = off.statute_code );
+ALTER TABLE offence_indicators ALTER COLUMN offence_id SET NOT null;
+
+ALTER TABLE offence_indicators ADD CONSTRAINT off_ind_offence_fk1 FOREIGN KEY (offence_id) REFERENCES offences(offence_id) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE;
+
+comment on column oms_owner.offence_indicators.offence_id is 'Unique identified of the offence';
+
+ALTER TABLE offence_indicators DROP COLUMN offence_code;
+ALTER TABLE offence_indicators DROP COLUMN statute_code;

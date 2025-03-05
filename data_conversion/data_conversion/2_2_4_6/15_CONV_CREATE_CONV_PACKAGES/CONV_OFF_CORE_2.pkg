@@ -1,0 +1,718 @@
+CREATE OR REPLACE PACKAGE CONV_OFF_CORE_2 IS
+
+   FUNCTION show_version RETURN VARCHAR2;
+      --
+      --
+   PROCEDURE offender_physical_attributes;
+   PROCEDURE offender_profiles;
+   PROCEDURE offender_profile_details;
+      --
+   PROCEDURE offender_addresses;
+   PROCEDURE offender_phones;
+		
+    PROCEDURE main;
+
+END CONV_OFF_CORE_2;
+/
+CREATE OR REPLACE PACKAGE BODY CONV_OFF_CORE_2 IS
+  -- ====================================================================================
+   vcp_version CONSTANT VARCHAR2(60) := '12.1.1.0 11-JAN-2021';
+  -- ====================================================================================
+  /*
+     MODIFICATION HISTORY (Please put version history in a reverse-chronological order below)
+     --------------------
+     Person      Date         Version               Comments
+     ---------   ---------    ---------             -----------------------------------
+     Syscon     12.1.1.0      11-JAN-2021           Initial version: offender  physical  attributes  ,  offender  profiles , offender  profile  details 
+                                                                     offender  addresses , offender  phones   
+                                                              
+  */
+  --------------------------------------------------------------------------------------------
+   g_max_limit    PLS_INTEGER := 10000;
+
+ --------------------------------------------------------------------------------------------
+
+   FUNCTION show_version RETURN VARCHAR2 IS
+   BEGIN
+      RETURN(vcp_version);
+   END show_version;
+
+  --------------------------------------------------------------------------------------------
+
+  PROCEDURE offender_physical_attributes
+  IS
+
+  CURSOR lv_stat_cur IS
+    SELECT  stg_p_att.offender_id_display as stage_offender_id_display 
+           ,stg_p_att.booking_begin_date as stage_booking_begin_date
+           ,conv_map_bookings.offender_book_id
+           ,1 as attribute_seq
+           ,stg_p_att.height_ft as height_ft
+           ,stg_p_att.height_in as height_in
+           ,stg_p_att.height_cm as height_cm
+           ,stg_p_att.weight_lb as weight_lbs
+           ,stg_p_att.weight_kg as weight_kg 
+           ,SYSTIMESTAMP  create_datetime
+           ,conv_utilities.g_conv_user create_user_id
+           ,SYSTIMESTAMP modify_datetime
+           ,NULL modify_user_id
+           ,NULL seal_flag
+      FROM oms_stage.stage_off_p_attributes stg_p_att, conv_map_bookings 
+      WHERE stg_p_att.offender_id_display = conv_map_bookings.stage_offender_id_display(+)
+       AND  stg_p_att.booking_begin_date = conv_map_bookings.stage_booking_begin_date(+);
+       
+  /*   WHERE NOT EXISTS  (SELECT offender_book_id, attribute_seq FROM offender_physical_attributes 
+                         WHERE offender_physical_attributes.offender_book_id = conv_map_bookings.offender_book_id 
+                           AND offender_physical_attributes.attribute_seq = 1); */
+        
+
+    TYPE typ_tab IS TABLE OF lv_stat_cur%ROWTYPE INDEX BY PLS_INTEGER;
+    lv_rec       typ_tab;
+    lv_idx  NUMBER;
+    lv_error_count   NUMBER;
+    dml_errors EXCEPTION;
+    PRAGMA EXCEPTION_INIT(dml_errors, -24381);
+  BEGIN 
+    conv_utilities.logging('OFFENDER_PHYSICAL_ATTRIBUTES', NULL, NULL, 'START', 'Start OFFENDER_PHYSICAL_ATTRIBUTES Procedure at: '|| systimestamp); 
+    lv_error_count := 0;
+
+    OPEN lv_stat_cur;
+    LOOP
+      FETCH lv_stat_cur BULK COLLECT
+        INTO lv_rec LIMIT g_max_limit;
+      BEGIN
+        FORALL i IN lv_rec.FIRST .. lv_rec.LAST SAVE EXCEPTIONS
+          INSERT /*+ APPEND */ INTO offender_physical_attributes
+           (offender_book_id
+           ,attribute_seq
+           ,height_ft
+           ,height_in
+           ,height_cm
+           ,weight_lbs
+           ,weight_kg
+           ,create_datetime
+           ,create_user_id
+           ,modify_datetime
+           ,modify_user_id
+           ,seal_flag)
+      VALUES (lv_rec(i).offender_book_id
+           ,lv_rec(i).attribute_seq
+           ,lv_rec(i).height_ft
+           ,lv_rec(i).height_in
+           ,lv_rec(i).height_cm
+           ,lv_rec(i).weight_lbs
+           ,lv_rec(i).weight_kg
+           ,lv_rec(i).create_datetime
+           ,lv_rec(i).create_user_id
+           ,lv_rec(i).modify_datetime
+           ,lv_rec(i).modify_user_id
+           ,lv_rec(i).seal_flag);
+      EXCEPTION
+        WHEN dml_errors THEN
+           lv_error_count := lv_error_count + SQL%BULK_EXCEPTIONS.count;
+           FOR j IN 1 .. SQL%BULK_EXCEPTIONS.COUNT
+           LOOP
+             lv_idx   := SQL%BULK_EXCEPTIONS(j).error_index;
+             conv_utilities.logging('OFFENDER_PHYSICAL_ATTRIBUTES', NULL, NULL, 'ERROR -- OFFENDER_BOOK_ID: '||lv_rec(lv_idx).offender_book_id
+                  || ' :stage_offender_id_display: ' || lv_rec(lv_idx).stage_offender_id_display
+                  || ' :stage_booking_begin_date: ' || TO_CHAR(lv_rec(lv_idx).stage_booking_begin_date, 'DD-MON-YYYY HH24:MI:SS')
+                 ,  SQLERRM(-sql%BULK_EXCEPTIONS(j).error_code));
+           END LOOP;
+      END;
+      COMMIT;
+      lv_rec.DELETE;
+      EXIT WHEN lv_stat_cur%NOTFOUND;
+    END LOOP;
+    CLOSE lv_stat_cur;
+    DBMS_STATS.GATHER_TABLE_STATS(ownname=>'OMS_OWNER',tabname=>'OFFENDER_PHYSICAL_ATTRIBUTES',cascade=>TRUE);
+    conv_utilities.logging('OFFENDER_PHYSICAL_ATTRIBUTES', NULL, NULL, 'END','Number of failures: ' || lv_error_count ||'. Procedure ends at: ' || systimestamp);
+  EXCEPTION
+    WHEN OTHERS THEN
+      IF lv_stat_cur%ISOPEN THEN
+        CLOSE lv_stat_cur;
+      END IF;
+      conv_utilities.logging('OFFENDER_PHYSICAL_ATTRIBUTES',NULL, NULL, 'EXCEPTION','Procedure generates exception. ' || SQLERRM || ' at time: ' ||systimestamp);
+  END offender_physical_attributes;
+
+
+ --------------------------------------------------------------------------------------------
+
+PROCEDURE offender_profiles
+IS
+
+  CURSOR lv_stat_cur IS
+    SELECT  conv_map_bookings.stage_offender_id_display as stage_offender_id_display  
+           ,conv_map_bookings.stage_booking_begin_date as stage_booking_begin_date 
+           ,conv_map_bookings.offender_book_id
+           ,1 as profile_seq
+           ,off_bkg.booking_begin_date as check_date --this is/should be the same as conv_map_bookings.stage_booking_begin_date 
+           ,SYSTIMESTAMP create_datetime
+           ,conv_utilities.g_conv_user create_user_id
+           ,SYSTIMESTAMP   modify_datetime
+           ,NULL modify_user_id
+           ,NULL seal_flag
+      FROM offender_bookings off_bkg, conv_map_bookings 
+     WHERE off_bkg.offender_book_id = conv_map_bookings.offender_book_id; --this logic is used to make it work for large volume of data; the staging table is used in the detail table
+          
+    /*   AND NOT EXISTS (SELECT offender_book_id, profile_seq 
+                         FROM offender_profiles  
+                        WHERE offender_profiles.offender_book_id = conv_map_bookings.offender_book_id  
+                          AND offender_profiles.profile_seq = 1); */
+
+    TYPE typ_tab IS TABLE OF lv_stat_cur%ROWTYPE INDEX BY PLS_INTEGER;
+    lv_rec       typ_tab;
+    lv_idx  NUMBER;
+    lv_error_count   NUMBER;
+    dml_errors EXCEPTION;
+    PRAGMA EXCEPTION_INIT(dml_errors, -24381);
+  BEGIN 
+    conv_utilities.logging('OFFENDER_PROFILES', NULL, NULL, 'START', 'Start OFFENDER_PROFILES Procedure at: '|| systimestamp); 
+    lv_error_count := 0;
+
+    OPEN lv_stat_cur;
+    LOOP
+      FETCH lv_stat_cur BULK COLLECT
+        INTO lv_rec LIMIT g_max_limit;
+      BEGIN
+        FORALL i IN lv_rec.FIRST .. lv_rec.LAST SAVE EXCEPTIONS
+          INSERT /*+ APPEND */ INTO offender_profiles
+           (offender_book_id
+           ,profile_seq
+           ,check_date   
+           ,create_datetime 
+           ,create_user_id 
+           ,modify_datetime
+           ,modify_user_id
+           ,seal_flag)
+      VALUES (lv_rec(i).offender_book_id
+           ,lv_rec(i).profile_seq
+           ,lv_rec(i).check_date   
+           ,lv_rec(i).create_datetime
+           ,lv_rec(i).create_user_id
+           ,lv_rec(i).modify_datetime 
+           ,lv_rec(i).modify_user_id
+           ,lv_rec(i).seal_flag);
+      EXCEPTION
+        WHEN dml_errors THEN
+           lv_error_count := lv_error_count + SQL%BULK_EXCEPTIONS.count;
+           FOR j IN 1 .. SQL%BULK_EXCEPTIONS.COUNT
+           LOOP
+             lv_idx   := SQL%BULK_EXCEPTIONS(j).error_index;
+             conv_utilities.logging('OFFENDER_PROFILES', NULL, NULL, 'ERROR -- OFFENDER_BOOK_ID: '||lv_rec(lv_idx).offender_book_id
+                     || ' :stage_offender_id_display: ' || lv_rec(lv_idx).stage_offender_id_display
+                     || ' :stage_booking_begin_date: ' || TO_CHAR(lv_rec(lv_idx).stage_booking_begin_date, 'DD-MON-YYYY HH24:MI:SS') 
+                    ,SQLERRM(-sql%BULK_EXCEPTIONS(j).error_code));
+           END LOOP;
+      END;
+      COMMIT;
+      lv_rec.DELETE;
+      EXIT WHEN lv_stat_cur%NOTFOUND;
+    END LOOP;
+    CLOSE lv_stat_cur;
+    DBMS_STATS.GATHER_TABLE_STATS(ownname=>'OMS_OWNER',tabname=>'OFFENDER_PROFILES',cascade=>TRUE);
+    conv_utilities.logging('OFFENDER_PROFILES', NULL, NULL, 'END','Number of failures: ' || lv_error_count ||'. Procedure ends at: ' || systimestamp);
+  EXCEPTION
+    WHEN OTHERS THEN
+      IF lv_stat_cur%ISOPEN THEN
+        CLOSE lv_stat_cur;
+      END IF;
+      conv_utilities.logging('OFFENDER_PROFILES',NULL, NULL, 'EXCEPTION','Procedure generates exception. ' || SQLERRM || ' at time: ' ||systimestamp);
+  END offender_profiles;
+
+  --------------------------------------------------------------------------------------------
+
+  PROCEDURE offender_profile_details
+  IS
+
+  CURSOR lv_stat_cur IS
+    SELECT  stg_off_p.offender_id_display as stage_offender_id_display  
+           ,stg_off_p.booking_begin_date as stage_booking_begin_date 
+           ,conv_map_bookings.offender_book_id as offender_book_id
+           ,1 as profile_seq
+           ,stg_off_p.profile_type as profile_type
+           ,stg_off_p.profile_code as profile_code
+           ,99 as list_seq
+           ,NULL as comment_text
+           ,'INST' as caseload_type
+           ,SYSTIMESTAMP create_datetime
+           ,conv_utilities.g_conv_user create_user_id
+           ,SYSTIMESTAMP   modify_datetime
+           ,NULL modify_user_id
+           ,NULL seal_flag
+      FROM oms_stage.stage_off_profiles stg_off_p, conv_map_bookings 
+     WHERE stg_off_p.offender_id_display  = conv_map_bookings.stage_offender_id_display(+)
+       AND stg_off_p.booking_begin_date = conv_map_bookings.stage_booking_begin_date(+); 
+          
+     /* NOT EXISTS (SELECT offender_book_id, profile_seq, profile_type 
+                         FROM offender_profile_details 
+                        WHERE offender_profile_details.offender_book_id  = dt.offender_book_id 
+                          AND offender_profile_details.profile_seq  = dt.profile_seq 
+                          AND offender_profile_details.profile_type = dt.profile_type  ); */
+
+    TYPE typ_tab IS TABLE OF lv_stat_cur%ROWTYPE INDEX BY PLS_INTEGER;
+    lv_rec       typ_tab;
+    lv_idx  NUMBER;
+    lv_error_count   NUMBER;
+    dml_errors EXCEPTION;
+    PRAGMA EXCEPTION_INIT(dml_errors, -24381);
+  BEGIN 
+    conv_utilities.logging('OFFENDER_PROFILE_DETAILS', NULL, NULL, 'START', 'Start OFFENDER_PROFILE_DETAILS Procedure at: '|| systimestamp); 
+    lv_error_count := 0;
+
+    OPEN lv_stat_cur;
+    LOOP
+      FETCH lv_stat_cur BULK COLLECT
+        INTO lv_rec LIMIT 50000;
+      BEGIN
+        FORALL i IN lv_rec.FIRST .. lv_rec.LAST SAVE EXCEPTIONS
+          INSERT /*+ APPEND */ INTO offender_profile_details
+           (offender_book_id
+           ,profile_seq
+           ,profile_type
+           ,profile_code
+           ,list_seq
+           ,comment_text
+           ,caseload_type
+           ,create_datetime 
+           ,create_user_id 
+           ,modify_datetime
+           ,modify_user_id
+           ,seal_flag)
+      VALUES (lv_rec(i).offender_book_id
+           ,lv_rec(i).profile_seq
+           ,lv_rec(i).profile_type
+           ,lv_rec(i).profile_code
+           ,lv_rec(i).list_seq
+           ,lv_rec(i).comment_text
+           ,lv_rec(i).caseload_type
+           ,lv_rec(i).create_datetime
+           ,lv_rec(i).create_user_id
+           ,lv_rec(i).modify_datetime 
+           ,lv_rec(i).modify_user_id
+           ,lv_rec(i).seal_flag);
+      EXCEPTION
+        WHEN dml_errors THEN
+           lv_error_count := lv_error_count + SQL%BULK_EXCEPTIONS.count;
+           FOR j IN 1 .. SQL%BULK_EXCEPTIONS.COUNT
+           LOOP
+             lv_idx   := SQL%BULK_EXCEPTIONS(j).error_index;
+             conv_utilities.logging('OFFENDER_PROFILE_DETAILS', NULL, NULL, 'ERROR -- OFFENDER_BOOK_ID: '||lv_rec(lv_idx).offender_book_id
+                     || ' :stage_offender_id_display: ' || lv_rec(lv_idx).stage_offender_id_display
+                     || ' :stage_booking_begin_date: ' || TO_CHAR(lv_rec(lv_idx).stage_booking_begin_date, 'DD-MON-YYYY HH24:MI:SS') 
+                     || ' :profile_type: ' || lv_rec(lv_idx).profile_type 
+                     || ' :profile_code: ' || lv_rec(lv_idx).profile_code  
+                   ,SQLERRM(-sql%BULK_EXCEPTIONS(j).error_code));
+           END LOOP;
+      END;
+      COMMIT;
+      lv_rec.DELETE;
+      EXIT WHEN lv_stat_cur%NOTFOUND;
+    END LOOP;
+    CLOSE lv_stat_cur;
+    DBMS_STATS.GATHER_TABLE_STATS(ownname=>'OMS_OWNER',tabname=>'OFFENDER_PROFILE_DETAILS',cascade=>TRUE);
+    conv_utilities.logging('OFFENDER_PROFILE_DETAILS', NULL, NULL, 'END','Number of failures: ' || lv_error_count ||'. Procedure ends at: ' || systimestamp);
+  EXCEPTION
+    WHEN OTHERS THEN
+      IF lv_stat_cur%ISOPEN THEN CLOSE lv_stat_cur;   END IF;
+      conv_utilities.logging('OFFENDER_PROFILE_DETAILS',NULL, NULL, 'EXCEPTION','Procedure generates exception. ' || SQLERRM || ' at time: ' ||systimestamp);
+  END offender_profile_details;
+
+  --------------------------------------------------------------------------------------------
+
+PROCEDURE offender_addresses
+IS
+
+  CURSOR lv_stat_cur IS
+    SELECT address_id.nextval as address_id
+	         ,stg_off_addr.offender_id_display as stage_offender_id_display 
+           ,'OFF'            as owner_class
+           ,conv_map_offenders.root_offender_id as owner_id
+		       , NULL                  as owner_seq
+           , NULL                  as address_type 
+           ,stg_off_addr.street    as street 
+           ,stg_off_addr.city              as city_code
+           ,stg_off_addr.prov_state_code    as prov_state_code
+           ,stg_off_addr.country            as country_code
+           ,stg_off_addr.zip_postal_code    as zip_postal_code         
+           ,NVL(stg_off_addr.primary_flag, 'N') as  primary_flag
+           ,NVL(stg_off_addr.mail_flag, 'N')        as mail_flag
+           ,NVL(stg_off_addr.nfa_flag, 'N')         as no_fixed_address_flag
+           ,NVL(stg_off_addr.start_date, TRUNC(sysdate))       as start_date
+           ,stg_off_addr.end_date         as end_date 
+		       ,stg_off_addr.comment_text as comment_text
+           ,stg_off_addr.suite_number as suite_number
+           ,stg_off_addr.street_number as street_number 
+           ,stg_off_addr.street_direction as street_direction  
+           ,stg_off_addr.address_type1 
+           ,stg_off_addr.address_type2 
+           ,stg_off_addr.address_type3 
+           ,SYSTIMESTAMP create_datetime
+           ,conv_utilities.g_conv_user create_user_id
+           ,SYSTIMESTAMP   modify_datetime
+           ,NULL modify_user_id
+           ,NULL seal_flag
+      FROM oms_stage.stage_addresses stg_off_addr, conv_map_offenders 
+      WHERE stg_off_addr.offender_id_display =  conv_map_offenders.stage_offender_id_display(+)
+        AND conv_map_offenders.offender_id(+) = conv_map_offenders.root_offender_id(+);
+
+    TYPE typ_tab IS TABLE OF lv_stat_cur%ROWTYPE INDEX BY PLS_INTEGER;
+    lv_rec       typ_tab;
+    lv_idx  NUMBER;
+    lv_error_count   NUMBER;
+    lv_error_count1     NUMBER;
+    lv_error_count2     NUMBER;
+    lv_error_count3     NUMBER;
+    dml_errors EXCEPTION;
+    PRAGMA EXCEPTION_INIT(dml_errors, -24381);
+  BEGIN 
+    conv_utilities.logging('OFFENDER_ADDRESSES', NULL, NULL, 'START', 'Start OFFENDER_ADDRESSES Procedure at: '|| systimestamp); 
+    lv_error_count := 0; 
+
+    OPEN lv_stat_cur;
+    LOOP
+      FETCH lv_stat_cur BULK COLLECT
+        INTO lv_rec LIMIT g_max_limit;
+        --
+      -- Exit when no rows to process
+         EXIT WHEN lv_rec.first IS NULL;
+
+      BEGIN
+        FORALL i IN lv_rec.FIRST .. lv_rec.LAST SAVE EXCEPTIONS
+          INSERT /*+ APPEND */ INTO addresses
+              (  address_id,
+                 owner_class,
+                 owner_id,
+                 owner_seq,
+                 address_type,
+                 street,
+                 city_code,
+                 country_code,
+                 prov_state_code,                 
+                 zip_postal_code,
+                 primary_flag,
+                 mail_flag,
+                 no_fixed_address_flag,
+                 start_date,
+                 end_date,
+				         comment_text, 
+                 suite_number,
+                 street_number,
+                 street_direction, 
+                 create_datetime, 
+                 create_user_id, 
+                 modify_datetime,
+                 modify_user_id,
+                 seal_flag
+              )
+              VALUES
+              (
+                 lv_rec(i).address_id,
+                 lv_rec(i).owner_class,
+                 lv_rec(i).owner_id,
+                 lv_rec(i).owner_seq,
+                 lv_rec(i).address_type,
+                 lv_rec(i).street,
+                 lv_rec(i).city_code,
+                 lv_rec(i).country_code,
+                 lv_rec(i).prov_state_code,                
+                 lv_rec(i).zip_postal_code,
+                 lv_rec(i).primary_flag,
+                 lv_rec(i).mail_flag,
+                 lv_rec(i).no_fixed_address_flag,
+                 lv_rec(i).start_date,
+                 lv_rec(i).end_date,
+				         lv_rec(i).comment_text, 
+                 lv_rec(i).suite_number,
+                 lv_rec(i).street_number,
+                 lv_rec(i).street_direction, 
+                 lv_rec(i).create_datetime,
+                 lv_rec(i).create_user_id,
+                 lv_rec(i).modify_datetime, 
+                 lv_rec(i).modify_user_id,
+                 lv_rec(i).seal_flag
+              );
+      EXCEPTION
+        WHEN dml_errors THEN
+           lv_error_count := lv_error_count + SQL%BULK_EXCEPTIONS.count;
+           FOR j IN 1 .. SQL%BULK_EXCEPTIONS.COUNT
+           LOOP
+             lv_idx   := SQL%BULK_EXCEPTIONS(j).error_index;
+             conv_utilities.logging('OFFENDER_ADDRESSES', NULL, NULL, 'ERROR -- ROOT_OFFENDER_ID: '||lv_rec(lv_idx).owner_id 
+                         || ' :stage_offender_id_display: ' || lv_rec(lv_idx).stage_offender_id_display
+                         || ' :street: ' || lv_rec(lv_idx).street 
+                    ,SQLERRM(-sql%BULK_EXCEPTIONS(j).error_code));
+           END LOOP;
+      END;
+      COMMIT;
+      
+        ------------
+        --load address usage1 
+        BEGIN
+           lv_error_count1 := 0;
+           FORALL i IN lv_rec.FIRST .. lv_rec.LAST SAVE EXCEPTIONS
+            INSERT /*+ APPEND */ INTO address_usages 
+                  (address_id
+                  ,address_usage
+                  ,active_flag
+                  ,create_datetime  
+                  ,create_user_id  
+                  ,modify_datetime 
+                  ,modify_user_id 
+                  ,seal_flag )
+               SELECT  lv_rec(i).address_id
+                  ,lv_rec(i).address_type1
+                  ,'Y'
+                  ,lv_rec(i).create_datetime 
+                  ,lv_rec(i).create_user_id 
+                  ,lv_rec(i).modify_datetime  
+                  ,lv_rec(i).modify_user_id 
+                  ,lv_rec(i).seal_flag 
+               FROM dual WHERE TRIM(lv_rec(i).address_type1) IS NOT NULL ;
+              EXCEPTION
+                 WHEN dml_errors THEN
+                      lv_error_count1 := lv_error_count1 + SQL%bulk_exceptions.count;
+                      FOR j IN 1 .. SQL%bulk_exceptions.count
+                      LOOP
+                        lv_idx := SQL%BULK_EXCEPTIONS(j).error_index;
+                        conv_utilities.logging('offender_residences-off_residences_mapping_conv',NULL, NULL,  'ERROR -- ROOT_OFFENDER_ID: '||lv_rec(lv_idx).owner_id 
+                                || ' :stage_offender_id_display: ' || lv_rec(lv_idx).stage_offender_id_display
+                                || ' :street: ' || lv_rec(lv_idx).street 
+                                || ' :usage1: ' || lv_rec(lv_idx).address_type1
+                            ,SQLERRM(-sql%BULK_EXCEPTIONS(j).error_code));
+                      END LOOP;
+         END;
+         COMMIT;
+         ------------
+         
+        ------------
+        --load address usage2 
+        BEGIN
+           lv_error_count2 := 0;
+           FORALL i IN lv_rec.FIRST .. lv_rec.LAST SAVE EXCEPTIONS
+            INSERT /*+ APPEND */ INTO address_usages 
+                  (address_id
+                  ,address_usage
+                  ,active_flag
+                  ,create_datetime  
+                  ,create_user_id  
+                  ,modify_datetime 
+                  ,modify_user_id 
+                  ,seal_flag )
+             SELECT  lv_rec(i).address_id
+                  ,lv_rec(i).address_type2
+                  ,'Y'
+                  ,lv_rec(i).create_datetime 
+                  ,lv_rec(i).create_user_id 
+                  ,lv_rec(i).modify_datetime  
+                  ,lv_rec(i).modify_user_id 
+                  ,lv_rec(i).seal_flag  
+                FROM dual WHERE TRIM(lv_rec(i).address_type2) IS NOT NULL ;
+              EXCEPTION
+                 WHEN dml_errors THEN
+                      lv_error_count2 := lv_error_count2 + SQL%bulk_exceptions.count;
+                      FOR j IN 1 .. SQL%bulk_exceptions.count
+                      LOOP
+                        lv_idx := SQL%BULK_EXCEPTIONS(j).error_index;
+                        conv_utilities.logging('offender_residences-off_residences_mapping_conv',NULL, NULL,  'ERROR -- ROOT_OFFENDER_ID: '||lv_rec(lv_idx).owner_id 
+                                || ' :stage_offender_id_display: ' || lv_rec(lv_idx).stage_offender_id_display
+                                || ' :street: ' || lv_rec(lv_idx).street 
+                                || ' :usage2: ' || lv_rec(lv_idx).address_type2
+                            ,SQLERRM(-sql%BULK_EXCEPTIONS(j).error_code));
+                      END LOOP;
+         END;
+         COMMIT;
+         ------------         
+         
+        ------------
+        --load address usage3 
+        BEGIN
+           lv_error_count3 := 0;
+           FORALL i IN lv_rec.FIRST .. lv_rec.LAST SAVE EXCEPTIONS
+            INSERT /*+ APPEND */ INTO address_usages 
+                  (address_id
+                  ,address_usage
+                  ,active_flag
+                  ,create_datetime  
+                  ,create_user_id  
+                  ,modify_datetime 
+                  ,modify_user_id 
+                  ,seal_flag )
+               SELECT  lv_rec(i).address_id
+                  ,lv_rec(i).address_type3
+                  ,'Y'
+                  ,lv_rec(i).create_datetime 
+                  ,lv_rec(i).create_user_id 
+                  ,lv_rec(i).modify_datetime  
+                  ,lv_rec(i).modify_user_id 
+                  ,lv_rec(i).seal_flag 
+                FROM dual WHERE TRIM(lv_rec(i).address_type3) IS NOT NULL ;
+              EXCEPTION
+                 WHEN dml_errors THEN
+                      lv_error_count3 := lv_error_count3 + SQL%bulk_exceptions.count;
+                      FOR j IN 1 .. SQL%bulk_exceptions.count
+                      LOOP
+                        lv_idx := SQL%BULK_EXCEPTIONS(j).error_index;
+                        conv_utilities.logging('offender_residences-off_residences_mapping_conv',NULL, NULL,  'ERROR -- ROOT_OFFENDER_ID: '||lv_rec(lv_idx).owner_id 
+                                || ' :stage_offender_id_display: ' || lv_rec(lv_idx).stage_offender_id_display
+                                || ' :street: ' || lv_rec(lv_idx).street 
+                                || ' :usage3: ' || lv_rec(lv_idx).address_type3
+                            ,SQLERRM(-sql%BULK_EXCEPTIONS(j).error_code));
+                      END LOOP;
+         END;
+         COMMIT;
+         ------------                  
+      
+      lv_rec.DELETE;
+      EXIT WHEN lv_stat_cur%NOTFOUND;
+    END LOOP;
+    lv_rec.DELETE;
+    COMMIT;
+    CLOSE lv_stat_cur;
+  
+    DBMS_STATS.GATHER_TABLE_STATS(ownname=>'OMS_OWNER',tabname=>'ADDRESSES',cascade=>TRUE);
+    DBMS_STATS.GATHER_TABLE_STATS(ownname=>'OMS_OWNER',tabname=>'ADDRESS_USAGES',cascade=>TRUE);
+   
+    conv_utilities.logging('OFFENDER_ADDRESSES', NULL, NULL, 'END','Number of failures: ' || TO_CHAR(NVL(lv_error_count, 0) + NVL(lv_error_count1, 0) + NVL(lv_error_count2, 0) + NVL(lv_error_count3, 0)) ||'. Procedure ends at: ' || systimestamp);
+   
+  EXCEPTION
+    WHEN OTHERS THEN
+      IF lv_stat_cur%ISOPEN THEN  CLOSE lv_stat_cur;  END IF;
+      conv_utilities.logging('OFFENDER_ADDRESSES',NULL, NULL, 'END','Procedure generates exception. ' || SQLERRM || ' at time: ' ||systimestamp);
+  END offender_addresses;
+
+--------------------------------------------------------------------------------------------
+
+  PROCEDURE offender_phones
+  IS
+
+    CURSOR lv_rec_cur IS
+      SELECT phone_id.nextval phone_id
+           ,stg_off_phn.offender_id_display as stage_offender_id_display 
+           ,'OFF'    AS owner_class
+           ,conv_map_offenders.root_offender_id as owner_id
+           ,NULL               AS  owner_seq
+           ,NULL               AS owner_code 		      
+           ,stg_off_phn.phone_usage        AS phone_type
+           ,stg_off_phn.phone_no           AS phone_no
+           ,stg_off_phn.extension_no       AS ext_no    
+           ,SYSTIMESTAMP create_datetime
+           ,conv_utilities.g_conv_user create_user_id
+           ,SYSTIMESTAMP   modify_datetime
+           ,NULL modify_user_id
+           ,NULL seal_flag
+      FROM oms_stage.stage_phones stg_off_phn, conv_map_offenders 
+      WHERE stg_off_phn.offender_id_display =  conv_map_offenders.stage_offender_id_display(+) 
+        AND conv_map_offenders.offender_id(+) = conv_map_offenders.root_offender_id(+);
+
+
+      TYPE typ_tab IS TABLE OF lv_rec_cur%ROWTYPE INDEX BY PLS_INTEGER;
+      lv_rec typ_tab;
+   -- Userd defined exceptions
+      dml_errors         EXCEPTION;
+      lv_bulk_error_indx NUMBER;
+      lv_error_count     NUMBER;
+      PRAGMA EXCEPTION_INIT(dml_errors, -24381);
+   BEGIN 
+      conv_utilities.logging('OFFENDERS_PHONES', NULL, NULL, 'START', 'Procedure starts at: ' || systimestamp);
+      lv_error_count := 0; 
+
+      OPEN lv_rec_cur;
+      LOOP
+         FETCH lv_rec_cur BULK COLLECT INTO lv_rec LIMIT g_max_limit;
+      --
+      -- Exit when no records to process
+       EXIT WHEN lv_rec.first IS NULL;
+
+        BEGIN
+          FORALL i IN lv_rec.first .. lv_rec.last SAVE EXCEPTIONS
+            INSERT /*+ APPEND */ INTO phones
+            (  phone_id,
+               owner_class,
+               owner_id,
+               owner_seq,
+               owner_code,
+               phone_type,
+               phone_no,
+               ext_no,
+               create_user_id,
+               create_datetime,
+               modify_datetime,
+               modify_user_id,
+               seal_flag
+            )
+            VALUES
+            (  lv_rec(i).phone_id,
+               lv_rec(i).owner_class,
+               lv_rec(i).owner_id,
+               lv_rec(i).owner_seq,
+               lv_rec(i).owner_code,
+               lv_rec(i).phone_type,
+               lv_rec(i).phone_no,
+               lv_rec(i).ext_no,
+               lv_rec(i).create_user_id,
+               lv_rec(i).create_datetime,
+               lv_rec(i).modify_datetime,
+               lv_rec(i).modify_user_id,
+               lv_rec(i).seal_flag
+            );
+        EXCEPTION
+           WHEN dml_errors THEN
+              lv_error_count := lv_error_count + SQL%bulk_exceptions.count;
+              FOR j IN 1 .. SQL%bulk_exceptions.count
+              LOOP
+                 lv_bulk_error_indx := SQL%BULK_EXCEPTIONS(j).error_index;
+              -- @@@ Girish 28-SEP-2012 PK values for record being passed for logging
+                 conv_utilities.logging('OFFENDERS_PHONES', NULL, NULL, 'ERROR -- ROOT_OFFENDER_ID: '||lv_rec(lv_bulk_error_indx).owner_id 
+                                || ' :stage_offender_id_display: ' || lv_rec(lv_bulk_error_indx).stage_offender_id_display
+                                || ' :phone_type: ' || lv_rec(lv_bulk_error_indx).phone_type 
+                                || ' :phone_no: ' || lv_rec(lv_bulk_error_indx).phone_no 
+                            ,SQLERRM(-sql%BULK_EXCEPTIONS(j).error_code));
+              END LOOP;
+        END;
+        COMMIT;
+        lv_rec.delete;
+        EXIT WHEN lv_rec_cur%NOTFOUND;
+      END LOOP;
+      COMMIT;
+      CLOSE lv_rec_cur;
+      
+      DBMS_STATS.GATHER_TABLE_STATS(ownname=>'OMS_OWNER',tabname=>'PHONES',cascade=>TRUE);
+      
+      conv_utilities.logging('OFFENDERS_PHONES', NULL, NULL, 'END', 'Number of failures: ' || lv_error_count ||
+              '.  Procedure ends at: ' || systimestamp);
+   EXCEPTION
+     WHEN OTHERS THEN
+        IF lv_rec_cur%ISOPEN THEN CLOSE lv_rec_cur; END IF;
+        conv_utilities.logging('OFFENDERS_PHONES',NULL, NULL, 'EXCEPTION',SQLERRM || 'Procedure person_phones Error at time: ' || systimestamp);
+   END offender_phones;
+
+ --------------------------------------------------------------------------------------------
+
+   PROCEDURE main
+   IS
+   BEGIN
+
+     conv_utilities.logging('PACKAGE - CONV_OFF_CORE_2', NULL, NULL, 'START', 'Start CONV_OFF_CORE_2 Package at: ' || systimestamp);
+	   
+      --
+     offender_physical_attributes;
+     offender_profiles;
+     offender_profile_details;
+    
+      --
+     offender_addresses;
+     offender_phones;
+
+     BEGIN 
+         conv_utilities.alter_sequences(p_conv_pkg_name => 'CONV_OFF_CORE_2');
+     EXCEPTION 
+        WHEN OTHERS THEN 
+           null; --nothing to do because the procedure already loggs the exception and we don't want to abort the entire process in main
+     END; 	
+	
+    conv_utilities.logging('PACKAGE - CONV_OFF_CORE_2', NULL, NULL, 'END', 'End CONV_OFF_CORE_2 Package at: ' || systimestamp); 	
+ END main;
+
+
+END CONV_OFF_CORE_2;
+/

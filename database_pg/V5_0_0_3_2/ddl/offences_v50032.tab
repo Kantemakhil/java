@@ -1,0 +1,8 @@
+ALTER TABLE offences ADD COLUMN offence_id int8;
+update offences set offence_id = nextval('offence_id_seq');
+ALTER TABLE offences ALTER COLUMN offence_id SET NOT null;
+
+ALTER TABLE offences DROP CONSTRAINT offences_pk;
+ALTER TABLE offences ADD CONSTRAINT offences_pk PRIMARY KEY (offence_id) using index tablespace tag_indx;
+
+comment on column oms_owner.offences.offence_id is 'Unique identified of the offence [db sequence=offence_id_seq]';

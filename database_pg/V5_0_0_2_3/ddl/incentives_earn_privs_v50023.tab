@@ -1,0 +1,30 @@
+create table oms_owner.incentives_earn_privs
+(iep_level_code          VARCHAR(12) not null,
+iep_level_description    VARCHAR(40) not null,
+list_seq                 bigint,
+review_days              bigint not null,
+intake_iep               VARCHAR(1) NOT NULL default 'N', 
+canteen_limits           bigint,
+active_flag              VARCHAR(1) NOT NULL default 'Y',
+expiry_date              TIMESTAMP(6),
+create_datetime          TIMESTAMP(6) not null default current_timestamp,
+create_user_id           VARCHAR(32) not null,
+modify_datetime          TIMESTAMP(6),
+modify_user_id           VARCHAR(32),
+seal_flag                varchar(1)
+) tablespace tag_data;
+
+alter table oms_owner.incentives_earn_privs    
+  add constraint incentives_earn_privs_pk PRIMARY KEY (iep_level_code)
+  using index tablespace tag_indx;
+
+comment on table oms_owner.incentives_earn_privs is 'System configured incentives and earned privillages';
+
+comment on column oms_owner.incentives_earn_privs.iep_level_code is 'IEP level code';
+comment on column oms_owner.incentives_earn_privs.iep_level_description is 'Description of the code';
+comment on column oms_owner.incentives_earn_privs.list_seq is 'List seq';
+comment on column oms_owner.incentives_earn_privs.review_days is 'Time period in days';
+comment on column oms_owner.incentives_earn_privs.intake_iep is 'IEP code level to be used when custody intake is completed (only one code can be marked as such)';
+comment on column oms_owner.incentives_earn_privs.canteen_limits is 'Amount in dollars';
+comment on column oms_owner.incentives_earn_privs.active_flag is 'Status of  IEPLevelCode (Y/N)';
+comment on column oms_owner.incentives_earn_privs.expiry_date is 'Expiry date for inactive IEP level codes';

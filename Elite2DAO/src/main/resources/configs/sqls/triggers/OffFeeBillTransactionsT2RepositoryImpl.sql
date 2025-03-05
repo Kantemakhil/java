@@ -1,0 +1,3 @@
+OFF_FEE_BILL_TRANSACTIONS_T2_GET_TXN_USAGE{
+SELECT txn_usage FROM transaction_types WHERE txn_type = :BILL_TXN_TYPE;
+}

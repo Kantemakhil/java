@@ -1,0 +1,32 @@
+CREATE OR REPLACE VIEW oms_owner.v_offenders
+AS SELECT off_name.offender_id,
+    off_name.sex_code,
+    off_name.alias_offender_id,
+    off_name.offender_id_display,
+    off_name.last_name,
+    off_name.first_name,
+    off_name.middle_name,
+    off_name.suffix,
+    off_name.birth_date,
+    off_bkg.offender_book_id,
+    off_bkg.booking_no,
+    off_bkg.booking_begin_date,
+    off_bkg.booking_end_date,
+    off_bkg.agy_loc_id,
+    off_bkg.living_unit_id,
+    off_bkg.disclosure_flag,
+    off_bkg.active_flag,
+    off_bkg.booking_status,
+    liv_unit.description,
+    off_bkg.in_out_status,
+    (
+        CASE
+            WHEN off_bkg.active_flag::text = 'Y'::text THEN 'ACTIVE'::text
+            ELSE 'INACTIVE'::text
+        END || '-'::text) || off_bkg.in_out_status::text AS status_display
+   FROM offenders off_name,
+    offender_bookings off_bkg
+     LEFT JOIN (SELECT ail.*
+   FROM agency_internal_locations ail
+  WHERE ail.unit_type IS NOT NULL AND ail.unit_type::text <> ''::text) liv_unit ON off_bkg.living_unit_id = liv_unit.internal_location_id
+  WHERE off_bkg.offender_id = off_name.offender_id;

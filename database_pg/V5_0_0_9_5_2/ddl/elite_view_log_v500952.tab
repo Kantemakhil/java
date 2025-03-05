@@ -1,0 +1,50 @@
+CREATE TABLE audit_log.elite_view_log (
+view_log_id int8 NOT NULL,
+view_time timestamp not null,
+user_id varchar(32) not null,
+module_name varchar(20) not null,
+input_search_parameters bytea NULL,
+input_search_result bytea NULL,
+booking_no varchar(14) NULL,
+offender_id_display varchar(10) null,
+CONSTRAINT elite_view_log_pk PRIMARY KEY (view_log_id, view_time )) PARTITION BY RANGE (view_time );
+
+COMMENT ON TABLE audit_log.elite_view_log IS 'Storage table for Elite search/view audit information'; 
+
+COMMENT ON COLUMN audit_log.elite_view_log.view_log_id IS 'Unique identifier for each search/view audit entry [db sequence = view_log_id_seq]';
+COMMENT ON COLUMN audit_log.elite_view_log.view_time  IS 'Search/view timestamp';
+COMMENT ON COLUMN audit_log.elite_view_log.user_id IS 'User who performs the search/view';
+COMMENT ON COLUMN audit_log.elite_view_log.module_name IS 'Module name on which search/view is performed';
+COMMENT ON COLUMN audit_log.elite_view_log.input_search_parameters IS 'The search/view criteria parameters';
+COMMENT ON COLUMN audit_log.elite_view_log.input_search_result IS 'The data based on the search/view parameters';
+
+CREATE TABLE audit_log.elite_view_log_part_2024_jan PARTITION OF audit_log.elite_view_log
+ FOR VALUES FROM ('2024-01-01') TO ('2024-02-01');
+CREATE TABLE audit_log.elite_view_log_part_2024_feb PARTITION OF audit_log.elite_view_log  
+ FOR VALUES FROM ('2024-02-01') TO ('2024-03-01');
+CREATE TABLE audit_log.elite_view_log_part_2024_mar PARTITION OF audit_log.elite_view_log  
+ FOR VALUES FROM ('2024-03-01') TO ('2024-04-01');
+CREATE TABLE audit_log.elite_view_log_part_2024_apr PARTITION OF audit_log.elite_view_log  
+ FOR VALUES FROM ('2024-04-01') TO ('2024-05-01');
+CREATE TABLE audit_log.elite_view_log_part_2024_may PARTITION OF audit_log.elite_view_log  
+ FOR VALUES FROM ('2024-05-01') TO ('2024-06-01');
+CREATE TABLE audit_log.elite_view_log_part_2024_jun PARTITION OF audit_log.elite_view_log  
+ FOR VALUES FROM ('2024-06-01') TO ('2024-07-01');
+CREATE TABLE audit_log.elite_view_log_part_2024_jul PARTITION OF audit_log.elite_view_log  
+ FOR VALUES FROM ('2024-07-01') TO ('2024-08-01');
+CREATE TABLE audit_log.elite_view_log_part_2024_aug PARTITION OF audit_log.elite_view_log  
+ FOR VALUES FROM ('2024-08-01') TO ('2024-09-01');
+CREATE TABLE audit_log.elite_view_log_part_2024_sep PARTITION OF audit_log.elite_view_log  
+ FOR VALUES FROM ('2024-09-01') TO ('2024-10-01');
+CREATE TABLE audit_log.elite_view_log_part_2024_oct PARTITION OF audit_log.elite_view_log  
+ FOR VALUES FROM ('2024-10-01') TO ('2024-11-01');
+CREATE TABLE audit_log.elite_view_log_part_2024_nov PARTITION OF audit_log.elite_view_log  
+ FOR VALUES FROM ('2024-11-01') TO ('2024-12-01');
+CREATE TABLE audit_log.elite_view_log_part_2024_dec PARTITION OF audit_log.elite_view_log  
+ FOR VALUES FROM ('2024-12-01') TO ('2025-01-01');
+
+
+CREATE INDEX ON audit_log.elite_view_log (view_time);
+
+GRANT INSERT, SELECT ON audit_log.elite_view_log TO audit_log_user;
+GRANT SELECT ON audit_log.elite_view_log TO readonlyauditloguser;

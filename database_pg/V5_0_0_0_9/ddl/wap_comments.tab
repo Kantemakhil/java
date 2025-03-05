@@ -1,0 +1,26 @@
+create table wap_comments
+(offender_book_id    bigint not null,
+wap_start_date       timestamp(6) not null,
+wap_end_date         timestamp(6) not null,
+comment_text         varchar(4000),
+create_datetime      TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL ,
+create_user_id       VARCHAR(32)NOT NULL ,
+modify_datetime      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+modify_user_id       VARCHAR(32),
+seal_flag            VARCHAR(1) 
+) tablespace tag_data;
+
+alter table wap_comments 
+	add constraint wap_comments_fk1 foreign key (offender_book_id) 
+	references offender_bookings(offender_book_id) on delete no action not deferrable initially immediate;
+
+comment on table  wap_comments is 'This Table is used to store the weekly activity comments';
+comment on column wap_comments.offender_book_id is 'This field is used to save the offender book id';
+comment on column wap_comments.wap_start_date is 'This field is used to maintain the comment of activity plan week start date';
+comment on column wap_comments.wap_end_date is 'This field is used to maintain the comment of activity plan week end date';
+comment on column wap_comments.comment_text is 'This feld is used to store the comment data of weekly activity plan';
+comment on column wap_comments.create_datetime is 'This field is used to save when the comment data is created ';
+comment on column wap_comments.create_user_id is 'This field is used to save Who thecomment data is created ';
+comment on column wap_comments.modify_datetime is 'This field is used to save when the comment data is modified';
+comment on column wap_comments.modify_user_id is 'This field is used to save Who the comment data is modified';
+comment on column wap_comments.seal_flag is 'This field is used to identify the seal flag'; 

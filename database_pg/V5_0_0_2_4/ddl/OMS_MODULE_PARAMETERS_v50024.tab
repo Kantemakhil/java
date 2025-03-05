@@ -1,0 +1,3 @@
+ALTER TABLE oms_owner.oms_module_parameters ADD COLUMN parent_lov varchar(40) NULL;
+
+comment on column oms_owner.oms_module_parameters.parent_lov  is 'The parameter name of the parent LOV';

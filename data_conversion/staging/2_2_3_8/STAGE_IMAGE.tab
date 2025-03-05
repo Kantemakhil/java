@@ -1,0 +1,29 @@
+create table stage_image
+(    image_object_type    varchar2(12)    not null
+   , capture_date         date            not null
+   , offender_id_display  varchar2(10)  
+   , booking_begin_date   date 
+   , image_object_seq     number(6) 
+   , image_view_type      varchar2(12) 
+   , image_thumbnail      blob
+   , orientation_type     varchar2(12)
+   , image_full           blob 
+   , image_original       blob 
+   , invalid_reason       varchar2(256)
+   , invalid_flag         varchar2(1) 
+)
+tablespace tag_data;
+
+comment on column stage_image.image_object_type is 'A code identifying the type of image. OFF_BKG (mugshot - requires offender_id_display and booking_begin_date).';
+comment on column stage_image.capture_date is 'The date the image was captured.';
+comment on column stage_image.offender_id_display is 'The user facing unique identifier of an offender. If padding is turned on, the value should be ten characters long, padded left with zeroes.';
+comment on column stage_image.booking_begin_date is 'The start date of the incarceration period.';
+comment on column stage_image.image_object_seq is 'A further identifier for the parent object for the image. E.g., for image_object_type OFF_IDM, represents the id_mark_seq of the identifier. Leave NULL for mugshots.';
+comment on column stage_image.image_view_type is 'The code used to categorize the image. Use FACE for mugshots. Validated against Reference domain MARK_TYPE for identifying marks.';
+comment on column stage_image.image_thumbnail is 'Small JPG image for display in a thumbnail view box, such as the header block. Expected 240 x 320 size.';
+comment on column stage_image.orientation_type is 'A code used to identify the image orientation. E.g., FRONT, SIDE. Reference domain ( IMAGE_VIEW ) for mugshots or for identifying marks on the face. Reference domain ( BODY_PART ) for other identifying mark images.';
+comment on column stage_image.image_full is 'Full sized JPG display image cropped to 480 x 640 size.';
+comment on column stage_image.image_original is 'Uncropped JPG image copy.';
+comment on column stage_image.invalid_reason is 'The reason the record will be skipped during conversion.';
+comment on column stage_image.invalid_flag is 'A flag to indicate whether the record should be processed. Records marked with ''N'' will be skipped during conversion.';
+comment on table stage_image is 'Master image table, storing image information for all parent entities to simplify data management and system changes.';

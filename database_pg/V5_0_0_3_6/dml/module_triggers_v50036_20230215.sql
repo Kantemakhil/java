@@ -1,0 +1,2 @@
+INSERT INTO MODULE_TRIGGERS(MODULE_NAME, DTO_NAME, MODULE_DESCRIPTION, TRIGGER_NAME, TRIGGER_ID, CREATE_DATETIME, CREATE_USER_ID, MODIFY_DATETIME)
+VALUES('OCDLEGLS', 'net.syscon.s4.common.beans.OdynfrmSubmitDataBean', 'Legal Summary', 'Verification', '104', current_timestamp, 'OMS_OWNER', null);

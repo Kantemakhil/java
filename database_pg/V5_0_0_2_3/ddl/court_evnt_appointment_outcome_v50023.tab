@@ -1,0 +1,1 @@
+ALTER TABLE court_evnt_appointment_outcome ALTER COLUMN count_type TYPE varchar(12);

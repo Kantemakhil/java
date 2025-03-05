@@ -1,0 +1,4 @@
+alter table oms_owner.community_conditions rename column default_flag to allocation_flag;
+alter table oms_owner.community_conditions alter column allocation_flag SET DEFAULT 'N';
+
+comment on column oms_owner.community_conditions.allocation_flag is 'To indentify whether the condition is eligible for allocation.';

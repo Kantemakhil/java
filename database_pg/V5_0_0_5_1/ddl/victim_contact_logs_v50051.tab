@@ -1,0 +1,30 @@
+create table victim_contact_logs (
+victim_contact_log_id int8 not null,
+victim_id int8 not null,
+log_datetime timestamp(6) not null,
+category varchar(12) null,
+type varchar(12) null,
+created_by_staff_id int8 not null,  
+contact_method varchar(12) null,
+note varchar(400) null,
+create_datetime timestamp(6) not null default current_timestamp(6),
+create_user_id varchar(32) not null,
+modify_datetime timestamp(6),
+modify_user_id varchar(32),
+seal_flag varchar(1)
+) tablespace tag_data;
+
+alter table oms_owner.victim_contact_logs  add constraint victim_contact_logs_pk primary key (victim_contact_log_id);
+
+alter table oms_owner.victim_contact_logs  add constraint victim_contact_logs_fk1 foreign key (victim_id) references oms_owner.victim_records(victim_id) on delete no action not deferrable initially immediate;
+
+comment on table victim_contact_logs is 'Store victim contact logs';
+
+comment on column victim_contact_logs.victim_contact_log_id is 'Unique identifier for the contact log [db sequence=victim_contact_log_id_seq]';
+comment on column victim_contact_logs.victim_id is 'Unique identifier of the victim';
+comment on column victim_contact_logs.log_datetime is 'The log datetime';
+comment on column victim_contact_logs.category is 'Log category [domain=VIC_CONT_CAT]';
+comment on column victim_contact_logs.type is 'Log type [domain=VIC_CON_TYPE]';
+comment on column victim_contact_logs.created_by_staff_id is 'Unique identifier of the staff';
+comment on column victim_contact_logs.contact_method is 'The contact method [domain=CONT_METH]';
+comment on column victim_contact_logs.note is 'Free text';

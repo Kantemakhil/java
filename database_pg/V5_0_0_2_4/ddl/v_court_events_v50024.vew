@@ -1,0 +1,57 @@
+CREATE OR REPLACE VIEW oms_owner.v_court_events
+AS SELECT ce.event_id,
+    substr(
+        CASE
+            WHEN bkg.active_flag::text = 'Y'::text THEN 'EXT_MOV'::text
+            ELSE 'COMM'::text
+        END, 1, 12) AS event_class,
+    substr('CRT'::text, 1, 12) AS event_type,
+    ce.case_id,
+    oc.case_info_prefix,
+    oc.case_info_number,
+    off.offender_id_display,
+    off.last_name,
+    off.first_name,
+    off.middle_name,
+    off.birth_date,
+    ce.offender_book_id,
+        CASE
+            WHEN bkg.active_flag::text = 'Y'::text THEN 'Y'::text
+            ELSE
+            CASE
+                WHEN bkg.community_active_flag::text = 'Y'::text THEN 'Y'::text
+                ELSE 'N'::text
+            END
+        END AS booking_active_flag,
+    bkg.living_unit_id,
+    lu.level_1_code,
+    lu.level_2_code,
+    lu.level_3_code,
+    lu.level_4_code,
+    bkg.agy_loc_id AS offender_agy_loc_id,
+    al2.description AS offender_agy_loc_desc,
+    ce.event_date,
+    ce.start_time,
+    ce.end_time,
+    ce.court_event_type,
+    substr(oms_miscellaneous_getdesccode('MOVE_RSN'::character varying, ce.court_event_type)::text, 1, 40) AS court_event_type_desc,
+    ce.court_event_type AS movement_reason_code,
+    substr(oms_miscellaneous_getdesccode('MOVE_RSN'::character varying, ce.court_event_type)::text, 1, 40) AS movement_reason_desc,
+    ce.judge_name,
+    ce.event_status,
+    ce.result_code,
+    ce.parent_event_id,
+    ce.agy_loc_id,
+    al.description AS agy_loc_id_name,
+    ce.comment_text,
+    ce.event_outcome,
+    tag_schedule_check_sum(COALESCE(ce.modify_datetime, ce.create_datetime)) AS check_sum,
+    ce.appearance_location ,ce.appearance_type
+   FROM offenders off,
+    agency_locations al,
+    court_events ce
+     LEFT JOIN offender_cases oc ON ce.case_id = oc.case_id,
+    offender_bookings bkg
+     LEFT JOIN agency_locations al2 ON bkg.agy_loc_id::text = al2.agy_loc_id::text
+     LEFT JOIN living_units lu ON bkg.living_unit_id = lu.living_unit_id
+  WHERE ce.agy_loc_id::text = al.agy_loc_id::text AND ce.offender_book_id = bkg.offender_book_id AND bkg.offender_id = off.offender_id;

@@ -1,0 +1,2 @@
+alter table persons add second_middle_name varchar(35);
+comment on column persons.second_middle_name is 'Person second middle name';

@@ -1,0 +1,2 @@
+INSERT INTO oms_owner.system_profiles(profile_type, profile_code, description, profile_value, profile_value_2, modify_user_id, old_table_name, create_datetime, create_user_id, modify_datetime, seal_flag)
+VALUES('CLIENT', 'SYS_GEN_USER', 'To configure to save the staff id of system generated user', 'SYSTEM_GENERATED', NULL, NULL, NULL, current_timestamp, 'OMS_OWNER', current_timestamp, NULL);

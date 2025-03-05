@@ -1,0 +1,6 @@
+ALTER TABLE oms_owner.event_measures 
+   ADD non_association_flag VARCHAR(1) 
+  ,ADD sanctions_flag       VARCHAR(1);
+
+comment on column oms_owner.event_measures.non_association_flag is 'If Non-Association Flag is set  Y for that Schedule type need to check non-association for that appointment';
+comment on column oms_owner.event_measures.sanctions_flag is 'This column is used to configure the schedule type and sub type is applicable for sanctions or not.';

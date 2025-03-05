@@ -1,0 +1,28 @@
+
+OCMMPBAL_FIND_CGFKMINPBACCOUNTCODE {
+ 	SELECT TO_CHAR(AC_CODE.ACCOUNT_CODE) CODE  ,AC_CODE.ACCOUNT_NAME DESCRIPTION FROM ACCOUNT_CODES AC_CODE WHERE CASELOAD_TYPE = :caseloadType ORDER BY AC_CODE.ACCOUNT_CODE ASC
+}
+
+OCMMPBAL_MINPB_FIND_MINIMUM_PAYABLE_BALANCES {
+select MIN.*,account_codes.account_name  description from MINIMUM_PAYABLE_BALANCES MIN join account_codes on account_codes.account_code = MIN.account_code 
+ where (cast(:accountCode as int)is null or MIN.ACCOUNT_CODE = cast(:accountCode as int))
+ 	and (cast(:minPayAmount as numeric)is null or MIN.MIN_PAY_AMOUNT = cast(:minPayAmount as numeric)) and :caseloadType 
+ 	=(select caseload_type from account_codes where account_codes.account_code = MIN.account_code)  ORDER BY ACCOUNT_CODE;
+
+}
+OCMMPBAL_MINPB_INSERT_MINIMUM_PAYABLE_BALANCES {
+ insert into MINIMUM_PAYABLE_BALANCES(ACCOUNT_CODE, MIN_PAY_AMOUNT, CREATE_DATETIME, CREATE_USER_ID, MODIFY_DATETIME, SEAL_FLAG) values(:accountCode, :minPayAmount, CURRENT_TIMESTAMP, :createUserId , null, null) 
+}
+
+OCMMPBAL_MINPB_UPDATE_MINIMUM_PAYABLE_BALANCES {
+	update MINIMUM_PAYABLE_BALANCES set MIN_PAY_AMOUNT = :minPayAmount, MODIFY_USER_ID = :modifyUserId , MODIFY_DATETIME = CURRENT_TIMESTAMP where ACCOUNT_CODE = :accountCode
+}
+
+
+OCMMPBAL_CGFKCHK_MIN_PB_MIN_PB_AC_CODE_ {
+	SELECT AC_CODE.ACCOUNT_NAME FROM   ACCOUNT_CODES AC_CODE WHERE  AC_CODE.ACCOUNT_CODE = :ACCOUNTCODE AND     CASELOAD_TYPE =:CASELOADTYPE
+}
+
+OCMMPBAL_CGWHEN_NEW_FORM_INSTANCE_ {
+	SELECT  SYSDATE, USER FROM    SYS.DUAL
+}

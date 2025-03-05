@@ -1,0 +1,9 @@
+alter table visit_cycle_limits add column visit_config_type varchar(12) NOT null default 'SEC_LEVEL';
+comment on column visit_cycle_limits.visit_config_type is 'Indicates Visit cycle config type (ref domain=VISIT_CONFIG)';
+
+alter table visit_cycle_limits rename sec_level to visit_config_type_Value;
+comment on column visit_cycle_limits.visit_config_type_Value is 'Code used to identify IEP/SEC LEVEL configuration value';
+
+
+
+

@@ -1,0 +1,5 @@
+create table oms_owner.offender_bookings_partial_cpy_500981 as
+select * 
+from oms_owner.offender_bookings 
+where agy_loc_id = 'TRN' 
+  and living_unit_id IS NOT NULL;

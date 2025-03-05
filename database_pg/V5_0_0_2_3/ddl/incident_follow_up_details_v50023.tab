@@ -1,0 +1,29 @@
+create table oms_owner.incident_follow_up_details
+( incident_follow_up_id    bigint NOT NULL,
+  agency_incident_id       bigint NOT NULL,
+  policy                   varchar(12) NOT NULL,
+  compliance               varchar(12) NOT NULL,
+  comment_text             varchar(240),
+  create_datetime          timestamp(6) not null default current_timestamp ,
+  create_user_id           varchar(32),
+  modify_datetime          timestamp(6),
+  modify_user_id           varchar(32),
+  seal_flag                varchar(1) 
+) tablespace tag_data;
+
+alter table oms_owner.incident_follow_up_details     
+  add constraint incident_follow_up_details_pk PRIMARY KEY (incident_follow_up_id)
+  using index tablespace tag_indx;
+
+
+alter table oms_owner.incident_follow_up_details  
+	add constraint incident_follow_up_details_fk1 foreign key (agency_incident_id) 
+	references agency_incidents(agency_incident_id) on delete no action not deferrable initially immediate;	
+	
+comment on table oms_owner.incident_follow_up_details is 'Stores the incident follow up details';
+
+comment on column oms_owner.incident_follow_up_details.incident_follow_up_id is 'Incident followup id unique identifier (sequence=incident_follow_up_id)';
+comment on column oms_owner.incident_follow_up_details.agency_incident_id is 'Agency incident ID Log number';
+comment on column oms_owner.incident_follow_up_details.policy is 'Policy  [ref domain=IN_POLICY]';
+comment on column oms_owner.incident_follow_up_details.compliance is 'Compliance [ref domain=IN_COMP]';
+comment on column oms_owner.incident_follow_up_details.comment_text is 'This column is used to save the incident follow up comment';

@@ -1,0 +1,16 @@
+ALTER TABLE offender_observation_types ADD cell_condition_flag varchar(1)  default 'N';
+ 
+ALTER TABLE offender_observation_types ADD activity_flag varchar(1)  default 'N';
+  
+ALTER TABLE offender_observation_types ADD demeanor_flag varchar(1)  default 'N';
+  
+ALTER TABLE offender_observation_types ADD not_in_cell_flag varchar(1)  default 'N';
+  
+ALTER TABLE offender_observation_types ADD officer_notes_flag varchar(1)  default 'N';
+  
+  
+comment on column offender_observation_types.cell_condition_flag is 'This field is used to store the observation type cell_condition_flag is configured of offender period Check';
+comment on column offender_observation_types.activity_flag is 'This field is used to store the observation type activity_flag is configured of offender period Check';
+comment on column offender_observation_types.demeanor_flag is 'This field is used to store the observation type demeanor_flag is configured of offender period Check';
+comment on column offender_observation_types.not_in_cell_flag is 'This field is used to store the observation type not_in_cell_flag is configured of offender period Check';
+comment on column offender_observation_types.officer_notes_flag is 'This field is used to store the observation type officer_notes_flag is configured of offender period Check';

@@ -1,0 +1,3 @@
+alter table oms_owner.event_measure_outcomes add  cancel_flag varchar(1);
+
+comment on column oms_owner.event_measure_outcomes.cancel_flag is 'If Outcome Cancel Flag is set Y for that Schedule type when cancel an apppointment need to send notification for that appointment';

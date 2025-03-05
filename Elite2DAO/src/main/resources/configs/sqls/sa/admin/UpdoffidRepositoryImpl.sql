@@ -1,0 +1,31 @@
+UPDOFFID_UPDATEOFF_ID{
+update offenders set offender_id_display = upper(:c2_off_id_disp), modify_datetime = current_timestamp , modify_user_id = :modifyUserId where root_offender_id = :lv_root_off_id
+}
+ UPDOFFID_INSER_OFFENDER_IDENTIFIERS {
+insert into OFFENDER_IDENTIFIERS (OFFENDER_ID, OFFENDER_ID_SEQ, IDENTIFIER_TYPE, IDENTIFIER, ISSUED_AUTHORITY_TEXT, ISSUED_DATE, ROOT_OFFENDER_ID, CASELOAD_TYPE, MODIFY_DATETIME, VERIFIED_FLAG, CREATE_DATETIME, CREATE_USER_ID, SEAL_FLAG) values (:offenderId, :offenderIdSeq, :identifierType, :identifier, :issuedAuthorityText, :issuedDate, :rootOffenderId, :caseloadType, null , :verifiedFlag, current_timestamp, :createUserId, :sealFlag)
+ }
+   
+
+UPDOFFID_GET_OFFID_SEQ {
+   
+    select
+	coalesce (MAX (offender_id_seq)::bigint,
+	0) + 1
+from
+	offender_identifiers
+where
+	offender_id = :offenderId
+ }
+ 
+ GET_PROFILE_VALUE_NEW {
+   select
+	OMS_MISCELLANEOUS_GET_PROFILE_VALUE( 'LABEL',
+	'OFF_ID_CODE') PROFILEVALUE
+from
+	dual
+ }
+ 
+ GET_OLD_OFFENDER_LIST{
+ SELECT OFFENDER_ID , OFFENDER_NAME_SEQ, ID_SOURCE_CODE, LAST_NAME , NAME_TYPE , FIRST_NAME, MIDDLE_NAME, BIRTH_DATE, SEX_CODE, SUFFIX, LAST_NAME_SOUNDEX, BIRTH_PLACE , BIRTH_COUNTRY_CODE , CREATE_DATE, LAST_NAME_KEY , ALIAS_OFFENDER_ID, FIRST_NAME_KEY , MIDDLE_NAME_KEY, OFFENDER_ID_DISPLAY , ROOT_OFFENDER_ID , CASELOAD_TYPE, MODIFY_USER_ID, MODIFY_DATETIME, ALIAS_NAME_TYPE , PARENT_OFFENDER_ID , UNIQUE_OBLIGATION_FLAG , SUSPENDED_FLAG , SUSPENDED_DATE , RACE_CODE, REMARK_CODE, ADD_INFO_CODE, BIRTH_COUNTY, BIRTH_STATE , MIDDLE_NAME_2, TITLE, AGE , CREATE_USER_ID, LAST_NAME_ALPHA_KEY, CREATE_DATETIME, NAME_SEQUENCE , SEAL_FLAG FROM OFFENDERS WHERE root_offender_id =  :root_offender_id
+ }
+ 

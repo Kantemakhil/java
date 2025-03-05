@@ -1,0 +1,35 @@
+CREATE TABLE oms_owner.off_fee_account_overrides (
+	off_fee_override_id int8 NOT NULL,
+	offender_fee_id int8 NOT NULL,
+	override_type varchar(12) NOT NULL,
+	override_start_date date NOT NULL,
+	override_end_date date NULL,
+	override_amount int8 NOT NULL,
+	comment_text varchar(240) NULL,
+	priority_indicator int4 NULL,
+	added_by_staff_id int8 NOT NULL,
+	added_date date NOT NULL,
+	create_datetime timestamp(6) NOT NULL DEFAULT current_timestamp,
+	create_user_id varchar(32) NOT NULL,
+	modify_datetime timestamp(6) NULL DEFAULT current_timestamp,
+	modify_user_id varchar(32) NULL,
+	seal_flag varchar(1) NULL,
+	bill_generated_flag varchar(1) NULL,
+	CONSTRAINT off_fee_account_overrides_pk PRIMARY KEY (off_fee_override_id),
+	CONSTRAINT off_fee_account_overrides_fk1 FOREIGN KEY (offender_fee_id) REFERENCES oms_owner.off_fee_account_profile(offender_fee_id)
+)
+TABLESPACE tag_data
+;
+
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_ACCOUNT_OVERRIDES.OFF_FEE_OVERRIDE_ID IS 'Unique record identifier [sequnec=OFF_FEE_OVERRIDE_ID]';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_ACCOUNT_OVERRIDES.OFFENDER_FEE_ID IS 'Offender fee account id';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_ACCOUNT_OVERRIDES.OVERRIDE_TYPE IS 'Override type [domain=CF_FOV_TYP]';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_ACCOUNT_OVERRIDES.OVERRIDE_START_DATE IS 'Start date of the fee override';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_ACCOUNT_OVERRIDES.OVERRIDE_END_DATE IS 'End date of the fee override';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_ACCOUNT_OVERRIDES.OVERRIDE_AMOUNT IS 'Amount of the fee override';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_ACCOUNT_OVERRIDES.COMMENT_TEXT IS 'Comment text of the override';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_ACCOUNT_OVERRIDES.PRIORITY_INDICATOR IS 'Priority of the fee override';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_ACCOUNT_OVERRIDES.ADDED_BY_STAFF_ID IS 'The staff who created the override';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_ACCOUNT_OVERRIDES.ADDED_DATE IS 'The date and time when the override was created';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_ACCOUNT_OVERRIDES.BILL_GENERATED_FLAG IS 'This field indicates that the bill is generated or not for this fee override amount';
+COMMENT ON TABLE OMS_OWNER.OFF_FEE_ACCOUNT_OVERRIDES  IS 'Offender fee account override details';

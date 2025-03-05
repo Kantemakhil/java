@@ -1,0 +1,19 @@
+&ref_base_path
+project_identifier: s4elite
+api_key: 8c26f72a0f6a4be4474354cb7917742a
+base_path: 
+commit_message: '[ci skip]'
+preserve_hierarchy: true
+
+files:
+  - source: /Elite2Web/src/main/resources/l10n/dev/appmsg.properties
+    translation: /Elite2Web/src/main/resources/l10n/%locale%/%original_file_name%
+    update_option: update_as_unapproved
+    escape_special_characters: 0
+  - source: /Elite2Web/src/main/resources/l10n/dev/loginmsg.properties
+    translation: /Elite2Web/src/main/resources/l10n/%locale%/%original_file_name%
+    update_option: update_as_unapproved
+    escape_special_characters: 0
+  - source: /Elite2Angular/src/assets/images/l10n/dev-flag-img.png
+    translation: /Elite2Angular/src/assets/images/l10n/%locale%-flag-img.png
+    update_option: update_as_unapproved

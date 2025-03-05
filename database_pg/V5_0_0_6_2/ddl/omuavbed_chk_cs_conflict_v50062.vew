@@ -1,0 +1,54 @@
+CREATE OR REPLACE FUNCTION oms_owner.omuavbed_chk_cs_conflict(p_offender_book_id bigint, p_liv_unit_id bigint, p_no_occupants bigint)
+ RETURNS character varying
+ LANGUAGE plpgsql
+AS $function$
+DECLARE
+
+      LV_CONFLICT varchar(1) := 'N';
+     
+      number_of_ocup CURSOR for
+    select 
+case when (lu1.parent_internal_location_id  is not null) 
+then 
+(select coalesce (sum(a.no_of_occupant),0) from  
+(select  internal_location_id as living_unit_id,
+		no_of_occupant
+	from
+		agency_internal_locations ail
+	where
+		ail.unit_type is not null
+		and ail.unit_type::text <> ''::text
+		and
+		parent_internal_location_id =lu1.parent_internal_location_id) a  where
+(select  count(*) from agency_internal_locations  lu2 where lu2.unit_type is not null
+		and lu2.unit_type::text <> ''::text and lu2.parent_internal_location_id  =a.living_unit_id )=0)
+else 
+(select coalesce(sum(lu.no_of_occupant),0)  from agency_internal_locations lu where lu.unit_type is not null
+		and lu.unit_type::text <> ''::text and lu.internal_location_id  =p_liv_unit_id)
+end
+from agency_internal_locations lu1 where lu1.unit_type is not null
+		and lu1.unit_type::text <> ''::text  and lu1.internal_location_id  =p_liv_unit_id;
+
+begin
+	
+	OPEN number_of_ocup;
+      FETCH number_of_ocup
+       INTO P_NO_OCCUPANTS;
+      CLOSE number_of_ocup;
+     
+     
+      IF P_NO_OCCUPANTS > 0
+      THEN
+         LV_CONFLICT := TAG_ASSESSMENT_CHK_BKG_CSA(P_OFFENDER_BOOK_ID);
+         IF LV_CONFLICT = 'N'
+         THEN
+            LV_CONFLICT := TAG_ASSESSMENT_CHK_OCCUPANT_CSA(P_LIV_UNIT_ID);
+         END IF;
+      END IF;
+      RETURN(LV_CONFLICT);
+   EXCEPTION
+      WHEN OTHERS THEN
+         raise '% %',sqlerrm,sqlstate;
+   END;
+$function$
+;

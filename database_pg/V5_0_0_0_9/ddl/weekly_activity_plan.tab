@@ -1,0 +1,57 @@
+CREATE TABLE oms_owner.weekly_activity_plan (
+	weekly_activity_plan_id bigserial NOT NULL,
+	offender_book_id int8 NOT NULL,
+	activity_date timestamp(6) NOT NULL,
+	wap_start_date timestamp(6) NOT NULL,
+	wap_end_date timestamp(6) NOT NULL,
+	activity_id varchar(20) NULL,
+	activity varchar(50) NOT NULL,
+	activity_address varchar(240) NULL,
+	depart_start_time timestamp(6) NULL,
+	activity_start timestamp(6) NULL,
+	activity_finish timestamp(6) NULL,
+	return_time timestamp(6) NULL,
+	mode_of_transport varchar(50) NULL,
+	update_indicator varchar(12) NULL,
+	comment_text varchar(240) NULL,
+	not_for_offender_flag varchar(1) null,
+	version_no bigint not null,
+	finalized varchar(1),
+    create_datetime                TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL ,
+    create_user_id                 VARCHAR(32)NOT NULL ,
+    modify_datetime                TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    modify_user_id                 VARCHAR(32),
+    seal_flag                      VARCHAR(1) 
+) tablespace tag_data;	
+	
+alter table weekly_activity_plan   
+  add constraint weekly_activity_plan_pk primary key (weekly_activity_plan_id)
+  using index tablespace tag_indx;
+  
+alter table weekly_activity_plan 
+	add constraint weekly_activity_plan_fk1 foreign key (offender_book_id) 
+	references offender_bookings(offender_book_id) on delete no action not deferrable initially immediate;	
+
+comment on table  weekly_activity_plan is 'To save the weekly activity details';
+comment on column weekly_activity_plan.weekly_activity_plan_id is 'This Field is used to store the sequence of Weekly activity plan';
+comment on column weekly_activity_plan.offender_book_id is 'This field is used to save the offender book id';
+comment on column weekly_activity_plan.activity_date is 'This field is used to save the Scheduled activity date';
+comment on column weekly_activity_plan.wap_start_date is 'This field is used to save the Scheduled activities Week Start date';
+comment on column weekly_activity_plan.wap_end_date is 'This field is used to save the Scheduled activities Week End date';
+comment on column weekly_activity_plan.activity_id is 'This Field is used to save the system generated activity id';
+comment on column weekly_activity_plan.activity is 'This field is used to save the activity for scheduled wap';
+comment on column weekly_activity_plan.activity_address is 'This Field is used to save the scheduled activity address';
+comment on column weekly_activity_plan.depart_start_time is 'This field used to save Depart Start time for perticular activity';
+comment on column weekly_activity_plan.activity_start is 'This field used to save Activity start time for perticular activity';
+comment on column weekly_activity_plan.activity_finish is 'This field is used to save the Activity end  time for perticular activity';
+comment on column weekly_activity_plan.return_time is 'This field is used to save the depart return time for activity';
+comment on column weekly_activity_plan.mode_of_transport is 'This field is used to store the mode of transport';
+comment on column weekly_activity_plan.update_indicator is 'This field is used to save activity plan is updated or added or canceled after amend';
+comment on column weekly_activity_plan.comment_text is 'This field is used to save the comment text';
+comment on column weekly_activity_plan.create_datetime is 'This field is used to save when the activity plan is created ';
+comment on column weekly_activity_plan.create_user_id is 'This field is used to save Who the activity plan is created ';
+comment on column weekly_activity_plan.modify_datetime is 'This field is used to save when the activity plan is modified';
+comment on column weekly_activity_plan.modify_user_id is 'This field is used to save Who the activity plan is modified';
+comment on column weekly_activity_plan.seal_flag is 'This field is used to identify the seal flag';
+comment on COLUMN  weekly_activity_plan.finalized is 'To save the Finalize status of scheduled activity';
+comment on COLUMN  weekly_activity_plan.version_no is 'To save the version number of the scheduled activity';

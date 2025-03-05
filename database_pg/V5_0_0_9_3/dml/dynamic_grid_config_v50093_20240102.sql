@@ -1,0 +1,10 @@
+update
+	dynamic_grid_config
+set
+	config_json = '[ { "field": "displayNo", "fieldName": "ocdleglo.no", "dataType": "text", "editable": false }, { "field": "orderNo", "hide": true, "dataType": "text", "editable": false }, { "field": "hearingDate", "fieldName": "ocdparor.hearingdate", "dataType": "date", "required": true }, { "field": "authority", "fieldName": "ocdparor.authority", "dataType": "lov", "source": "link", "url": "ocdccase/populateCourtData", "sourceType": "OUMAGLOC", "required": true }, { "field": "sentenceCalcType", "fieldName": "ocdleglo.type", "dataType": "lov", "source": "link", "url": "ocmpconf/populateSentType?sentCategory=PAR", "sourceType": "OIMSREQS", "required": true }, { "field": "commenceType", "fieldName": "ocdleglo.commencetype", "dataType": "lov", "source": "domain", "url": "LO_REL_TYPE", "required": true, "editable": false }, { "field": "duration", "fieldName": "ocdparor.duration", "dataType": "text", "required": true, "editable": false }, { "fieldName": "ocdparor.lengthBtn", "field": "lengthBtn", "dataType": "hyperlink", "link": "/durationToLine", "parentField": [ "duration", "terms" ] }, { "field": "commenceDate", "fieldName": "ocdleglo.commencedate", "dataType": "date", "required": true }, { "field": "expiryDate", "fieldName": "ocdparor.expirydate", "dataType": "date" }, { "field": "intParties", "dataType": "hyperlink", "link": "/OCDINTPA", "fieldName": "ocdleglo.intParties" }, { "field": "status", "fieldName": "ocdleglo.status", "dataType": "lov", "source": "link", "sourceType": "OCMSTATS", "url": "ocmpconf/rgOrderStatus?orderType=PAR", "editable": true, "required": true }, { "field": "affectedOrders", "hide": true, "dataType": "text" }, { "field": "terms", "hide": true, "dataType": "text" }, { "field": "activeType", "hide": true, "dataType": "text" }, { "field": "iwpButton", "fieldName": "ocdleglo.document", "dataType": "hyperlink", "link": "/EOFFENDER", "queryparam": [ "objectId" ] } ]',
+	modify_datetime = current_timestamp ,
+	modify_user_id = 'OMS_OWNER'
+where
+	module_name = 'OCDPAROR'
+	and grid_name = 'paroleOrders'
+	and db_table_name = 'OCDLEGLO_DATA';

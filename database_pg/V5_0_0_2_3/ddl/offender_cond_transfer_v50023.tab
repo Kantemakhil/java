@@ -1,0 +1,15 @@
+alter table oms_owner.offender_cond_transfer add rcvd_from_loc varchar(12);
+comment on column oms_owner.offender_cond_transfer.rcvd_from_loc is 'To identify from which location the condition is recieved';
+
+alter table oms_owner.offender_cond_transfer add rcvd_from_team bigint;
+comment on column oms_owner.offender_cond_transfer.rcvd_from_team is 'To identify from which team the condition is recieved';
+
+alter table oms_owner.offender_cond_transfer 
+  add constraint offender_cond_transfer_fk9 foreign key (rcvd_from_loc) 
+  references oms_owner.agency_locations(agy_loc_id) on delete no action not deferrable initially immediate;	
+
+alter table oms_owner.offender_cond_transfer 
+  add constraint offender_cond_transfer_fk10 foreign key (rcvd_from_team ) 
+  references oms_owner.automation_teams(team_id) on delete no action not deferrable initially immediate;	
+
+

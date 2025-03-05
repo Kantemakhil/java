@@ -1,0 +1,12 @@
+CREATE TABLE oms_owner.automation_error_log
+	(id                 BIGSERIAL NOT NULL,
+	error_data          BYTEA NOT NULL,
+	process_key         VARCHAR(100) NOT NULL,
+	process_id          VARCHAR(100) NOT NULL,
+	create_datetime     TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL ,
+	create_user_id      VARCHAR(32)NOT NULL ,
+	modify_datetime     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	modify_user_id      VARCHAR(32),
+	seal_flag           VARCHAR(1)
+) tablespace tag_data;
+    

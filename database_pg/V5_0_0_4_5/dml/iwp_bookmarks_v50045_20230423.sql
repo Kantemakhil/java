@@ -1,0 +1,3 @@
+update iwp_bookmarks set description ='Composite Bookmark for Internal Appointment',modify_datetime=current_timestamp, modify_user_id='OMS_OWNER' where bookmark_name ='INT_APPOINT';
+update iwp_bookmarks set description ='Composite Bookmark for Offender Address', modify_datetime=current_timestamp, modify_user_id='OMS_OWNER' where bookmark_name ='OFFEN_ADDRES';
+update iwp_bookmarks set description ='Composite Bookmark for Offender Alert', modify_datetime=current_timestamp, modify_user_id='OMS_OWNER' where bookmark_name ='OFFEN_ALERT'; 

@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="OTRRECEI" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="451a48d0-ea1b-4598-996f-62f4ff347c21">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<parameter name="cfCurr" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[]]>
+	</queryString>
+	<field name="client" class="java.lang.String"/>
+	<field name="userId" class="java.lang.String"/>
+	<field name="clDesc" class="java.lang.String"/>
+	<field name="txnDate" class="java.util.Date"/>
+	<field name="recNum" class="java.lang.String"/>
+	<field name="remitter" class="java.lang.String"/>
+	<field name="amt" class="java.math.BigDecimal"/>
+	<field name="amtText" class="java.lang.String"/>
+	<field name="offName" class="java.lang.String"/>
+	<field name="offId" class="java.lang.String"/>
+	<field name="accountCode" class="java.lang.String"/>
+	<field name="accountName" class="java.lang.String"/>
+	<field name="location" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<detail>
+		<band height="390" splitType="Stretch">
+			<rectangle>
+				<reportElement x="0" y="21" width="555" height="25" backcolor="#BFDFFF" uuid="d8b15d25-8435-4f9c-985c-7cc8128ac2ba"/>
+				<graphicElement>
+					<pen lineColor="#BFDFFF"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement x="0" y="47" width="555" height="25" backcolor="#ADADAD" uuid="22ae3ea5-2f7f-4077-b2db-e092d728f595"/>
+				<graphicElement>
+					<pen lineColor="#EAEAEA"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement x="0" y="71" width="555" height="25" backcolor="#ADADAD" uuid="9d66efdf-8997-40bd-a2f6-5c485da2e6b6"/>
+				<graphicElement>
+					<pen lineColor="#ADADAD"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement positionType="Float" x="0" y="96" width="555" height="25" uuid="5c89ad02-f398-4d44-90b5-afcf1888a3b3"/>
+				<graphicElement>
+					<pen lineColor="#ADADAD"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement x="0" y="121" width="555" height="41" uuid="57b867d1-38d6-4684-b39b-598b8320cb2f"/>
+				<graphicElement>
+					<pen lineColor="#ADADAD"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement x="0" y="163" width="555" height="65" uuid="71769afd-9f68-4669-ba3b-e66964342fba"/>
+				<graphicElement>
+					<pen lineColor="#ADADAD"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement x="0" y="228" width="555" height="20" backcolor="#ADADAD" uuid="1509729d-b181-4015-b00d-92405e5104e0"/>
+				<graphicElement>
+					<pen lineColor="#EAEAEA"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement x="0" y="274" width="555" height="45" uuid="aea5a2d0-0e94-4c71-b79b-106e1365f60e"/>
+				<graphicElement>
+					<pen lineColor="#ADADAD"/>
+				</graphicElement>
+			</rectangle>
+			<line>
+				<reportElement x="278" y="228" width="1" height="45" uuid="56c80e28-d724-4d0a-8cad-7776dd005a59"/>
+				<graphicElement>
+					<pen lineColor="#ADADAD"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement x="333" y="71" width="1" height="90" uuid="d5622cce-3515-4e8e-8918-e8403dad8903"/>
+				<graphicElement>
+					<pen lineColor="#ADADAD"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement x="400" y="71" width="1" height="50" uuid="f10cf2dc-c949-49ec-ac5a-300e76dd65b7"/>
+				<graphicElement>
+					<pen lineColor="#ADADAD"/>
+				</graphicElement>
+			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement x="1" y="20" width="280" height="30" forecolor="#00007F" uuid="823c3b14-f863-4ebe-b4b1-f5e0738e1db5"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{client}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="360" y="20" width="60" height="30" forecolor="#00007F" uuid="73cb76ee-0386-476a-b39d-6f06ed45b206"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["USER ID : "]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="425" y="20" width="122" height="30" forecolor="#00007F" uuid="9cd32c2c-6d43-49c6-b3e7-8ae9add20131"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{userId}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="1" y="47" width="60" height="20" forecolor="#00007F" uuid="e14baf26-6d7d-419f-bc77-aef9d8caceb0"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["RECEIPT "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="196" y="47" width="170" height="20" forecolor="#00007F" uuid="0c51f0a5-3f8f-4c28-b64f-9de44aebe740"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["SAVE THIS OFFICIAL RECEIPT"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="71" width="333" height="25" forecolor="#007FFF" uuid="36777f6d-b7a6-4747-be91-6d36ba7060f2"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["INSTITUTION/CITY"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="334" y="70" width="68" height="25" forecolor="#007FFF" uuid="864b880f-fdbd-48f8-8e5f-dc970011b1a3"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["DATE"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="402" y="71" width="82" height="20" forecolor="#007FFF" uuid="5cb94019-0f0b-487e-9344-9eb70dbb38b7"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["RECEIPT NO : "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="121" width="333" height="20" forecolor="#007FFF" uuid="acae7ea1-3d2f-4376-9b98-7897a072e2b2"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["RECEIVED FROM"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="1" y="164" width="331" height="20" forecolor="#007FFF" uuid="f01ea4e8-2f76-49a3-95fd-334703cbad9d"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["FOR (PURPOSE)"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="229" width="278" height="20" forecolor="#007FFF" uuid="aff2f20d-374b-4bee-8d74-dca3c47e5980"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["FOR ACCOUNT OF (INMATE/CLIENT NAME)"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="280" y="229" width="275" height="20" forecolor="#007FFF" uuid="c914e85f-1e69-41f8-adc5-c21c1ad7437a"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["INMATE/CLIENT NUMBER"]]></textFieldExpression>
+			</textField>
+			<rectangle>
+				<reportElement x="0" y="249" width="555" height="25" uuid="9547cda2-6b19-4481-895a-ae2886028acc"/>
+				<graphicElement>
+					<pen lineColor="#ADADAD"/>
+				</graphicElement>
+			</rectangle>
+			<textField>
+				<reportElement x="1" y="275" width="280" height="20" forecolor="#007FFF" uuid="393a32fa-f034-4997-b779-f5b2af7ba8d2"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["TO SUB ACCOUNT"]]></textFieldExpression>
+			</textField>
+			<rectangle>
+				<reportElement x="0" y="319" width="555" height="71" uuid="55daab43-f43a-4e04-a4b4-d849c106daed"/>
+				<graphicElement>
+					<pen lineColor="#ADADAD"/>
+				</graphicElement>
+			</rectangle>
+			<textField>
+				<reportElement x="1" y="320" width="278" height="20" forecolor="#007FFF" uuid="04130b29-a9be-464d-8a8a-d8d492a25342"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["[   ]   CASH  [   ]   CHECK  [   ]   MONEY ORDER "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="300" y="320" width="160" height="20" forecolor="#007FFF" uuid="546f310e-357c-4608-a362-51e839996309"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[" | RECEIVED BY | "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="1" y="368" width="160" height="20" forecolor="#007FFF" uuid="edd30c59-bdcf-4122-8fde-8a0dd67c8763"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["INMATE HOUSING LOCATION :"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="302" y="349" width="250" height="20" forecolor="#000000" uuid="ef7d271b-8cd4-4937-9046-febcb536c7d4"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["-------------------------------------------"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="1" y="96" width="280" height="25" forecolor="#000000" uuid="fef19765-40a6-474d-95ff-0c9836ad22ab"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{clDesc}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="1" y="141" width="280" height="20" forecolor="#000000" uuid="f8916f7c-9ad5-4580-9b35-583b5159ef7f"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{remitter}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="1" y="202" width="554" height="25" forecolor="#000000" uuid="c1ae668f-a57f-408a-aa6b-35a37eb3240d"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{amtText}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="1" y="248" width="279" height="25" forecolor="#000000" uuid="42b4ecb2-4d98-44b4-8934-05a6b9512934"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{offName}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="1" y="295" width="100" height="25" forecolor="#000000" uuid="a9b8c5a0-3ca6-48f5-86b7-ce6665c07856"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{accountCode}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="280" y="249" width="273" height="24" forecolor="#000000" uuid="c4ecbdaf-9d5d-4698-8eca-1b6fa08794ae"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{offId}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="109" y="296" width="446" height="25" forecolor="#000000" uuid="916b6ee7-7eb6-4f2c-a04e-f904c78eb302"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{accountName}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="168" y="369" width="384" height="21" forecolor="#000000" uuid="7c9ab3bc-1ea4-48df-9e4d-321f2facefc4"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{location}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="333" y="95" width="67" height="25" forecolor="#000000" uuid="b51c9ef5-4917-41df-ab05-c1a621811c7f"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{txnDate} != null ? new SimpleDateFormat("dd/MM/yyyy").format($F{txnDate}) : null]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="401" y="95" width="67" height="25" forecolor="#000000" uuid="ff461437-f833-4317-864d-eb8a4d47c67c"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{recNum}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="390" y="136" width="157" height="25" forecolor="#000000" uuid="026cfe98-381f-4ec4-a1c5-ebae4cc57a93"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{amt} != null ?  $P{cfCurr} +"  " + $F{amt}.setScale( 2, java.math.BigDecimal.ROUND_HALF_UP) : null]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

@@ -1,0 +1,1 @@
+COMMENT ON COLUMN oms_owner.tables_audit.audit_flag is 'Indicates if the table is being audited for insert, update, delete (Y= Enabled, N= Disabled)';

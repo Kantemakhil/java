@@ -1,0 +1,23 @@
+create table oms_owner.offender_custody_status (
+	offender_book_id int8 not null,	
+	custody_status_datetime timestamp(6) not null,
+	custody_status varchar(1000) not null,
+	create_datetime timestamp(6) not null default CURRENT_TIMESTAMP,
+	create_user_id varchar(32) not null,
+	modify_datetime timestamp(6),
+	modify_user_id varchar(32),
+	seal_flag varchar(1)
+) tablespace tag_setup_data;
+
+ALTER TABLE offender_custody_status
+ ADD CONSTRAINT offender_custody_status_uk1 UNIQUE (offender_book_id) using index tablespace tag_indx;
+
+ALTER TABLE offender_custody_status  
+  ADD CONSTRAINT offender_custody_status_fk1 FOREIGN KEY (offender_book_id )
+   REFERENCES oms_owner.offender_bookings(offender_book_id)  ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE; 
+
+comment on table offender_custody_status is 'Stores the offender custody status';
+
+comment on column offender_custody_status.offender_book_id is ' Unique surrogate key that identified the offender booking record';
+comment on column offender_custody_status.custody_status_datetime is 'The date and time when the offender custody status was calculated';
+comment on column offender_custody_status.custody_status is 'The offender custody status (may contain multiple custody statuses)';

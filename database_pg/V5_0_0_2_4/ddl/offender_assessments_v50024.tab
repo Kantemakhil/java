@@ -1,0 +1,1 @@
+comment on column oms_owner.offender_assessments.assess_status is 'Assessment status, Reference(ASSESS_STATS) ie. A-Active, P-Submitted, I-Inactive, D-Draft';

@@ -1,0 +1,25 @@
+CREATE OR REPLACE VIEW oms_owner.v_program_placements
+AS SELECT c.corporate_id,
+    c.corporate_name,
+    va.address_id,
+    va.address_type,
+    va.full_address,
+    va.house,
+    va.street,
+    va.area,
+    va.country,
+    va.suite_number,
+    va.street_number,
+    va.street_direction,
+    va.city_code,
+    va.city_name,
+    va.prov_state_code,
+    va.zip_postal_code,
+    va.capacity,
+    va.comment_text,
+    va.primary_flag,
+    va.mail_flag,
+    va.services_flag
+   FROM corporates c,
+    v_addresses va
+  WHERE c.corporate_id = va.owner_id AND va.owner_class::text = 'CORP'::text AND va.services_flag::text = 'Y'::text; 

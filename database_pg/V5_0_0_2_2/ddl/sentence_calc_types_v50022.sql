@@ -1,0 +1,2 @@
+alter table sentence_calc_types add charges_flag varchar(1) DEFAULT 'Y' NOT NULL;
+comment on column sentence_calc_types.charges_flag is 'Indicates if the recording of charges is required for custodial holding orders(Y/N values)';

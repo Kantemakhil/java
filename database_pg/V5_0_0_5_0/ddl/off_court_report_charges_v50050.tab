@@ -1,0 +1,25 @@
+create table off_court_report_charges(
+offender_book_id bigint not null,
+order_id bigint not null,
+charge_id bigint not null,
+create_datetime timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+create_user_id varchar(32) NOT NULL,
+modify_datetime timestamp(6),
+modify_user_id varchar(32),
+seal_flag varchar(1)) tablespace tag_data;
+
+alter table off_court_report_charges 
+ add constraint off_court_report_charges_fk1 foreign key(offender_book_id) 
+  references offender_bookings(offender_book_id) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE;
+
+alter table off_court_report_charges 
+ add constraint off_court_report_charges_fk2 foreign key(order_id) 
+  references orders(order_id) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE;
+
+alter table off_court_report_charges add constraint off_court_report_charges_uk1 unique (offender_book_id, order_id, charge_id);
+
+comment on table off_court_report_charges is 'Stores offender court reports charges';
+
+comment on column off_court_report_charges.offender_book_id is 'Unique identifier for offender booking';
+comment on column off_court_report_charges.order_id is ' Unique identifier for offender court report';
+comment on column off_court_report_charges.charge_id is 'Unique identifier for offender charge within a given booking ';

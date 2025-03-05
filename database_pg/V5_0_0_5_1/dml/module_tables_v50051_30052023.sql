@@ -1,0 +1,1 @@
+update module_tables set module_name='OCDCORDS' where module_name='OCDLEGLO';

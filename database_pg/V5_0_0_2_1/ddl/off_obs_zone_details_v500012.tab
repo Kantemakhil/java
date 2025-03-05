@@ -1,0 +1,41 @@
+-- Create table
+create table oms_owner.off_obs_zone_details
+(
+  agy_loc_id           varchar(10) not null,
+  zone_code            varchar(12) not null,
+  internal_location_id integer not null,
+  sensor_id            varchar(100) not null,
+  list_seq             integer not null,
+  active_flag          varchar(1) not null default 'Y',
+  expiry_date          timestamp,
+  create_datetime      timestamp not null default CURRENT_TIMESTAMP,
+  create_user_id       varchar(32) not null,
+  modify_datetime      timestamp default CURRENT_TIMESTAMP,
+  modify_user_id       varchar(32),
+  seal_flag            varchar(1)
+)
+tablespace tag_data;
+ 
+-- Create/Recreate primary, unique and foreign key constraints 
+alter table oms_owner.off_obs_zone_details
+  add constraint off_obs_zone_details_pk primary key (agy_loc_id, zone_code, internal_location_id)
+  using index tablespace tag_indx;
+  
+alter table oms_owner.off_obs_zone_details
+  add constraint off_obs_zone_details_fk1 foreign key (agy_loc_id, zone_code)
+  references oms_owner.offender_observation_zones (agy_loc_id, zone_code) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE;    
+  
+alter table oms_owner.off_obs_zone_details
+  add constraint off_obs_zone_details_fk2 foreign key (internal_location_id)
+  references oms_owner.agency_internal_locations (internal_location_id) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE;      
+  
+--
+comment on table oms_owner.off_obs_zone_details is 'Stores the housing locations for offender observation zones (maintenance table)';
+comment on column oms_owner.off_obs_zone_details.agy_loc_id is 'The agency location of the zone';
+comment on column oms_owner.off_obs_zone_details.zone_code is 'The zone code [ref domain=OBSRVTN_ZONE]';
+comment on column oms_owner.off_obs_zone_details.internal_location_id is 'This system identifier of the housing location configured under the zone'; 
+comment on column oms_owner.off_obs_zone_details.sensor_id is 'Sensor id (free text)';
+comment on column oms_owner.off_obs_zone_details.list_seq is 'The sequence of housing location';
+comment on column oms_owner.off_obs_zone_details.active_flag is 'Indicates if the housing location configured under the zone is active (Y/N)';
+comment on column oms_owner.off_obs_zone_details.expiry_date is 'The zone housing location expiry datetime';
+  

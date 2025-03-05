@@ -1,0 +1,4 @@
+alter table NAME_SYNONYMS drop constraint name_synonyms_pk;
+
+alter table NAME_SYNONYMS add constraint name_synonyms_pk primary key(NAME,
+BASE_NAME);

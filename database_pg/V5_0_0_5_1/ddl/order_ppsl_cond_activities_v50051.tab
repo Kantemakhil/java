@@ -1,0 +1,25 @@
+DROP TABLE if exists oms_owner.order_ppsl_cond_activities;
+
+CREATE TABLE oms_owner.order_ppsl_cond_activities (
+	order_ppsl_cond_activity_id int8 NOT NULL,
+	order_id int8 NOT NULL,
+	condition_activity_code varchar(12) NULL,
+	comment_text varchar(240) NULL,
+	program_id int8 NULL,
+	create_datetime timestamp NOT NULL,
+	create_user_id varchar(32) NOT NULL,
+	modify_datetime timestamp NULL,
+	modify_user_id varchar(32) NULL,
+	seal_flag varchar(1) NULL,
+	CONSTRAINT order_condition_activities_pk PRIMARY KEY (order_ppsl_cond_activity_id),
+	CONSTRAINT ord_pc_act_ord_pc_fk1 FOREIGN KEY (order_id) REFERENCES oms_owner.orders(order_id),
+	CONSTRAINT ord_pc_act_ord_pc_fk2 FOREIGN KEY (program_id) REFERENCES oms_owner.program_services(program_id)
+) TABLESPACE tag_data;
+
+comment on table oms_owner.order_ppsl_cond_activities is 'Store the condition details of offender court reports';
+
+comment on column order_ppsl_cond_activities.order_ppsl_cond_activity_id is 'Unique identifier for the condition details id [db sequence=ORDER_PPSL_COND_ACTIVITY_ID]';
+comment on column order_ppsl_cond_activities.order_id is 'Unique identifier for the offender court report';
+comment on column order_ppsl_cond_activities.condition_activity_code is 'Condition activity code [domain=COND_ACT]';
+comment on column order_ppsl_cond_activities.comment_text is 'Additional information';
+comment on column order_ppsl_cond_activities.program_id is ' Unique identifier of the program activity';

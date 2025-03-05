@@ -1,0 +1,18 @@
+GET_JSON_SPEC{ 
+	SELECT ID,SPEC_KEY,JSON_SPECS,CREATE_DATETIME,CREATE_USER_ID FROM JSON_SPEC where SPEC_KEY=:specKey
+}
+GET_SPEC_KEY_LIST{
+	SELECT  SPEC_KEY  FROM JSON_SPEC
+}
+CHECK_EXIST_SPECKEY{
+	SELECT  count(*)  FROM JSON_SPEC WHERE SPEC_KEY = :specKey
+}
+INSERT_JSON_DATA{
+	INSERT INTO json_spec(id, spec_key, json_specs, create_datetime, create_user_id, modify_datetime, modify_user_id, seal_flag)
+	VALUES(nextval('JSON_SPEC_ID'), :specKey, :jsonSpecs, CURRENT_TIMESTAMP, :createUserId, NULL, NULL, NULL)
+}
+UPDATE_JSON_DATA{
+	UPDATE JSON_SPEC
+	SET JSON_SPECS=:jsonSpecs, MODIFY_DATETIME=CURRENT_TIMESTAMP, MODIFY_USER_ID= :createUserId
+	WHERE SPEC_KEY=:specKey	
+}

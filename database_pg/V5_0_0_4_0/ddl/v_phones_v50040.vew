@@ -1,0 +1,12 @@
+CREATE OR REPLACE VIEW oms_owner.v_phones
+AS SELECT phones.phone_id,
+    phones.owner_class,
+    phones.owner_id,
+    phones.owner_seq,
+    phones.owner_code,
+    phones.phone_type,
+    NULL::text AS phone_area,
+    phones.phone_no,
+    phones.ext_no,
+    phones.format
+   FROM phones;

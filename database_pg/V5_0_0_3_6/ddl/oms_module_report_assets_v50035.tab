@@ -1,0 +1,19 @@
+CREATE TABLE oms_owner.oms_module_report_assets (
+	assets_id int8 NOT NULL,
+	asset_code varchar(50) NOT NULL,
+	asset_body bytea NOT NULL,
+	assets_filename varchar(100) NOT NULL,
+	create_datetime   timestamp(6) default current_timestamp NOT NULL,
+	create_user_id varchar(32) NOT NULL,
+	modify_datetime timestamp(6) NULL,
+	modify_user_id varchar(32) NULL,
+	CONSTRAINT oms_module_report_assets_pk PRIMARY KEY (assets_id),
+	CONSTRAINT oms_module_report_assets_uk1 UNIQUE (asset_code)
+);
+
+comment on table oms_module_report_assets is 'It is used to store report related assets.';
+
+comment on column oms_module_report_assets.assets_id is ' assets_id is primary key [db sequence=oms_asset_id_seq]';
+comment on column oms_module_report_assets.asset_code is 'assets code is unique and used in report to build logo and style sheet ';
+comment on column oms_module_report_assets.asset_body is 'asset_body is either bytearray image or styler sheet file. ';
+comment on column oms_module_report_assets.assets_filename is 'assets_filesname is filename of image or style sheet. ';

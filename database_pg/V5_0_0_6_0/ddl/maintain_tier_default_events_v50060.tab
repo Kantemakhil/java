@@ -1,0 +1,20 @@
+truncate table maintain_tier_default_events;
+
+ALTER TABLE maintain_tier_default_events DROP CONSTRAINT maintain_tier_default_events_pk;
+
+ALTER TABLE maintain_tier_default_events ADD version_no int8 NOT null;
+ALTER TABLE maintain_tier_default_events ADD version_create_datetime timestamp(6) NOT null default CURRENT_TIMESTAMP;
+ALTER TABLE maintain_tier_default_events ADD version_create_staff_id int8 NOT NULL;
+
+comment on column maintain_tier_default_events.version_no is 'Tier schedule version no';
+comment on column maintain_tier_default_events.version_create_datetime is 'The datetime when the tier default event schedule version is created';
+comment on column maintain_tier_default_events.version_create_staff_id is 'The staff who created the tier default event schedule version'; 
+
+
+ALTER TABLE maintain_tier_default_events ADD tier_event_sch_version_id int8 NOT NULL;
+comment on column maintain_tier_default_events.tier_event_sch_version_id is 'Unique record identifier for each tier default event schedule version [db seq=tier_event_sch_version_id_seq]'; 
+
+
+ALTER table maintain_tier_default_events ADD CONSTRAINT maintain_tier_default_events_pk PRIMARY KEY (tier_event_sch_version_id );
+ALTER table maintain_tier_default_events ADD CONSTRAINT maintain_tier_default_events_uk1 UNIQUE(tier_level_code ,schedule_type, schedule_sub_type, version_no);
+

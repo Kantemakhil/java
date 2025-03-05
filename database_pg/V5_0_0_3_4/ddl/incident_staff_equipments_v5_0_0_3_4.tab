@@ -1,0 +1,23 @@
+create table oms_owner.incident_staff_equipments (
+	incident_report_id bigint NOT NULL,
+	equipment_used varchar(12) NOT NULL,
+	equipment_detail varchar(240),
+	create_datetime timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	create_user_id varchar(32) NOT NULL,
+	modify_user_id varchar(32),
+	modify_datetime timestamp ,
+	seal_flag varchar(1) NULL 
+) tablespace tag_data;
+
+alter table oms_owner.incident_staff_equipments	
+  ADD CONSTRAINT incident_staff_equipments_uk1 UNIQUE (incident_report_id, equipment_used) 
+  using index tablespace tag_indx;
+  
+alter table oms_owner.incident_staff_equipments	
+  ADD CONSTRAINT incident_staff_equipments_fk1 FOREIGN KEY (incident_report_id) REFERENCES oms_owner.incident_staff_reports(incident_report_id) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE;
+  
+comment on table oms_owner.incident_staff_equipments is 'Agency incidents staff reports equipments';
+
+comment on column oms_owner.incident_staff_equipments.incident_report_id is 'Unique identified of the incident staff report';
+comment on column oms_owner.incident_staff_equipments.equipment_used is 'Equipment [domain=INC_STF_EQUP]'; 
+comment on column oms_owner.incident_staff_equipments.equipment_detail is 'Equipment details, free text';

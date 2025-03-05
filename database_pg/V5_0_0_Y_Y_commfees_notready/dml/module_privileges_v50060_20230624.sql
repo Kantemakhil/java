@@ -1,0 +1,214 @@
+insert
+	into
+	MODULE_PRIVILEGES (MODULE_NAME,
+	ROLE_ID,
+	ACCESS_PRIVILEGE,
+	VERIFICATION_FLAG,
+	CREATE_DATETIME,
+	CREATE_USER_ID,
+	MODIFY_DATETIME,
+	MODIFY_USER_ID,
+	SEAL_FLAG) 
+select
+	'OCDOFACC',
+	444,
+	'A',
+	'Y',
+	CURRENT_TIMESTAMP,
+	'OMS_OWNER',
+	current_timestamp,
+	'OMS_OWNER',
+	null
+where
+	not exists (
+	select
+		1
+	from
+		MODULE_PRIVILEGES
+	where
+		MODULE_NAME = 'OCDOFACC'
+		and role_id = 444);
+
+insert
+	into
+	MODULE_PRIVILEGES (MODULE_NAME,
+	ROLE_ID,
+	ACCESS_PRIVILEGE,
+	VERIFICATION_FLAG,
+	CREATE_DATETIME,
+	CREATE_USER_ID,
+	MODIFY_DATETIME,
+	MODIFY_USER_ID,
+	SEAL_FLAG) 
+select
+	'OCUFOVDT',
+	444,
+	'A',
+	'Y',
+	CURRENT_TIMESTAMP,
+	'OMS_OWNER',
+	current_timestamp,
+	'OMS_OWNER',
+	null
+where
+	not exists (
+	select
+		1
+	from
+		MODULE_PRIVILEGES
+	where
+		MODULE_NAME = 'OCUFOVDT'
+		and role_id = 444);
+
+insert
+	into
+	MODULE_PRIVILEGES (MODULE_NAME,
+	ROLE_ID,
+	ACCESS_PRIVILEGE,
+	VERIFICATION_FLAG,
+	CREATE_DATETIME,
+	CREATE_USER_ID,
+	MODIFY_DATETIME,
+	MODIFY_USER_ID,
+	SEAL_FLAG) 
+select
+	'OCUTRDET',
+	444,
+	'A',
+	'Y',
+	CURRENT_TIMESTAMP,
+	'OMS_OWNER',
+	current_timestamp,
+	'OMS_OWNER',
+	null
+where
+	not exists (
+	select
+		1
+	from
+		MODULE_PRIVILEGES
+	where
+		MODULE_NAME = 'OCUTRDET'
+		and role_id = 444);
+
+insert
+	into
+	MODULE_PRIVILEGES (MODULE_NAME,
+	ROLE_ID,
+	ACCESS_PRIVILEGE,
+	VERIFICATION_FLAG,
+	CREATE_DATETIME,
+	CREATE_USER_ID,
+	MODIFY_DATETIME,
+	MODIFY_USER_ID,
+	SEAL_FLAG) 
+select
+	'OCUACHIS',
+	444,
+	'A',
+	'Y',
+	CURRENT_TIMESTAMP,
+	'OMS_OWNER',
+	current_timestamp,
+	'OMS_OWNER',
+	null
+where
+	not exists (
+	select
+		1
+	from
+		MODULE_PRIVILEGES
+	where
+		MODULE_NAME = 'OCUACHIS'
+		and role_id = 444);
+
+insert
+	into
+	MODULE_PRIVILEGES (MODULE_NAME,
+	ROLE_ID,
+	ACCESS_PRIVILEGE,
+	VERIFICATION_FLAG,
+	CREATE_DATETIME,
+	CREATE_USER_ID,
+	MODIFY_DATETIME,
+	MODIFY_USER_ID,
+	SEAL_FLAG) 
+select
+	'OCUBADJS',
+	444,
+	'A',
+	'Y',
+	CURRENT_TIMESTAMP,
+	'OMS_OWNER',
+	CURRENT_TIMESTAMP,
+	null,
+	null
+where
+	not exists (
+	select
+		1
+	from
+		MODULE_PRIVILEGES
+	where
+		MODULE_NAME = 'OCUBADJS'
+		and role_id = 444);
+
+insert
+	into
+	MODULE_PRIVILEGES (MODULE_NAME,
+	ROLE_ID,
+	ACCESS_PRIVILEGE,
+	VERIFICATION_FLAG,
+	CREATE_DATETIME,
+	CREATE_USER_ID,
+	MODIFY_DATETIME,
+	MODIFY_USER_ID,
+	SEAL_FLAG) 
+select
+	'OCDADJUS',
+	444,
+	'A',
+	'Y',
+	CURRENT_TIMESTAMP,
+	'OMS_OWNER',
+	CURRENT_TIMESTAMP,
+	'OMS_OWNER',
+	null
+where
+	not exists (
+	select
+		1
+	from
+		MODULE_PRIVILEGES
+	where
+		MODULE_NAME = 'OCDADJUS');
+
+insert
+	into
+	MODULE_PRIVILEGES (MODULE_NAME,
+	ROLE_ID,
+	ACCESS_PRIVILEGE,
+	VERIFICATION_FLAG,
+	CREATE_DATETIME,
+	CREATE_USER_ID,
+	MODIFY_DATETIME,
+	MODIFY_USER_ID,
+	SEAL_FLAG) 
+select
+	'OCDREVER',
+	444,
+	'A',
+	'Y',
+	CURRENT_TIMESTAMP,
+	'OMS_OWNER',
+	CURRENT_TIMESTAMP,
+	'OMS_OWNER',
+	null
+where
+	not exists (
+	select
+		1
+	from
+		MODULE_PRIVILEGES
+	where
+		MODULE_NAME = 'OCDREVER');

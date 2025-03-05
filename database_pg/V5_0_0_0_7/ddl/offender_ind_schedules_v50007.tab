@@ -1,0 +1,13 @@
+alter table oms_owner.offender_ind_schedules add email_sent_flag varchar(1) default 'N';
+alter table oms_owner.offender_ind_schedules add sms_sent_flag varchar(1) default 'N';
+comment on column oms_owner.offender_ind_schedules.email_sent_flag is  'When email scheduled was sent successfully , this flag will set to Y';
+comment on column oms_owner.offender_ind_schedules.sms_sent_flag is  'When SMS scheduled was sent successfully , this flag will set to Y';
+
+alter table oms_owner.offender_ind_schedules add  sms_schedule_hours_before int;
+alter table oms_owner.offender_ind_schedules add  email_schedule_hours_before int;
+alter table oms_owner.offender_ind_schedules add  email_flag varchar(1);
+alter table oms_owner.offender_ind_schedules add  sms_flag varchar(1);
+comment on column oms_owner.offender_ind_schedules.sms_schedule_hours_before is 'To set the time before sms notificaion to be sent';
+comment on column oms_owner.offender_ind_schedules.email_schedule_hours_before is 'To set the time before email notificaion to be sent';
+comment on column oms_owner.offender_ind_schedules.email_flag is 'If Email Flag is set Y for that Schedule type need to send notification for that appointment';
+comment on column oms_owner.offender_ind_schedules.sms_flag is 'If SMS Flag is set Y for that Schedule type need to send notification for that appointment';

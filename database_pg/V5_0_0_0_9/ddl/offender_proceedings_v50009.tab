@@ -1,0 +1,4 @@
+ALTER TABLE offender_proceedings ADD team_responsible varchar(100);
+ALTER TABLE offender_proceedings ADD staff_responsible varchar(100);
+ALTER TABLE offender_proceedings ADD order_type varchar(100);
+ALTER TABLE offender_proceedings ADD sentence_seq varchar(50);

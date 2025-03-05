@@ -1,0 +1,16 @@
+CREATE TABLE oms_owner.ocuchgou_data (
+	id BIGSERIAL,
+	form_identifier varchar(1000) NULL,
+	form_info_json bytea NULL,
+	create_datetime timestamp(6) NOT NULL DEFAULT current_timestamp,
+	create_user_id varchar(32) NOT NULL,
+	modify_datetime timestamp(6) NULL,
+	modify_user_id varchar(32) NULL
+) TABLESPACE tag_data;
+
+alter table ocuchgou_data add constraint ocuchgou_data_pk primary key(id);
+
+comment on table ocuchgou_data is 'This is used to store the historical data of charges';
+comment on column ocuchgou_data.id is 'Sequence for data maintenance';
+comment on column ocuchgou_data.form_identifier is 'Stores the search criteria Offender_Book_Id';
+comment on column ocuchgou_data.form_info_json is 'Stores the Json Data of charges history';

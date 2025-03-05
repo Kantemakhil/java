@@ -1,0 +1,11 @@
+drop sequence MODULE_TAB_ID;
+
+DO
+$body$
+DECLARE seq_array int;
+    i int;
+begin
+seq_array:=(select MAX(module_tab_id )+1 from MODULE_TABLES  a);
+execute 'create sequence MODULE_TAB_ID  start with '|| seq_array ||' increment by 1';
+END;
+$body$ 

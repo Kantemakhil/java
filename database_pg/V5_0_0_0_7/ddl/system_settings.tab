@@ -1,0 +1,16 @@
+CREATE TABLE oms_owner.system_settings
+(	setting_type 			VARCHAR(50) NOT NULL,
+	setting_provider_code 	VARCHAR(50) NOT NULL,
+	setting_value 			BYTEA NOT NULL,
+	create_datetime     	TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL ,
+	create_user_id      	VARCHAR(32)NOT NULL ,
+	modify_datetime     	TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	modify_user_id      	VARCHAR(32),
+	seal_flag           	VARCHAR(1)
+) tablespace tag_data;
+
+
+ALTER TABLE oms_owner.system_settings
+  ADD CONSTRAINT system_settings_pk PRIMARY KEY (setting_type,setting_provider_code)
+  USING index tablespace tag_indx;
+  

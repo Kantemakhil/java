@@ -1,0 +1,1 @@
+ALTER TABLE oms_owner.off_external_account_balances ALTER COLUMN create_user_id SET DEFAULT USER;

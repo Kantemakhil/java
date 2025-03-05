@@ -1,0 +1,3 @@
+ --create UNIQUE KEY
+ALTER TABLE oms_owner.module_tables ADD CONSTRAINT module_tables_uk1 UNIQUE (object_name, module_name) using index tablespace tag_indx;
+ 

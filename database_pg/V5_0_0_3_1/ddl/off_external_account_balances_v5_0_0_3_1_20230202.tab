@@ -1,0 +1,10 @@
+truncate table oms_owner.off_external_account_balances;
+
+CREATE INDEX off_external_account_bal_in1
+    ON oms_owner.off_external_account_balances
+	  ( last_changed)
+  tablespace tag_indx
+;
+
+alter table oms_owner.off_external_account_balances 
+  add constraint off_external_account_bal_fk1 foreign key (root_offender_id) REFERENCES oms_owner.offenders(offender_id) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE;

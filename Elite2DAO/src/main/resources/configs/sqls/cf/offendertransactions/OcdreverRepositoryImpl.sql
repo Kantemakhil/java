@@ -1,0 +1,111 @@
+
+OCDREVER_OFF_FEE_BILL_TRN_DATA {
+ SELECT
+    A.BOOKING_NO,
+    A.BILL_DATE BILL_GENERATE_DATETIME,
+    A.CASELOAD_ID,
+    A.OFFENDER_FEE_ID,
+    A.FEE_CODE,
+    A.feecodedesc, 
+    (
+        SELECT
+            TXN_USAGE
+        FROM
+            TRANSACTION_TYPES TP
+        WHERE
+            TP.TXN_TYPE = OFBT.BILL_TXN_TYPE
+    ) TXN_USAGE,
+    (
+        SELECT
+            DESCRIPTION
+        FROM
+            TRANSACTION_TYPES
+        WHERE
+            TXN_TYPE = OFBT.BILL_TXN_TYPE
+    ) AS BILL_TXN_TYPE_DESCRIPTON,
+    A.BILL_LDPP_START_DATE,
+    A.BILL_LDPP_END_DATE,
+    A.BILL_AR_DUE_DATE,
+    OFBT.*
+FROM
+    (
+        SELECT
+            OFB.*,
+            VHB.BOOKING_NO,
+            OFAP.CASELOAD_ID,
+            OFAP.FEE_CODE,
+     
+            (select deduction_desc from deduction_types where DEDUCTION_CATEGORY = 'FEE' and deduction_type = OFAP.FEE_CODE) as feecodedesc
+        FROM
+            OFF_FEE_BILLS           OFB,
+            OFF_FEE_ACCOUNT_PROFILE OFAP,
+            V_HEADER_BLOCK          VHB
+        WHERE
+                OFAP.OFFENDER_BOOK_ID = :OFFENDER_BOOK_ID
+            AND VHB.OFFENDER_BOOK_ID = :OFFENDER_BOOK_ID
+            AND OFAP.OFFENDER_FEE_ID = OFB.OFFENDER_FEE_ID
+    )                         A,
+    OFF_FEE_BILL_TRANSACTIONS OFBT 
+WHERE
+    OFBT.BILL_ID = A.BILL_ID
+ORDER BY
+    A.CREATE_DATETIME,OFBT.BILL_ID ,OFBT.BILL_TXN_NO asc;
+   
+
+
+ }
+  
+ OCDREVER_OFF_BILL_TRN_INSERT_QUERY {
+  INSERT INTO OFF_FEE_BILL_TRANSACTIONS (BILL_ID,BILL_TXN_NO,BILL_TXN_DATETIME,BILL_TXN_STAFF_ID,BILL_TXN_USER,
+BILL_TXN_TYPE,BILL_TXN_AMOUNT,TRUST_TXN_ID,TRUST_TXN_ENTRY_SEQ,OFF_ADJ_CANC_RSN,OFF_ADJ_SUB_RSN,OFF_ADJ_TXN_ID,OFF_ADJ_REV_RSN,
+BILL_STATUS,BILL_AGING_START_DATE,BILL_AGING_END_DATE,BILL_TXN_COMMENT,ORIGINAL_BILL_ID,ORIGINAL_BILL_TXN_NO,
+ORIGINAL_OFF_ADJ_TXN_ID,
+CREATE_DATETIME,CREATE_USER_ID,MODIFY_DATETIME,MODIFY_USER_ID,SEAL_FLAG)
+values(:billId,:billTxnNo,:billTxnDatetime,:billTxnStaffId,:billTxnUser,
+:billTxnType,:billTxnAmount,:trustTxnId,:trustTxnEntrySeq,:offAdjCancRsn,:offAdjSubRsn,nextval('OFF_ADJ_TXN_ID'),:offAdjRevRsn,
+:billStatus,:billAgingStartDate,:billAgingEndDate,:billTxnComment,:originalBillId,:originalBillTxnNo,
+:originalOffAdjTxnId,
+current_timestamp,:createUserId,current_timestamp,:modifyUserId,:sealFlag)
+ 
+ }
+ OCDREVER_OFF_FEE_BILLS_TRANSACTIONS_PRE_INSERT {
+ select coalesce(max(BILL_TXN_NO),0)+1 from OFF_FEE_BILL_TRANSACTIONS where BILL_ID = :BILL_ID
+ }
+ OCDREVER_UPDATE_OFF_FEE_BILLS {
+ UPDATE OFF_FEE_BILLS SET STATEMENT_GENERATED_FLAG = 'Y',BILLING_STATEMENT_ID=:billingStatementId,BILL_STATEMENT_DATE=date_trunc('day',:statementGenerateDatetime),
+BILL_AR_DUE_DATE=date_trunc('day',:statementGenerateDatetime)+30,BILL_LDPP_START_DATE =date_trunc('day',:statementGenerateDatetime)+31,BILL_LDPP_END_DATE=date_trunc('day',:statementGenerateDatetime)+30 WHERE BILL_ID = :billId
+ }
+ OCDREVER_UPDATE_OFF_FEE_BILL_TRANSACTIONS {
+ UPDATE OFF_FEE_BILL_TRANSACTIONS SET TXN_STATEMENT_GENERATED_FLAG = 'Y',BILLING_STATEMENT_ID=:billingStatementId,BILL_AGING_START_DATE=date_trunc('day',:billingCycleStartDate),
+BILL_AGING_END_DATE=date_trunc('day',:billingCycleEndDate) WHERE BILL_ID = :billId  and BILL_TXN_NO=:billTxnNo
+ }
+ OCDREVER_OFF_BILL_STMT_INSERT_QUERY {
+ INSERT INTO OFF_BILLING_STATEMENTS (BILLING_STATEMENT_ID,CASELOAD_ID,ROOT_OFFENDER_ID,BILLING_CYCLE_START_DATE,BILLING_CYCLE_END_DATE,
+STATEMENT_GENERATE_DATETIME,STATEMENT_GENERATE_STAFF_ID,STATEMENT_GENERATE_USER,BEGINING_BALANCE_AMOUNT,PAYMENTS_CREDITS_AMOUNT,
+BILLINGS_AMOUNT,ENDING_BALANCE_AMOUNT,OFFENDER_BOOK_ID,CASE_PLAN_ID)
+VALUES (:billingStatementId,:caseloadId,:rootOffenderId,date_trunc('day',:billingCycleStartDate),date_trunc('day',:billingCycleEndDate),
+date_trunc('day',:statementGenerateDatetime),:statementGenerateStaffId,:statementGenerateUser,:beginingBalanceAmount,:paymentsCreditsAmount,
+:billingsAmount,:endingBalanceAmount,:offenderBookId,:casePlanId)
+}
+OCDREVER_OFF_BILL_STMT_PRE_INSERT_QUERY {
+SELECT NEXTVAL('BILLING_STATEMENT_ID') FROM DUAL
+}
+
+OCDREVER_GET_OFF_BILL_ORIGINAL_BALANCE_OWING {
+SELECT BILL_TXN_AMOUNT FROM (SELECT * FROM off_fee_bill_transactions where BILL_ID=:billId ORDER BY BILL_TXN_DATETIME desc) as amount limit 1;
+}
+
+OCDREVER_GET_ADJUSTED_BILLS{
+SELECT  OFBT.* FROM OFF_FEE_BILL_TRANSACTIONS  OFBT WHERE BILL_ID = :BILLID AND BILL_TXN_NO < :BILLTXNNO 
+--AND BILL_TXN_TYPE IN (SELECT TXN_TYPE FROM TRANSACTION_TYPES TP WHERE TP.TXN_USAGE = 'A' ) 
+ORDER BY BILL_TXN_DATETIME DESC
+}
+
+OCDREVER_UPDATE_OFF_FEE_BILL_BILLAGING {
+ UPDATE OFF_FEE_BILLS SET  BILL_LDPP_START_DATE=date_trunc('day',:billLdppStartDate::timestamp)::date WHERE BILL_ID = :billId
+ }
+ 
+ GET_OLD_DATA_OFF_FEE_BILLS{
+select BILL_AR_START_DATE , BILL_AR_DUE_DATE from OFF_FEE_BILLS where bill_id =:billId ;
+}
+

@@ -1,0 +1,2 @@
+alter table offender_prg_obligations add order_type VARCHAR(20);
+comment on column offender_prg_obligations.order_type is 'The order_type indicates the sentence type';

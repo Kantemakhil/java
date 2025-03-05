@@ -1,0 +1,53 @@
+ 
+OCMSNOTI_SANNOT_FIND_SANCTION_NOTICES {
+--select
+--	SANCTION_NOTICE_CODE,
+--	LATE_DAYS,
+--	DESCRIPTION,
+--	ACTIVE_FLAG,
+--	SEQ_NUM,
+--	UPDATE_ALLOWED_FLAG,
+--	EXPIRY_DATE,
+--	 ROW_ID ,
+--	MODIFY_USER_ID,
+--	MODIFY_DATETIME,
+--	CREATE_DATETIME,
+--	CREATE_USER_ID,
+--	SEAL_FLAG
+--from
+--	SANCTION_NOTICES order by row_id
+select
+	SANCTION_NOTICE_CODE,
+	LATE_DAYS,
+	DESCRIPTION,
+	ACTIVE_FLAG,
+	SEQ_NUM,
+	UPDATE_ALLOWED_FLAG,
+	EXPIRY_DATE,
+	TO_CHAR(ROW_ID) ROW_ID ,
+	MODIFY_USER_ID,
+	MODIFY_DATETIME,
+	CREATE_DATETIME,
+	CREATE_USER_ID,
+	SEAL_FLAG
+from
+	SANCTION_NOTICES 
+}
+OCMSNOTI_SANNOT_INSERT_SANCTION_NOTICES {
+	--INSERT INTO SANCTION_NOTICES(SANCTION_NOTICE_CODE,LATE_DAYS,DESCRIPTION,ACTIVE_FLAG,SEQ_NUM,UPDATE_ALLOWED_FLAG,EXPIRY_DATE,MODIFY_USER_ID,MODIFY_DATETIME,CREATE_DATETIME,CREATE_USER_ID,SEAL_FLAG) VALUES(:sanctionNoticeCode,:lateDays,:description,:activeFlag,:seqNum,:updateAllowedFlag,:expiryDate,:modifyUserId ,:modifyDatetime ,:createDatetime ,:createUserId ,:sealFlag )
+	insert into SANCTION_NOTICES(SANCTION_NOTICE_CODE, LATE_DAYS, DESCRIPTION, ACTIVE_FLAG, SEQ_NUM, UPDATE_ALLOWED_FLAG, EXPIRY_DATE, CREATE_DATETIME, CREATE_USER_ID, MODIFY_DATETIME, SEAL_FLAG) values(:sanctionNoticeCode, :lateDays, :description, :activeFlag, :seqNum, :updateAllowedFlag, :expiryDate, current_timestamp, :createUserId , current_timestamp, :sealFlag )
+} 
+
+OCMSNOTI_SANNOT_UPDATE_SANCTION_NOTICES {
+	--UPDATE SANCTION_NOTICES set SANCTION_NOTICE_CODE  = :sanctionNoticeCode ,DESCRIPTION  = :description ,LATE_DAYS  = :lateDays ,ACTIVE_FLAG  = :activeFlag ,SEQ_NUM  = :seqNum ,UPDATE_ALLOWED_FLAG  = :updateAllowedFlag ,EXPIRY_DATE  = :expiryDate ,MODIFY_USER_ID  = :modifyUserId ,CREATE_DATETIME  = :createDatetime ,CREATE_USER_ID  = :createUserId ,MODIFY_DATETIME  = :modifyDatetime ,SEAL_FLAG  = :sealFlag   where ROWID = :rowId 
+	update SANCTION_NOTICES set SANCTION_NOTICE_CODE = :sanctionNoticeCode , DESCRIPTION = :description , LATE_DAYS = :lateDays , ACTIVE_FLAG = :activeFlag , SEQ_NUM = :seqNum , UPDATE_ALLOWED_FLAG = :updateAllowedFlag , EXPIRY_DATE = :expiryDate , MODIFY_USER_ID = :modifyUserId , MODIFY_DATETIME = current_timestamp , SEAL_FLAG = :sealFlag where ROW_ID = :rowId::bigint
+} 
+
+
+OCMSNOTI_CREATE_FORM_GLOBALS {
+	SELECT DESCRIPTION  FROM   OMS_MODULES WHERE  MODULE_NAME = :V_FORM_NAME
+}
+
+OCMSNOTI_CGWHEN_NEW_FORM_INSTANCE_ {
+	SELECT  SYSDATE(), upper(user) as user FROM    DUAL
+}

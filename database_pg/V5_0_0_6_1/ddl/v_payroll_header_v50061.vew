@@ -1,0 +1,105 @@
+CREATE OR REPLACE VIEW oms_owner.v_payroll_header
+AS SELECT off_bkg.offender_book_id,
+    off_name.alias_offender_id,
+    off_name.offender_id_display,
+    off_name.last_name,
+    off_name.first_name,
+    off_name.middle_name,
+    off_name.suffix,
+    off_name.birth_date,
+    off_bkg.booking_no,
+    off_bkg.booking_begin_date,
+    off_bkg.booking_end_date,
+    off_bkg.agy_loc_id,
+    off_bkg.living_unit_id,
+    off_bkg.disclosure_flag,
+    off_bkg.active_flag,
+    off_bkg.booking_status,
+        CASE
+            WHEN csld.caseload_type::text = 'COMM'::text THEN (((((((
+            CASE
+                WHEN off_bkg.community_active_flag::text = 'Y'::text THEN off_bkg.community_agy_loc_id
+                ELSE NULL::character varying
+            END::text || ' - '::text) || staff.last_name::text) || ', '::text) || staff.first_name::text) || ' ; '::text) || off_bkg.comm_staff_role::text) || ' : '::text) || off_bkg.agy_loc_id::text
+            ELSE (((liv_unit.description::text || ';'::text) || agency_iml.internal_location_code::text) || ' : '::text) || off_bkg.community_agy_loc_id::text
+        END AS living_unit_description,
+    off_bkg.in_out_status,
+        CASE
+            WHEN csld.caseload_type::text = 'COMM'::text THEN
+            CASE
+                WHEN off_bkg.community_active_flag::text = 'Y'::text THEN oms_system_profile('CLIENT'::character varying, 'B/C_STATUS'::character varying, 1)::text ||
+                CASE
+                    WHEN oms_system_profile('C_KER'::character varying, 'ACT_SUP_STS'::character varying, 1)::text = 'Y'::text THEN '-'::text || ((( SELECT offender_comm_sup_histories.status_code
+                       FROM offender_comm_sup_histories
+                      WHERE offender_comm_sup_histories.offender_book_id = off_bkg.offender_book_id AND offender_comm_sup_histories.status_seq = (( SELECT max(offender_comm_sup_histories_1.status_seq) AS max
+                               FROM offender_comm_sup_histories offender_comm_sup_histories_1
+                              WHERE offender_comm_sup_histories_1.offender_book_id = off_bkg.offender_book_id AND offender_comm_sup_histories_1.effective_date <= LOCALTIMESTAMP))))::text)
+                    WHEN oms_system_profile('C_KER'::character varying, 'ACT_SUP_STS'::character varying, 1)::text = 'N'::text THEN '-'::text || off_bkg.comm_status::text
+                    ELSE '-'::text || off_bkg.comm_status::text
+                END
+                WHEN off_bkg.community_active_flag::text = 'N'::text THEN oms_system_profile('CLIENT'::character varying, 'B/C_STATUS'::character varying, 2)::text
+                ELSE NULL::text
+            END
+            ELSE
+            CASE
+                WHEN off_bkg.active_flag::text = 'Y'::text THEN 'ACTIVE-'::text
+                WHEN off_bkg.active_flag::text = 'N'::text THEN 'INACTIVE-'::text
+                ELSE NULL::text
+            END ||
+            CASE
+                WHEN off_bkg.in_out_status::text = 'OUT'::text THEN
+                CASE
+                    WHEN mov_rsn.header_status_flag::text = 'Y'::text THEN substr(off_bkg.status_reason::text, "position"(off_bkg.status_reason::text, '-'::text) + 1)::character varying
+                    ELSE off_bkg.in_out_status
+                END
+                ELSE off_bkg.in_out_status
+            END::text
+        END AS status_display,
+    off_bkg.root_offender_id,
+    off_bkg.assigned_staff_id,
+    agy_loc.agency_location_type AS agy_loc_type,
+    csld.caseload_id AS payroll_caseload_id,
+    csld.caseload_id,
+    COALESCE(csld.payroll_trust_caseload, csld.caseload_id) AS trust_caseload_id,
+    off_bkg.offender_id,
+    off_bkg.booking_type,
+    off_bkg.intake_agy_loc_id,
+    off_bkg.community_active_flag,
+    off_bkg.create_intake_agy_loc_id,
+    off_bkg.comm_status AS community_status,
+    tag_header_get_age(off_name.birth_date) AS age,
+    substr(oms_miscellaneous_getdesccode('SEX'::character varying, off_name.sex_code)::text, 0, 10) AS gender,
+    mov_rsn.header_status_flag AS header_status,
+    substr(omkhead_get_alerts(off_bkg.offender_book_id)::text, 0, 40) AS off_alerts,
+    substr(tag_header_get_officer(off_bkg.offender_book_id)::text, 0, 105) AS officer,
+    substr(tag_header_get_prison_location(off_bkg.agy_loc_id, off_bkg.living_unit_id, off_bkg.agency_iml_id)::text, 0, 105) AS prison_location,
+    substr(tag_header_get_status_1(off_bkg.offender_book_id, off_bkg.in_out_status, off_bkg.comm_status, off_bkg.status_reason)::text, 0, 40) AS status_1,
+    substr(tag_header_get_status_2(off_bkg.offender_book_id)::text, 0, 40) AS status_2,
+    substr(tag_header_get_status_3(off_bkg.offender_book_id)::text, 0, 40) AS status_3,
+    off_bkg.status_reason,
+    ( SELECT oem.movement_reason_code
+           FROM offender_external_movements oem
+          WHERE oem.offender_book_id = off_bkg.offender_book_id AND oem.movement_seq = (( SELECT max(oem2.movement_seq) AS max
+                   FROM offender_external_movements oem2
+                  WHERE oem2.offender_book_id = oem.offender_book_id)) AND (EXISTS ( SELECT 'X'::text AS text
+                   FROM movement_reasons mr
+                  WHERE mr.movement_type::text = oem.movement_type::text AND mr.movement_reason_code::text = oem.movement_reason_code::text AND mr.header_status_flag::text = 'Y'::text))) AS movement_reason,
+    oms_intake_get_offender_supervision(off_bkg.offender_book_id) AS off_sup_level
+   FROM offender_trust_accounts off_ta,
+    offenders off_name,
+    caseloads csld,
+    offender_bookings off_bkg
+     LEFT JOIN staff_members staff ON off_bkg.comm_staff_id = staff.staff_id
+     LEFT JOIN agency_locations agy_loc ON off_bkg.agy_loc_id::text = agy_loc.agy_loc_id::text
+     LEFT JOIN agency_internal_locations agency_iml ON off_bkg.agency_iml_id = agency_iml.internal_location_id
+     LEFT JOIN living_units liv_unit ON off_bkg.living_unit_id = liv_unit.living_unit_id
+     LEFT JOIN movement_reasons mov_rsn ON substr(off_bkg.status_reason::text, 1::numeric, instr(off_bkg.status_reason::text, '-'::text, 1::numeric) - 1::numeric) = mov_rsn.movement_type::text AND substr(off_bkg.status_reason::text, instr(off_bkg.status_reason::text, '-'::text, 1::numeric) + 1::numeric) = mov_rsn.movement_reason_code::text
+  WHERE off_ta.caseload_id::text = COALESCE(csld.payroll_trust_caseload, csld.caseload_id)::text AND off_ta.offender_id = off_name.root_offender_id AND off_name.offender_id = off_bkg.offender_id AND ((EXISTS ( SELECT '1'::text AS text
+           FROM offender_trust_accounts ota
+          WHERE ota.offender_id = off_name.root_offender_id AND ota.caseload_id::text = csld.caseload_id::text)) OR (EXISTS ( SELECT '1'::text AS text
+           FROM work_assignments wa
+          WHERE wa.offender_id = off_name.root_offender_id AND wa.caseload_id::text = csld.caseload_id::text)) OR (EXISTS ( SELECT '1'::text AS text
+           FROM caseload_agency_locations cal
+          WHERE cal.caseload_id::text = csld.caseload_id::text AND (EXISTS ( SELECT '1'::text AS text
+                   FROM offender_bookings ob
+                  WHERE ob.agy_loc_id::text = cal.agy_loc_id::text AND ob.root_offender_id = off_name.root_offender_id AND (ob.agy_loc_id::text <> ALL (ARRAY['TRN'::character varying::text, 'OUT'::character varying::text])))))));

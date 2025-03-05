@@ -1,0 +1,680 @@
+create or replace package CONV_UTILITIES
+IS
+  -- Purpose : to provide utilities used during data migration 
+               --Assumes destination schema is OMS_OWNER --some statements require to prefix objects with oms_owner schema name when package CONV_UTILITIES is executed by OMS_CONV user
+
+   g_conv_user     VARCHAR(30) := USER;
+   g_conv_staff_id NUMBER(10)  := NULL;
+  
+  -- Public declarations
+   FUNCTION show_version RETURN VARCHAR2;
+   PROCEDURE logging(p_proc_name          VARCHAR2,
+                       p_offender_id      NUMBER,
+                       p_offender_book_id NUMBER,
+                       p_id               VARCHAR2,
+                       p_msg              VARCHAR2);
+
+   PROCEDURE reset_table_sequence(p_sequence  IN VARCHAR2
+                                , p_table     IN VARCHAR2
+                                , p_column    IN VARCHAR2);
+
+   PROCEDURE alter_table_sequence( p_sequence  IN VARCHAR2
+                                 , p_table     IN VARCHAR2
+                                 , p_column    IN VARCHAR2);
+
+   PROCEDURE alter_event_id_sequence;
+   
+   FUNCTION off_id_display_to_no(p_offender_id_display IN VARCHAR2)
+     RETURN NUMBER ;
+
+   PROCEDURE reset_offender_id_display;
+
+   PROCEDURE reset_all_offender_seq;
+
+   FUNCTION max_booking_no
+     RETURN NUMBER ;
+
+   PROCEDURE reset_booking_no;
+
+   PROCEDURE reset_sequences(p_conv_pkg_name IN VARCHAR2 DEFAULT NULL);
+                                                      
+   PROCEDURE alter_sequences(p_conv_pkg_name IN VARCHAR2 DEFAULT NULL);                           
+--
+-- Disable/Enable triggers and constraints
+
+   PROCEDURE populate_triggers;
+   PROCEDURE disable_triggers;
+   PROCEDURE enable_triggers;
+
+   PROCEDURE disable_fk_constraints;
+   PROCEDURE enable_fk_constraints;
+
+
+
+
+END CONV_UTILITIES;
+/
+
+create or replace package body CONV_UTILITIES
+IS
+
+-- (Please modify the vcp_version with proper version number and modification date when
+--  this package is being modified.)
+-- =====================================================================================
+   vcp_version   CONSTANT VARCHAR2 (60) := '12.1.1.0 07-JAN-2021';
+-- =====================================================================================
+
+/*
+   MODIFICATION HISTORY (Please put version history in a reverse-chronological order below)
+   --------------------
+   Person            Date          Version              Comments
+   ---------        -----------    -----------         --------------------------------------------
+   Syscon           07-JAN-2021    12.1.1.0             Initial Version
+*/
+
+/* --------------------------------------------------------------------------------
+  Function show_version -- to show version
+-------------------------------------------------------------------------------- */
+   FUNCTION show_version RETURN VARCHAR2 IS
+   BEGIN
+     RETURN(vcp_version);
+   END show_version;
+
+/* --------------------------------------------------------------------------------
+ PROCEDURE logging -- To log the error messages
+-------------------------------------------------------------------------------- */
+   PROCEDURE logging(p_proc_name       VARCHAR2,
+                    p_offender_id      NUMBER,
+                    p_offender_book_id NUMBER,
+                    p_id               VARCHAR2,
+                    p_msg              VARCHAR2) IS
+    PRAGMA AUTONOMOUS_TRANSACTION;
+    lv_seq NUMBER(10);
+   BEGIN
+    SELECT conv_log_seq.NEXTVAL
+      INTO lv_seq
+      FROM dual;
+
+    INSERT INTO conv_logs
+      (log_id, proc_name, offender_id, offender_book_id, id, msg)
+    VALUES
+      (lv_seq,
+       UPPER(SUBSTR(p_proc_name,1,200)),
+       p_offender_id,
+       p_offender_book_id,
+       SUBSTR(p_id,1,200),
+       SUBSTR(p_msg,1,1000));
+
+     COMMIT;
+
+   EXCEPTION
+      WHEN OTHERS THEN
+         tag_error.handle;
+   END logging;
+
+PROCEDURE reset_table_sequence(p_sequence IN VARCHAR2, p_table IN VARCHAR2, p_column IN VARCHAR2)
+IS
+   lv_stm_max_value     VARCHAR2(500) := NULL;
+   lv_table_max_value   NUMBER(10)    := NULL;
+   lv_stm_seq_value     VARCHAR2(500) := NULL;
+   lv_seq_value         NUMBER(10)    := NULL;
+   lv_seq_nextval       NUMBER(10)    := NULL;
+BEGIN
+   --no auto commit as no DDL gets executed
+   lv_stm_max_value    := 'SELECT NVL(MAX(' || p_column || '), 0) FROM ' || p_table;
+   lv_stm_seq_value    := 'SELECT ' || p_sequence || '.NEXTVAL FROM DUAL';
+
+   EXECUTE IMMEDIATE lv_stm_max_value INTO lv_table_max_value;
+   EXECUTE IMMEDIATE lv_stm_seq_value INTO lv_seq_value;
+
+   IF lv_seq_value < lv_table_max_value THEN
+      FOR i IN (lv_seq_value+1)..lv_table_max_value LOOP
+          EXECUTE IMMEDIATE lv_stm_seq_value INTO lv_seq_nextval;
+      END LOOP;
+   END IF;
+
+EXCEPTION
+   WHEN OTHERS THEN
+       CONV_UTILITIES.logging('RESET_TABLE_SEQUENCE', NULL, NULL, 'EXCEPTION', 'Error resetting sequence: '
+                                         || p_sequence || ' :table: ' || p_table || ' :column:' || p_column || ' ' ||SQLERRM);
+      RAISE;
+END reset_table_sequence;
+
+
+   -- Resets the sequence with DDL in an autonomous transaction. Alter sequence can be performed without invalidating dependent objects.
+   -- Note that this is not part of your transaction, so it will not be able to see any intermediary (uncommitted) data changes. I.e., if you used the
+   -- sequence to create records and have not committed yet, the procedure will not see those records--the table sequence value will be based on the committed value on the table only, so the
+   -- results will be wrong in this scenario.
+
+PROCEDURE alter_table_sequence(p_sequence IN VARCHAR2, p_table IN VARCHAR2, p_column IN VARCHAR2) 
+IS
+   lv_stm_max_value     VARCHAR2(500) := NULL;
+   lv_table_max_value   NUMBER(10)    := NULL;
+   lv_stm_seq_value     VARCHAR2(500) := NULL;
+   lv_difference_value  VARCHAR2(500) := NULL;
+   lv_increment_reset   VARCHAR2(500) := NULL;
+   lv_increment_by      NUMBER(10)    := NULL;
+   lv_seq_value         NUMBER(10)    := NULL;
+   lv_seq_nextval       NUMBER(10)    := NULL;
+   lv_difference        NUMBER(10)    := NULL;
+   lv_min_value         user_sequences.min_value%TYPE;
+   PRAGMA AUTONOMOUS_TRANSACTION;
+
+BEGIN
+
+   SELECT min_value, increment_by
+     INTO lv_min_value, lv_increment_by
+     FROM dba_sequences
+    WHERE sequence_name = UPPER(p_sequence)
+      AND sequence_owner = 'OMS_OWNER';
+
+   lv_stm_max_value    := 'SELECT NVL(MAX(' || p_column || '), 0) FROM '  || p_table;
+   lv_stm_seq_value    := 'SELECT '  || p_sequence || '.NEXTVAL FROM DUAL';
+
+   EXECUTE IMMEDIATE lv_stm_max_value INTO lv_table_max_value;
+   EXECUTE IMMEDIATE lv_stm_seq_value INTO lv_seq_value;
+
+   -- To ensure the reset will not go below the minimum value defined for the sequence.
+   IF lv_table_max_value < lv_min_value THEN
+      lv_table_max_value := lv_min_value;
+   END IF;
+
+   lv_difference := lv_table_max_value - lv_seq_value;
+
+   IF lv_difference != 0 THEN
+      lv_difference_value := 'ALTER SEQUENCE ' || 'OMS_OWNER' || '.' || p_sequence || ' INCREMENT BY ' || lv_difference;
+      lv_increment_reset   := 'ALTER SEQUENCE ' || 'OMS_OWNER' || '.' || p_sequence || ' INCREMENT BY ' || lv_increment_by;
+
+      EXECUTE IMMEDIATE lv_difference_value;
+      EXECUTE IMMEDIATE lv_stm_seq_value INTO lv_seq_value;
+      EXECUTE IMMEDIATE lv_increment_reset;
+   END IF;
+
+   COMMIT;
+
+EXCEPTION
+   WHEN OTHERS THEN
+       CONV_UTILITIES.logging('ALTER_TABLE_SEQUENCE', NULL, NULL, 'EXCEPTION', 'Error altering sequence: '
+                                          || p_sequence || ' :table: ' || p_table || ' :column:' || p_column || ' ' ||SQLERRM);
+      RAISE;
+END alter_table_sequence;
+
+
+PROCEDURE alter_event_id_sequence 
+IS
+         lv_max_value                  NUMBER(10)      := NULL;
+         lv_event_id                   NUMBER(10)      := NULL;
+         lv_difference                 NUMBER(10)      := NULL;
+         lv_dummy                      NUMBER(10);
+BEGIN
+      CONV_UTILITIES.logging('ALTER_EVENT_ID_SEQUENCE', NULL, NULL, 'START', 'Start alter event_id sequence');
+
+      --get max no used value
+   SELECT MAX(event_id) event_id INTO lv_max_value
+     FROM 
+      (SELECT NVL(MAX(event_id),0) event_id FROM v_offender_all_schedules_2
+        UNION ALL
+       SELECT NVL(MAX(event_id),0) event_id FROM offender_visit_visitors);
+
+    --get max sequence value
+      SELECT event_id.NEXTVAL INTO lv_event_id
+        FROM dual;
+
+  --alter sequence event_id
+   IF lv_event_id  < lv_max_value THEN
+      lv_difference := lv_max_value - lv_event_id;
+
+      BEGIN
+         EXECUTE IMMEDIATE 'ALTER SEQUENCE oms_owner.event_id INCREMENT BY ' || lv_difference;
+         SELECT event_id.NEXTVAL INTO lv_dummy FROM DUAL;
+         EXECUTE IMMEDIATE 'ALTER SEQUENCE oms_owner.event_id INCREMENT BY 1';
+         SELECT event_id.NEXTVAL INTO lv_dummy FROM DUAL;
+
+      EXCEPTION
+         WHEN OTHERS THEN
+            CONV_UTILITIES.logging('ALTER_EVENT_ID_SEQUENCE', NULL, NULL, 'ERROR', 'Error when altering event_id sequence : ' || SQLERRM);
+      END;
+      
+   END IF;
+
+      CONV_UTILITIES.logging('ALTER_EVENT_ID_SEQUENCE', NULL, NULL, 'END', 'End alter event_id sequence');
+EXCEPTION
+   WHEN OTHERS THEN
+       CONV_UTILITIES.logging('ALTER_EVENT_ID_SEQUENCE', NULL, NULL, 'EXCEPTION', 'Error alter event_id sequence : '  || SQLERRM);
+       RAISE;
+END alter_event_id_sequence;
+
+FUNCTION off_id_display_to_no(p_offender_id_display IN VARCHAR2)
+   RETURN NUMBER
+   IS
+   BEGIN
+     --this logic is specific to clients who have  mostly numbers as offender id display
+      RETURN TO_NUMBER(p_offender_id_display);
+   EXCEPTION
+      WHEN OTHERS THEN
+         RETURN NULL;
+   END;
+
+
+PROCEDURE reset_offender_id_display
+IS
+         lv_max_value                    NUMBER(10)      := NULL;
+        lv_seq_off_id_displ_no  NUMBER(10) := NULL;
+       lv_seq_nextval                   NUMBER(10)    := NULL;
+BEGIN
+      CONV_UTILITIES.logging('RESET_OFFENDER_ID_DISPLAY', NULL, NULL, 'START', 'Start reseting offender id display sequence');
+
+      --get max no used value
+      SELECT NVL(MAX(offender_id_display_no), 0)  INTO lv_max_value
+        FROM (SELECT CONV_UTILITIES.off_id_display_to_no(offender_id_display) as offender_id_display_no FROM offenders);
+
+    --get max sequnece value
+      SELECT offender_id_display.nextval INTO lv_seq_off_id_displ_no  FROM dual;
+
+  --reset sequence offender_id_display
+   IF lv_seq_off_id_displ_no  < lv_max_value THEN
+        FOR i IN (lv_seq_off_id_displ_no   + 1)..lv_max_value LOOP
+               SELECT offender_id_display.nextval INTO lv_seq_nextval FROM dual;
+       END LOOP;
+   END IF;
+
+      CONV_UTILITIES.logging('RESET_OFFENDER_ID_DISPLAY', NULL, NULL, 'END', 'End reseting offender id display sequence');
+EXCEPTION
+   WHEN OTHERS THEN
+       CONV_UTILITIES.logging('RESET_OFFENDER_ID_DISPLAY', NULL, NULL, 'EXCEPTION', 'Error reseting offender id display sequence: ' ||SQLERRM);
+       RAISE;
+END reset_offender_id_display;
+
+
+PROCEDURE reset_all_offender_seq
+IS
+   lv_offender_id_max_val         NUMBER(10)    := NULL;
+   lv_seq_offender_id             NUMBER(10)    := NULL;
+
+   lv_offender_alias_id_max_val   NUMBER(10)    := NULL;
+   lv_seq_offender_alias_id       NUMBER(10)    := NULL;
+
+   lv_off_id_display_no_max_val   NUMBER(10)    := NULL;
+   lv_seq_offender_id_display     NUMBER(10)    := NULL;
+
+   lv_max_value                   NUMBER(10)    := NULL;
+   lv_seq_nextval                 NUMBER(10)    := NULL;
+
+BEGIN
+  -- log the message
+      CONV_UTILITIES.logging('RESET_ALL_OFFENDER_SEQ', NULL, NULL, 'START', 'Start Procedure at: '|| systimestamp);
+
+   --get max offender id
+   SELECT NVL(MAX(offender_id), 0) INTO lv_offender_id_max_val FROM offenders;
+   --get sequence lv_off_id_display_no_max_val
+   SELECT offender_id.nextval INTO lv_seq_offender_id FROM dual;
+
+   --get max alias offender id
+   SELECT NVL(MAX(alias_offender_id), 0) INTO lv_offender_alias_id_max_val FROM offenders;
+   --get sequence lv_alias_offender_id
+   SELECT offender_alias_id.nextval INTO lv_seq_offender_alias_id FROM dual;
+
+   --get max offender id display
+   SELECT NVL(MAX(offender_id_display_no), 0) INTO lv_off_id_display_no_max_val
+     FROM (SELECT CONV_UTILITIES.off_id_display_to_no(offender_id_display) as offender_id_display_no FROM offenders);
+   --get sequence offender_id_display
+   SELECT offender_id_display.nextval INTO lv_seq_offender_id_display FROM dual;
+
+   --all these three sequences should have the same value initialy; they might get out of sync if client is not using a generated offender_id_display
+   lv_max_value := GREATEST(lv_offender_id_max_val, lv_offender_alias_id_max_val, lv_off_id_display_no_max_val);
+
+   --reset sequence offender_id
+   IF lv_seq_offender_id < lv_max_value THEN
+      FOR i IN (lv_seq_offender_id + 1)..lv_max_value LOOP
+          SELECT offender_id.nextval INTO lv_seq_nextval FROM dual;
+      END LOOP;
+   END IF;
+
+   --reset sequence offender_alias_id
+   IF lv_seq_offender_alias_id < lv_max_value THEN
+      FOR i IN (lv_seq_offender_alias_id + 1)..lv_max_value LOOP
+          SELECT offender_alias_id.nextval INTO lv_seq_nextval FROM dual;
+      END LOOP;
+   END IF;
+
+   --reset sequence offender_id_display
+   IF lv_seq_offender_id_display < lv_max_value THEN
+      FOR i IN (lv_seq_offender_id_display + 1)..lv_max_value LOOP
+          SELECT offender_id_display.nextval INTO lv_seq_nextval FROM dual;
+      END LOOP;
+   END IF;
+
+   CONV_UTILITIES.logging('RESET_ALL_OFFENDER_SEQ', NULL, NULL, 'END', 'End Procedure at: '|| systimestamp);
+EXCEPTION
+   WHEN OTHERS THEN
+       CONV_UTILITIES.logging('RESET_ALL_OFFENDERS_SEQ', NULL, NULL, 'EXCEPTION', 'Error resetting all offender sequences: ' ||SQLERRM);
+       RAISE;
+END reset_all_offender_seq;
+
+
+FUNCTION max_booking_no
+ RETURN NUMBER
+IS
+       lv_max_book_no NUMBER(10) := NULL;
+BEGIN
+      --this function logi is specific to clients who have booking no generated as YYYY-digits format (ex.: 2013-18829); the format for booking-no is specified in system profile 'FORMAT' / 'BOOKING_NO'
+     select NVL( MAX( TO_NUMBER(SUBSTR(booking_no, DECODE(INSTR(booking_no, '-', 1, 1), 0, 1, INSTR(booking_no, '-', 1, 1) + 1 )), 999999999999) ) , 0)
+       INTO lv_max_book_no
+      from offender_bookings;
+
+      RETURN lv_max_book_no;
+
+EXCEPTION
+      WHEN OTHERS THEN
+         CONV_UTILITIES.logging('MAX_BOOKING_NO', NULL, NULL, 'ERROR', 'Unable to  get max booking no ' || SQLERRM);
+		 RAISE;
+END max_booking_no;
+
+PROCEDURE reset_booking_no
+IS
+         lv_max_value             NUMBER(10)      := NULL;
+        lv_seq_booking_no  NUMBER(10) := NULL;
+lv_seq_nextval                 NUMBER(10)    := NULL;
+BEGIN
+      CONV_UTILITIES.logging('RESET_BOOKING_NO', NULL, NULL, 'START', 'Start reseting booking no sequence');
+
+      --get max no used value
+       lv_max_value   := NVL(CONV_UTILITIES.max_booking_no, 0);
+
+    --get max sequence value
+      SELECT booking_no.nextval INTO lv_seq_booking_no FROM dual;
+
+     --reset sequence booking_no
+    IF lv_seq_booking_no <  lv_max_value THEN
+      FOR i IN (lv_seq_booking_no + 1)..lv_max_value LOOP
+          SELECT booking_no.nextval INTO lv_seq_nextval FROM dual;
+      END LOOP;
+    END IF;
+
+      CONV_UTILITIES.logging('RESET_BOOKING_NO', NULL, NULL, 'END', 'End reseting booking no sequence');
+EXCEPTION
+   WHEN OTHERS THEN
+       CONV_UTILITIES.logging('RESET_BOOKING_NO', NULL, NULL, 'EXCEPTION', 'Error reseting booking no sequence: ' ||SQLERRM);
+       RAISE;
+END reset_booking_no;
+
+PROCEDURE reset_sequences(p_conv_pkg_name IN VARCHAR2 DEFAULT NULL)
+IS
+
+   CURSOR cur_sequences
+   IS
+   SELECT DISTINCT seq_name, special_flag, table_name, column_name
+     FROM conv_sequences
+    WHERE  special_flag = 'N'
+      AND (     p_conv_pkg_name IS NULL
+            OR  (p_conv_pkg_name IS NOT NULL AND UPPER(conv_pkg_name) = UPPER(p_conv_pkg_name))
+          );
+
+BEGIN
+
+  CONV_UTILITIES.logging('RESET_SEQUENCES', NULL, NULL, 'START', 'Start Procedure at: '|| systimestamp);
+  
+   --regular sequences only 
+   FOR rec IN cur_sequences LOOP
+      BEGIN
+         CONV_UTILITIES.reset_table_sequence(p_sequence => rec.seq_name, p_table => rec.table_name, p_column => rec.column_name);
+      EXCEPTION
+         WHEN OTHERS THEN
+           CONV_UTILITIES.logging('RESET_SEQUENCES', NULL, NULL, 'ERROR', 'Error resetting sequence: '
+                                          || rec.seq_name || ' :table: ' || rec.table_name || ' :column:' || rec.column_name || ' ' ||SQLERRM);
+      END;
+   END LOOP;
+
+   CONV_UTILITIES.logging('RESET_SEQUENCES', NULL, NULL, 'END', 'End Procedure at: '|| systimestamp);
+
+EXCEPTION
+   WHEN OTHERS THEN
+       CONV_UTILITIES.logging('RESET_SEQUENCES', NULL, NULL, 'EXCEPTION', 'Error resetting sequences: ' || ' ' ||SQLERRM);
+      RAISE;
+END reset_sequences;
+
+
+PROCEDURE alter_sequences(p_conv_pkg_name IN VARCHAR2 DEFAULT NULL)
+IS
+
+   CURSOR cur_sequences
+   IS
+   SELECT DISTINCT seq_name, special_flag, table_name, column_name
+     FROM conv_sequences
+    WHERE  special_flag = 'N'
+      AND (     p_conv_pkg_name IS NULL
+            OR  (p_conv_pkg_name IS NOT NULL AND UPPER(conv_pkg_name) = UPPER(p_conv_pkg_name))
+          );
+
+BEGIN
+
+  CONV_UTILITIES.logging('ALTER_SEQUENCES', NULL, NULL, 'START', 'Start Procedure at: '|| systimestamp);
+
+   --regular sequences only
+   FOR rec IN cur_sequences LOOP
+      BEGIN
+         CONV_UTILITIES.alter_table_sequence(p_sequence => rec.seq_name, p_table => rec.table_name, p_column => rec.column_name);   
+      EXCEPTION
+         WHEN OTHERS THEN
+           CONV_UTILITIES.logging('ALTER_SEQUENCES', NULL, NULL, 'ERROR', 'Error altering sequence: '
+                                          || rec.seq_name || ' :table: ' || rec.table_name || ' :column:' || rec.column_name || ' ' ||SQLERRM);
+      END;
+   END LOOP;
+
+   CONV_UTILITIES.logging('ALTER_SEQUENCES', NULL, NULL, 'END', 'End Procedure at: '|| systimestamp);
+
+EXCEPTION
+   WHEN OTHERS THEN
+       CONV_UTILITIES.logging('ALTER_SEQUENCES', NULL, NULL, 'EXCEPTION', 'Error altering sequences: ' || ' ' ||SQLERRM);
+      RAISE;
+END alter_sequences;
+
+
+
+/* --------------------------------------------------------------------------------
+ PROCEDURE populate_triggers
+-------------------------------------------------------------------------------- */
+
+ PROCEDURE populate_triggers
+  IS
+   CURSOR populate_trig_cur
+   IS
+     SELECT trigger_name
+       FROM dba_triggers  
+      WHERE owner = 'OMS_OWNER' 
+        AND UPPER(status) = 'ENABLED'
+        AND UPPER(trigger_name) NOT IN ('ADDRESSES_T1','ADDRESSES_T2','PHONES_T1', 'STAFF_MEMBERS_T2', 'INTERNET_ADDRESSES_T1')
+        and trigger_name NOT IN ('ELITE_CONTEXT_TRIGGER', 'ELITE_LOGIN', 'ELITE_LOGOFF'); --do NOT include db triggers such as ELITE_CONTEXT_TRIGGER, ELITE_LOGIN, ELITE_LOGOFF
+
+BEGIN
+
+  CONV_UTILITIES.logging('POPULATE_TRIGGERS', NULL, NULL, 'START', 'Start  POPULATE_TRIGGERS Procedure at: '|| systimestamp);
+
+  SAVEPOINT TRIGGERS_POPULATION;
+
+  --
+  -- Delete table CONV_ENA_DIS_TRIGGERS
+  DELETE FROM CONV_ENA_DIS_TRIGGERS;
+  --do not commit here COMMIT;
+
+  FOR all_rec IN populate_trig_cur
+    LOOP
+
+        INSERT INTO CONV_ENA_DIS_TRIGGERS (trigger_name)
+          VALUES (all_rec.trigger_name);
+
+  END LOOP;
+
+  COMMIT; --commit all together
+
+  CONV_UTILITIES.logging('POPULATE_TRIGGERS', NULL, NULL, 'END','Procedure POPULATE_TRIGGERS ends at: ' || systimestamp);
+
+  EXCEPTION
+	WHEN OTHERS THEN
+          ROLLBACK TO TRIGGERS_POPULATION;
+	  CONV_UTILITIES.logging('POPULATE_TRIGGERS', NULL, NULL, 'EXCEPTION', 'Error populating triggers ' || SQLERRM);
+ END populate_triggers;
+
+/* --------------------------------------------------------------------------------
+ PROCEDURE disable_triggers
+-------------------------------------------------------------------------------- */
+
+ PROCEDURE disable_triggers
+  IS
+
+  CURSOR dis_triggers_cur
+  IS
+    SELECT trigger_name
+     FROM CONV_ENA_DIS_TRIGGERS;
+
+BEGIN
+
+ CONV_UTILITIES.logging('DISABLE_TRIGGERS', NULL, NULL, 'START', 'Start  DISABLE_TRIGGERS Procedure at: '|| systimestamp);
+
+ FOR all_rec IN dis_triggers_cur
+  LOOP
+     BEGIN
+        EXECUTE IMMEDIATE 'ALTER TRIGGER OMS_OWNER.'||all_rec.trigger_name||' DISABLE';
+     EXCEPTION
+	WHEN OTHERS THEN
+	  CONV_UTILITIES.logging('DISABLE_TRIGGERS', NULL, NULL, 'ERROR', SQLERRM);
+     END;
+ END LOOP;
+
+ COMMIT;
+
+ CONV_UTILITIES.logging('DISABLE_TRIGGERS', NULL, NULL, 'END', 'Procedure DISABLE_TRIGGERS ends at: ' || systimestamp);
+
+ EXCEPTION
+	WHEN OTHERS THEN
+	  CONV_UTILITIES.logging('DISABLE_TRIGGERS', NULL, NULL, 'EXCEPTION', SQLERRM);
+
+END disable_triggers;
+/* --------------------------------------------------------------------------------
+ PROCEDURE enable_triggers
+-------------------------------------------------------------------------------- */
+
+ PROCEDURE enable_triggers
+  IS
+   CURSOR ena_constraints_cur
+   IS
+    SELECT trigger_name
+     FROM CONV_ENA_DIS_TRIGGERS;
+
+BEGIN
+
+  CONV_UTILITIES.logging('ENABLE_TRIGGERS', NULL, NULL, 'START', 'Start  ENABLE_TRIGGERS Procedure at: '|| systimestamp);
+
+ FOR all_rec IN ena_constraints_cur
+  LOOP
+     BEGIN
+        EXECUTE IMMEDIATE 'ALTER TRIGGER OMS_OWNER.'||all_rec.trigger_name||' ENABLE';
+     EXCEPTION
+     WHEN OTHERS  THEN
+	  CONV_UTILITIES.logging('ENABLE_TRIGGERS', NULL, NULL, 'ERROR', SQLERRM);
+     END;
+ END LOOP;
+
+ CONV_UTILITIES.logging('ENABLE_TRIGGERS', NULL, NULL, 'END', 'Procedure ENABLE_TRIGGERS ends at: ' || systimestamp);
+
+ EXCEPTION
+    WHEN OTHERS  THEN
+	  CONV_UTILITIES.logging('ENABLE_TRIGGERS', NULL, NULL, 'EXCEPTION', SQLERRM);
+ END enable_triggers;
+
+
+/* --------------------------------------------------------------------------------
+ PROCEDURE disable_fk_constraints
+-------------------------------------------------------------------------------- */
+ PROCEDURE disable_fk_constraints
+   IS
+    CURSOR dis_constraints_cur_r
+     IS
+      SELECT constraint_name, table_name, constraint_type
+        FROM dba_constraints
+       WHERE owner = 'OMS_OWNER'
+         AND UPPER(constraint_type) IN ('R') -- R U P C O
+         AND UPPER(status) = 'ENABLED'
+      AND constraint_name NOT LIKE '%==$0'
+      AND  UPPER(table_name) NOT LIKE 'AQ$_%'
+      AND upper(table_name) NOT IN ('QM_QUEUETABLE') --; -- BAI_OWNER 
+      and rownum <= 3;
+
+ BEGIN
+
+  CONV_UTILITIES.logging('DISABLE_FK_CONSTRAINTS', NULL, NULL, 'START', 'Start  DISABLE_FK_CONSTRAINTS Procedure at: '|| systimestamp);
+
+   DELETE FROM CONV_ENA_DIS_CONSTRAINTS;
+   COMMIT;
+
+   FOR all_rec IN dis_constraints_cur_r
+     LOOP
+
+     -- dbms_output.put_line('table_name: '||all_rec.constraint_name );
+      BEGIN
+         INSERT INTO CONV_ENA_DIS_CONSTRAINTS (table_name, constraint_name, constraint_type)
+             VALUES (all_rec.table_name, all_rec.constraint_name, all_rec.constraint_type);
+
+         EXECUTE IMMEDIATE 'ALTER TABLE OMS_OWNER.'||all_rec.table_name||' DISABLE CONSTRAINT '||all_rec.constraint_name;
+      EXCEPTION
+         WHEN OTHERS THEN
+            CONV_UTILITIES.logging('DISABLE_FK_CONSTRAINTS', NULL, NULL, 'ERROR', SQLERRM);
+      END;
+   END LOOP;
+
+   COMMIT;
+
+   CONV_UTILITIES.logging('DISABLE_FK_CONSTRAINTS', NULL, NULL, 'END','Procedure DISABLE_FK_CONSTRAINTS ends at: ' || systimestamp);
+
+ EXCEPTION
+  WHEN OTHERS THEN
+    CONV_UTILITIES.logging('DISABLE_FK_CONSTRAINTS', NULL, NULL, 'EXCEPTION', SQLERRM);
+ END disable_fk_constraints;
+
+
+/* --------------------------------------------------------------------------------
+ PROCEDURE enable_fk_constraints
+-------------------------------------------------------------------------------- */
+
+ PROCEDURE enable_fk_constraints
+  IS
+
+   CURSOR ena_constraints_cur_r  -- foreign key constraints
+   IS
+     SELECT table_name, constraint_name
+       FROM CONV_ENA_DIS_CONSTRAINTS
+	  WHERE constraint_type = 'R';
+
+ BEGIN
+
+  CONV_UTILITIES.logging('ENABLE_FK_CONSTRAINTS', NULL, NULL, 'START', 'Start  ENABLE_FK_CONSTRAINTS Procedure at: '|| systimestamp);
+
+   FOR all_rec IN ena_constraints_cur_r
+    LOOP
+       BEGIN
+          EXECUTE IMMEDIATE 'ALTER TABLE OMS_OWNER.'||all_rec.table_name||' ENABLE CONSTRAINT '||all_rec.constraint_name;
+       EXCEPTION
+	  WHEN OTHERS THEN
+	     CONV_UTILITIES.logging('ENABLE_FK_CONSTRAINTS', NULL, NULL, 'ERROR', SQLERRM);
+       END;
+   END LOOP;
+
+ CONV_UTILITIES.logging('ENABLE_FK_CONSTRAINTS', NULL, NULL, 'END','Procedure ENABLE_FK_CONSTRAINTS ends at: ' || systimestamp);
+
+ EXCEPTION
+	WHEN OTHERS
+	 THEN
+	  CONV_UTILITIES.logging('ENABLE_FK_CONSTRAINTS', NULL, NULL, 'EXCEPTION', SQLERRM);
+ END enable_fk_constraints;
+
+BEGIN
+   TAG_ERROR.start_log;
+   SELECT staff_id INTO g_conv_staff_id 
+     FROM staff_members 
+   WHERE user_id = g_conv_user; --it is expected to return one and only one record; if the conversion user was not set-up properly, do not proceed with the conversion
+EXCEPTION 
+   WHEN OTHERS THEN 
+      TAG_ERROR.handle;
+END CONV_UTILITIES;
+/
+

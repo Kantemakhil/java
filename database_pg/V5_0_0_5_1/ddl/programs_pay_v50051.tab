@@ -1,0 +1,17 @@
+CREATE TABLE programs_pay (
+program_category varchar(12) NOT NULL,
+active_flag  varchar(1)  NOT NULL  DEFAULT 'Y',
+expiry_date timestamp   NULL ,
+create_datetime timestamp(6) NOT NULL DEFAULT current_timestamp,
+create_user_id varchar(32) NOT NULL ,
+modify_datetime timestamp(6) NULL ,
+modify_user_id varchar(32) NULL,
+seal_flag varchar(1) NULL
+)  tablespace tag_data;
+
+alter table programs_pay add constraint programs_pay_pk primary key(program_category ) using index tablespace tag_indx;
+
+comment on table programs_pay  is 'Maintain Program and Services categories that trigger offender payment';
+comment on column programs_pay.program_category is 'Program category trigger offender payment [domain=PS_CATEGORY]';
+comment on column programs_pay.active_flag is 'Indicates if the configuration is active';
+comment on column programs_pay.expiry_date is 'Expiry date';

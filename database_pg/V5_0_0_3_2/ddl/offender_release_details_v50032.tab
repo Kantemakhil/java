@@ -1,0 +1,4 @@
+alter table OFFENDER_RELEASE_DETAILS drop column approved_release_date;
+alter table OFFENDER_RELEASE_DETAILS drop column auto_release_date;
+alter table OFFENDER_RELEASE_DETAILS drop column dto_approved_date;
+alter table OFFENDER_RELEASE_DETAILS drop column dto_mid_term_date; 

@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="OCRRECEI" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="96f9541e-b4e9-403b-b324-4cf883ca834f">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<queryString>
+		<![CDATA[]]>
+	</queryString>
+	<field name="fClient" class="java.lang.String"/>
+	<field name="fClDesc" class="java.lang.String"/>
+	<field name="fTxnDate" class="java.util.Date"/>
+	<field name="fOne" class="java.math.BigDecimal"/>
+	<field name="fTwo" class="java.math.BigDecimal"/>
+	<field name="fThree" class="java.math.BigDecimal"/>
+	<field name="fFour" class="java.math.BigDecimal"/>
+	<field name="fFive" class="java.math.BigDecimal"/>
+	<field name="fAmtTwo" class="java.lang.String"/>
+	<field name="fAmtOne" class="java.lang.String"/>
+	<field name="fOffName" class="java.lang.String"/>
+	<field name="fOffId" class="java.lang.String"/>
+	<field name="fTxnDesc" class="java.lang.String"/>
+	<field name="fUserId" class="java.lang.String"/>
+	<field name="fRecNo" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<detail>
+		<band height="348" splitType="Stretch">
+			<rectangle>
+				<reportElement x="0" y="40" width="555" height="20" backcolor="#EBEBEB" uuid="338bea25-9cab-4b3a-802b-a6421bf4bcf7"/>
+				<graphicElement>
+					<pen lineColor="#B1B1B1"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement x="0" y="60" width="555" height="20" backcolor="#FFFFFF" uuid="ec9bac60-d153-45d9-bf89-1b6dcf683024"/>
+				<graphicElement>
+					<pen lineColor="#B1B1B1"/>
+				</graphicElement>
+			</rectangle>
+			<line>
+				<reportElement x="237" y="40" width="1" height="40" uuid="28831f29-f653-40d9-bd62-b2602bb181fa"/>
+				<graphicElement>
+					<pen lineColor="#B1B1B1"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement x="319" y="40" width="1" height="40" uuid="75b4f2ca-e114-42f9-b931-fc3b7e8f7164"/>
+				<graphicElement>
+					<pen lineColor="#B1B1B1"/>
+				</graphicElement>
+			</line>
+			<rectangle>
+				<reportElement x="0" y="80" width="555" height="47" backcolor="#FFFFFF" uuid="e14f94e6-9f5f-4bca-927e-dfb2439d6178"/>
+				<graphicElement>
+					<pen lineColor="#B1B1B1"/>
+				</graphicElement>
+			</rectangle>
+			<line>
+				<reportElement x="319" y="80" width="1" height="47" uuid="ad3390f9-c81f-4f36-bf29-60f63b7a36a6"/>
+				<graphicElement>
+					<pen lineColor="#B1B1B1"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement x="4" y="44" width="105" height="15" forecolor="#0080FF" uuid="97572ccb-94c1-441e-ab39-ee32e8125113"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[OFFICE/CITY]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="243" y="44" width="56" height="15" forecolor="#0080FF" uuid="a11f09ff-f876-4768-a434-60eb51a179f3"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[DATE]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="327" y="63" width="105" height="15" forecolor="#0080FF" uuid="aab441e2-c04b-4626-885a-3829989f3c15"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[RECEIPT NO.:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="4" y="86" width="170" height="15" forecolor="#0080FF" uuid="66149f46-0c05-4f2b-9830-d07eeecc9d16"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TOTAL ASSESSMENT:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="4" y="107" width="226" height="15" forecolor="#0080FF" uuid="01614460-54f5-4a41-bc32-c2ac377ff73b"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[CURRENT BALANCE(AFTER PAYMENT):]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="327" y="83" width="105" height="15" forecolor="#0080FF" uuid="3ffed9c5-f11e-4259-a293-be18b856d197"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[DEDN/TRN SF AMT.:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="327" y="98" width="105" height="15" forecolor="#0080FF" uuid="7b1dba91-8dde-454e-9971-f1fb463fb206"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TRANSACTION FEE :]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="327" y="112" width="105" height="15" forecolor="#0080FF" uuid="34ff711b-1f4e-420a-942b-c9d235dc9ca3"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TOTAL RECEIPT :]]></text>
+			</staticText>
+			<rectangle>
+				<reportElement x="0" y="127" width="555" height="55" backcolor="#FFFFFF" uuid="6a4f287f-eb01-4735-9f15-591f39ab60a0"/>
+				<graphicElement>
+					<pen lineColor="#B1B1B1"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="4" y="129" width="56" height="15" forecolor="#0080FF" uuid="b150ef92-4096-40bf-94e3-af0938fb5f30"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[FOR]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="440" y="164" width="70" height="15" forecolor="#0080FF" uuid="e2169a4a-24d4-4dfb-ad60-2daa5fefc1d2"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[DOLLAR(S)]]></text>
+			</staticText>
+			<rectangle>
+				<reportElement x="0" y="182" width="555" height="20" backcolor="#EBEBEB" uuid="50f63529-5af0-4e7b-8175-af3edc58a553"/>
+				<graphicElement>
+					<pen lineColor="#B1B1B1"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement x="0" y="202" width="555" height="20" backcolor="#FFFFFF" uuid="4b80e637-016b-48ae-a102-22442a6e9f74"/>
+				<graphicElement>
+					<pen lineColor="#B1B1B1"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement x="0" y="222" width="555" height="20" backcolor="#FFFFFF" uuid="14fb5f2b-f9a2-4bc2-9de0-0db5868a3a39"/>
+				<graphicElement>
+					<pen lineColor="#B1B1B1"/>
+				</graphicElement>
+			</rectangle>
+			<line>
+				<reportElement x="277" y="182" width="1" height="20" uuid="bf22e774-eba9-467b-9599-f0622e92cf7d"/>
+				<graphicElement>
+					<pen lineColor="#B1B1B1"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement x="4" y="186" width="170" height="15" forecolor="#0080FF" uuid="9b5adfb4-7cb2-478a-9ab4-c4087256ce92"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[FOR THE ACCOUNT OF]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="282" y="186" width="80" height="15" forecolor="#0080FF" uuid="9dd3990f-4787-4bed-8807-1a3fbdad74ae"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NUMBER]]></text>
+			</staticText>
+			<rectangle>
+				<reportElement x="0" y="242" width="555" height="20" backcolor="#EBEBEB" uuid="5fc33e9f-f013-4948-8b19-d1055837180b"/>
+				<graphicElement>
+					<pen lineColor="#B1B1B1"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement x="0" y="262" width="555" height="20" backcolor="#EBEBEB" uuid="a02cac5c-ee32-43ca-a639-7595d2295350"/>
+				<graphicElement>
+					<pen lineColor="#B1B1B1"/>
+				</graphicElement>
+			</rectangle>
+			<line>
+				<reportElement x="277" y="202" width="1" height="20" uuid="cbe55a4e-a100-433e-af91-3bc7f59a06cf"/>
+				<graphicElement>
+					<pen lineColor="#B1B1B1"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement x="277" y="222" width="1" height="20" uuid="6961c16a-b189-4954-a962-ac2bae6857f3"/>
+				<graphicElement>
+					<pen lineColor="#B1B1B1"/>
+				</graphicElement>
+			</line>
+			<textField isBlankWhenNull="true">
+				<reportElement x="4" y="63" width="226" height="14" uuid="7e0cf270-fb10-4cba-b95f-8a4fd2c331ea"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{fClDesc}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="243" y="63" width="67" height="14" uuid="0c8821fe-c096-45a1-86a6-d8ce2f68ebec"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new SimpleDateFormat("dd/MM/yyyy").format($F{fTxnDate})]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="232" y="86" width="78" height="15" uuid="7cefa440-34dd-42ac-9d2c-c4273e046878"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{fTwo}.compareTo( java.math.BigDecimal.ZERO) >= 0  ?$F{fTwo}.setScale( 2, java.math.BigDecimal.ROUND_HALF_UP ) :
+"<"+ $F{fTwo}.abs().setScale( 2, java.math.BigDecimal.ROUND_HALF_UP )+ ">"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="232" y="107" width="78" height="15" uuid="6c62f32a-2990-4df1-8b14-e904b9150307"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{fOne}.compareTo( java.math.BigDecimal.ZERO) >= 0  ?$F{fOne}.setScale( 2, java.math.BigDecimal.ROUND_HALF_UP ) :
+"<"+ $F{fOne}.abs().setScale( 2, java.math.BigDecimal.ROUND_HALF_UP )+ ">"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="450" y="83" width="95" height="14" uuid="d7420eb9-9da3-4beb-b8b3-3463f5df09bc"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{fFive}.compareTo( java.math.BigDecimal.ZERO) >= 0  ?$F{fFive}.setScale( 2, java.math.BigDecimal.ROUND_HALF_UP ) :
+"<"+ $F{fFive}.abs().setScale( 2, java.math.BigDecimal.ROUND_HALF_UP )+ ">"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="450" y="98" width="95" height="14" uuid="5317d15f-36a5-4803-8e21-2b9d7d44589f"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{fFour}.compareTo( java.math.BigDecimal.ZERO) >= 0  ?$F{fFour}.setScale( 2, java.math.BigDecimal.ROUND_HALF_UP ) :
+"<"+ $F{fFour}.abs().setScale( 2, java.math.BigDecimal.ROUND_HALF_UP )+ ">"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="450" y="112" width="95" height="15" uuid="86c64065-23f0-4735-b110-5bab1528b787"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{fThree}.compareTo( java.math.BigDecimal.ZERO) >= 0  ?$F{fThree}.setScale( 2, java.math.BigDecimal.ROUND_HALF_UP ) :
+"<"+ $F{fThree}.abs().setScale( 2, java.math.BigDecimal.ROUND_HALF_UP )+ ">"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="4" y="147" width="550" height="15" uuid="06379f75-3973-43f7-8ead-26c801581574"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{fAmtTwo}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="360" y="265" width="194" height="15" uuid="23329d4d-42ac-4fd8-9483-86bddd084576"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$F{fAmtOne}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="4" y="202" width="274" height="20" uuid="3c43d492-5dd5-4ba7-acc4-1cafcc3e2397"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{fOffName}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement positionType="Float" x="282" y="202" width="271" height="20" uuid="d8057c00-335a-4e95-bbf1-8b81836e5b40"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{fOffId}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="4" y="222" width="274" height="20" uuid="26892cb2-2e43-4a68-b04d-43cb6a76fe04"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{fTxnDesc}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="282" y="222" width="272" height="20" uuid="16cbe40f-84dd-44bd-85fd-426652c09f6e"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{fUserId}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="450" y="63" width="103" height="14" uuid="a7ef97a5-7acd-4719-9caa-9292d08ae077"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{fRecNo}]]></textFieldExpression>
+			</textField>
+			<rectangle radius="0">
+				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="555" height="40" backcolor="#BFDFFF" uuid="2add80aa-ddab-4a2a-893e-f37cd353dfa6"/>
+				<graphicElement>
+					<pen lineColor="#98CBFF"/>
+				</graphicElement>
+			</rectangle>
+			<textField isBlankWhenNull="true">
+				<reportElement x="4" y="1" width="550" height="18" forecolor="#000080" uuid="320da47c-6d97-4c0f-aa02-331557ad6871"/>
+				<textElement>
+					<font size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{fClient}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="19" width="555" height="1" uuid="7dddee42-ee6a-408a-9f0c-35cf93e10e18"/>
+				<graphicElement>
+					<pen lineColor="#98CBFF"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement x="205" y="23" width="208" height="17" forecolor="#000080" uuid="1078b21f-60fc-43fa-950d-a1f47c5f16ea"/>
+				<textElement>
+					<font size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[SAVE THIS OFFICIAL RECEIPT]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="4" y="23" width="75" height="17" forecolor="#000080" uuid="375c1a24-f44d-46b2-8d83-d5724bf5af3f"/>
+				<textElement>
+					<font size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[RECEIPT]]></text>
+			</staticText>
+		</band>
+	</detail>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

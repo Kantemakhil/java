@@ -1,0 +1,63 @@
+SEARCH_HOLD_WARRENT_DETAINER {
+SELECT HWD_ID,RECEIVED_DATE,ISSUING_AGY,HWD_TYPE,HWD_INFO_ID,START_DATE,EXPIRY_DATE,BAIL_AMOUNT,PROB_REVOC_FLAG,HWD_STATUS 
+FROM OFFENDER_HWD
+WHERE offender_book_id=:offenderBookId
+ORDER BY received_date desc,issuing_agy asc,hwd_type asc
+}
+
+SEARCH_CHARGES {
+SELECT OFF_CHR.HWD_ID,OFF_CHR.HWD_CHARGE_ID,OFF_CHR.CHARGE_CODE,OFF_CHR.CHARGE_COMMENT,OFF_CHR.TRIED_UNTRIED_CODE,OFF_CHR.CHARGE_STATUS
+FROM OFFENDER_HWD_CHARGES OFF_CHR, OFFENDER_HWD OFF_HWD
+WHERE OFF_CHR.HWD_ID = :holdWarrentId 
+AND OFF_CHR.hwd_id = OFF_HWD.hwd_id
+}
+
+INSERT_HWDET_DATA {
+INSERT INTO OFFENDER_HWD (HWD_ID, OFFENDER_BOOK_ID, RECEIVED_DATE, ISSUING_AGY, HWD_TYPE, HWD_INFO_ID, START_DATE, EXPIRY_DATE, BAIL_AMOUNT, PROB_REVOC_FLAG, HWD_STATUS, CREATE_DATETIME, CREATE_USER_ID, MODIFY_USER_ID, MODIFY_DATETIME ) VALUES(NEXTVAL('HWD_ID'), :offenderBookId, :receivedDate, :issuingAgyLocId, :holdWarrentDetainerType, :warrentNumber, :startDate, :expiryDate, :bailAmount, :probRevocFlag, :holdWarrentDetainerTypeInfoIdStatus, current_timestamp, :createUserId, NULL, NULL ) 
+}
+
+INSERT_HWDET_CHARGES {
+insert into OFFENDER_HWD_CHARGES (HWD_CHARGE_ID, HWD_ID, CHARGE_CODE, CHARGE_COMMENT, TRIED_UNTRIED_CODE, CHARGE_STATUS, CREATE_DATETIME, CREATE_USER_ID, MODIFY_USER_ID, MODIFY_DATETIME ) values(NEXTVAL('HWD_CHARGE_ID') , :holdWarrentId, :chargeCode, :chargeComment, :triedUntried, :chargeStatus, current_timestamp, :createUserId, NULL, NULL ) 
+}
+UPDATE_HWDET_DATA{
+update OFFENDER_HWD set RECEIVED_DATE =:receivedDate, ISSUING_AGY =:issuingAgyLocId, HWD_TYPE =:holdWarrentDetainerType, HWD_INFO_ID =:warrentNumber, START_DATE =:startDate, EXPIRY_DATE =:expiryDate, BAIL_AMOUNT =:bailAmount, PROB_REVOC_FLAG =:probRevocFlag, HWD_STATUS =:holdWarrentDetainerTypeInfoIdStatus, modify_datetime=current_timestamp , modify_user_id =:modifyUserId where HWD_ID =:holdWarrentId 
+}
+
+UPDATE_HWDET_CHARGES {
+update OFFENDER_HWD_CHARGES set CHARGE_CODE =:chargeCode, CHARGE_COMMENT =:chargeComment, TRIED_UNTRIED_CODE =:triedUntried, CHARGE_STATUS =:chargeStatus, modify_datetime = current_timestamp , modify_user_id =:modifyUserId where HWD_CHARGE_ID =:holdWarrentDetainerChargeId
+}
+
+DELETE_HWDET_CHARGES{
+DELETE FROM OFFENDER_HWD_CHARGES
+WHERE HWD_CHARGE_ID=:holdWarrentDetainerChargeId
+}
+
+GET_HISTORY_RECORD {
+	SELECT HWD_HTY_ID,HWD_ID,EVENT_DATETIME,EVENT_TYPE,EVENT_COMMENT,
+ 	CREATE_DATETIME,CREATE_USER_ID,MODIFY_DATETIME,MODIFY_USER_ID,SEAL_FLAG
+ 	FROM OFFENDER_HWD_HTY WHERE HWD_ID =:hwdId
+}
+
+INSERT_HWDET_HISTORY {
+INSERT INTO OFFENDER_HWD_HTY (HWD_HTY_ID, HWD_ID, EVENT_DATETIME, EVENT_TYPE, EVENT_COMMENT, CREATE_DATETIME, CREATE_USER_ID, MODIFY_DATETIME, MODIFY_USER_ID, SEAL_FLAG) VALUES(NEXTVAL('HWD_HTY_ID') , :holdWarrentId, :eventDateTime, :eventType, :eventComment, current_timestamp, :createUserId, NULL, NULL, :sealFlag) 
+}
+
+UPDATE_HWDET_HISTORY {
+UPDATE OFFENDER_HWD_HTY
+SET 
+EVENT_DATETIME=:eventDateTime,
+EVENT_TYPE=:eventType,
+EVENT_COMMENT=:eventComment,
+MODIFY_DATETIME=current_timestamp,
+MODIFY_USER_ID=:modifyUserId
+WHERE HWD_HTY_ID=:holdWarrentDetainerHistoryId
+}
+
+DELETE_HWDET_HISTORY{
+DELETE FROM OFFENDER_HWD_HTY
+WHERE HWD_HTY_ID=:holdWarrentDetainerHistoryId
+}
+
+DELETE_HWDET_DATA {
+delete from OFFENDER_HWD where hwd_id = :holdWarrentId
+}

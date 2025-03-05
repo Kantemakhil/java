@@ -1,0 +1,36 @@
+create table oms_owner.offender_observation_types
+(
+  obs_type_version_id		integer not null,
+  observation_type			varchar(12) not null,
+  frequency					integer not null,
+  notification_flag			varchar(1) not null default 'N',
+  notification_timing		integer,
+  list_seq					integer,
+  active_flag				varchar(1) not null default 'Y',
+  expiry_date				timestamp,
+  officer_notes_flag		varchar(1) not null default 'N',
+  create_datetime			timestamp not null default CURRENT_TIMESTAMP,
+  create_user_id			varchar(32) not null,
+  modify_datetime			timestamp default CURRENT_TIMESTAMP,
+  modify_user_id			varchar(32),
+  seal_flag					varchar(1)
+)
+tablespace tag_data;
+  
+-- Create/Recreate primary, unique and foreign key constraints 
+ALTER TABLE oms_owner.offender_observation_types 
+  ADD CONSTRAINT offender_obs_types_pk primary key (obs_type_version_id) 
+  USING index tablespace tag_indx;
+
+--
+comment on table oms_owner.offender_observation_types is 'Stores versions of offender observation types (maintenance table)';
+comment on column oms_owner.offender_observation_types.obs_type_version_id is 'Unique record identifier (db seq=obs_type_version_id_seq)';
+comment on column oms_owner.offender_observation_types.observation_type is 'Observation Type [ref domain=OBSRVATN_TYP]';
+comment on column oms_owner.offender_observation_types.frequency is 'The frequency (in minutes) for performing observation checks. The value is used to calculate the scheduled time of the next check from the actual time of the last performed check';
+comment on column oms_owner.offender_observation_types.notification_flag is 'Indicates if observation type sends notifications';
+comment on column oms_owner.offender_observation_types.notification_timing is 'Indicates how many minutes before the next scheduled check the system sends a notification'; 
+comment on column oms_owner.offender_observation_types.list_seq is 'Observation type sequence';
+comment on column oms_owner.offender_observation_types.active_flag is 'Indicates if the configured observation type is active (Y/N)';
+comment on column oms_owner.offender_observation_types.expiry_date is 'The observation type expiry date';
+comment on column oms_owner.offender_observation_types.officer_notes_flag is 'Indicates that officer note has to be recorded against for the observation checks (Y/N)'; 
+

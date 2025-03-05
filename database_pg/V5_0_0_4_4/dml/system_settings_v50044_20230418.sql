@@ -1,0 +1,3 @@
+insert into system_settings (setting_type, setting_provider_code, setting_value, create_datetime, create_user_id, modify_datetime) 
+ select 'eMail', 'SMTP', ( select '[{"KEY_DESC":"SMTP Host","KEY_CODE":"SMTP_HOST","VALUE":"mail.vrnda.com"}, {"KEY_DESC":"SMTP Port","KEY_CODE":"SMTP_PORT","VALUE":"587"}, {"KEY_DESC":"SMTP User","KEY_CODE":"SMTP_USER","VALUE":"dilipp@vrnda.com"}, {"KEY_DESC":"SMTP Password","KEY_CODE":"SMTP_PWD","VALUE":"' || encode('PeDi*051105', 'base64')|| '"}]')::bytea, current_timestamp, 'OMS_OWNER', null 
+ where not exists ( select 1 from system_settings where setting_type = 'eMail' and setting_provider_code = 'SMTP');

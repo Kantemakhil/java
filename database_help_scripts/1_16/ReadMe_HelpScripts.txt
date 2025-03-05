@@ -1,0 +1,1 @@
+psql --no-psqlrc -U oms_owner  -d  dbname -h hostname -f oms_modules_help_online_help_1_16.run >> oms_modules_help_online_help_1_16.log 2>&1  & type oms_modules_help_online_help_1_16.log

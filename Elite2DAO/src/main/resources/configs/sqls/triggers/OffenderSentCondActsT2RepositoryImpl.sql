@@ -1,0 +1,6 @@
+OFFENDER_SENT_COND_ACTS_T2_OFFENDER_SENT_COND_ACTS_GET{
+SELECT OFFENDER_SENT_CONDITION_ID,ACTIVITY_CODE,COMMENT_TEXT,CREATE_DATETIME,CREATE_USER_ID,MODIFY_DATETIME,MODIFY_USER_ID,OFFENDER_SENT_COND_ACT_ID,COND_ACT_TYPE,DETAILS,AGE,ACTIVITY_STATUS,PROGRAM_ID,SEAL_FLAG FROM OFFENDER_SENT_COND_ACTS WHERE OFFENDER_SENT_COND_ACT_ID=:offenderSentCondActId
+}
+OFFENDER_SENT_COND_ACTS_T2_OFFENDER_PRG_OBLIGATIONS{
+INSERT INTO Offender_prg_Obligations(Offender_Prg_Obligation_ID, Offender_Book_ID, Offender_Sent_cond_act_ID, Offender_Sent_Condition_ID, Sentence_seq, Program_ID, length, length_Unit, referral_date, Event_type) SELECT  Offender_prg_obligation_ID.nextval, OSC.Offender_Book_ID,:offenderSentCondActId, OSC.Offender_Sent_Condition_ID, OSC.Sentence_seq,:programId, OSC.Length, OSC.Length_Unit, OS.Start_date, PS.Program_category FROM    Offender_Sent_conditions OSC, Offender_Sentences OS, Program_services PS  WHERE   OSC.Offender_sent_condition_id = :offenderSentConditionId AND     OSC.Offender_Book_ID           = OS.Offender_Book_ID  AND     OSC.Sentence_Seq               = OS.Sentence_Seq AND     PS.Program_ID                  = :programId AND     NOT EXISTS (SELECT 'X' FROM    Offender_Prg_Obligations OPO  WHERE   OPO.Program_ID = :programId AND     OPO.Offender_Sent_cond_Act_ID = :offenderSentCondActId)
+}

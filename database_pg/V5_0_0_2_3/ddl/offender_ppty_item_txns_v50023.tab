@@ -1,0 +1,6 @@
+ALTER TABLE oms_owner.offender_ppty_item_txns ADD action_code varchar(12);
+comment on column oms_owner.offender_ppty_item_txns.action_code is 'Code which specifies the action performed on the item';
+
+
+ALTER TABLE oms_owner.offender_ppty_item_txns ADD action_reason varchar(12);
+comment on column oms_owner.offender_ppty_item_txns.action_reason is 'The reason for canceling or rejecting an action of type transfer, [ref domain=P_TRN_CAN,P_TRN_REJ]';

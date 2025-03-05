@@ -1,0 +1,1 @@
+CREATE TYPE nt_email_addresses AS (nt_email_addresses varchar(240)[]);

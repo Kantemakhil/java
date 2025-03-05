@@ -1,0 +1,4 @@
+create index offender_case_notes_ni4 on
+offender_case_notes
+	using btree (case_note_type,
+case_note_sub_type);

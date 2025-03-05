@@ -1,0 +1,143 @@
+CREATE OR REPLACE VIEW oms_owner.v_addresses
+AS SELECT a.address_id,
+a.address_type,
+substr(
+CASE
+WHEN COALESCE(a.address_type::text, ''::text) = ''::text THEN NULL::character varying
+ELSE oms_miscellaneous_getdesccode('ADDR_TYPE'::character varying, a.address_type)
+END::text, 1, 40) AS address_type_desc,
+a.owner_class,
+a.owner_id,
+a.owner_seq,
+a.owner_code,
+a.start_date,
+a.end_date,
+CASE
+WHEN COALESCE(a.end_date::text, ''::text) = ''::text THEN 'Y'::text
+ELSE
+CASE
+WHEN LEAST(a.end_date::date, LOCALTIMESTAMP::date) = LOCALTIMESTAMP::date THEN 'Y'::text
+ELSE 'N'::text
+END
+END AS active_flag,
+CASE
+WHEN a.no_fixed_address_flag::text = 'Y'::text THEN 'No fixed address'::text
+ELSE (substr((((((
+CASE
+WHEN COALESCE(a.suite_number::text, ''::text) = ''::text THEN NULL::text
+ELSE a.suite_number::text || ' '::text
+END ||
+CASE
+WHEN COALESCE(a.street_number::text, ''::text) = ''::text THEN NULL::text
+ELSE ltrim(a.street_number::text, ' '::text) || ' '::text
+END) ||
+CASE
+WHEN COALESCE(a.street::text, ''::text) = ''::text THEN NULL::text
+ELSE ltrim(a.street::text, ' '::text) || ' '::text
+END) ||
+CASE
+WHEN COALESCE(a.street_direction::text, ''::text) = ''::text THEN NULL::text
+ELSE a.street_direction::text || ' '::text
+END) ||
+CASE
+WHEN COALESCE(a.city_name::text, ''::text) = ''::text THEN oms_miscellaneous_getdesccode('CITY'::character varying, a.city_code)
+ELSE a.city_name
+END::text) || ' '::text) ||
+CASE
+WHEN COALESCE(a.prov_state_code::text, ''::text) = ''::text THEN NULL::text
+ELSE oms_miscellaneous_getdesccode('PROV_STATE'::character varying, a.prov_state_code)::text || ' '::text
+END, 1, 200) ||
+CASE
+WHEN COALESCE(a.zip_postal_code::text, ''::text) = ''::text THEN NULL::text
+ELSE a.zip_postal_code::text || ' '::text
+END) || substr(
+CASE
+WHEN COALESCE(a.country_code::text, ''::text) = ''::text THEN NULL::character varying
+ELSE oms_miscellaneous_getdesccode('COUNTRY'::character varying, a.country_code)
+END::text, 1, 40)
+END AS full_address,
+CASE
+WHEN COALESCE(a.no_fixed_address_flag, 'N'::character varying)::text = 'N'::text THEN
+CASE
+WHEN COALESCE(a.suite_number::text, ''::text) = ''::text THEN NULL::text
+ELSE a.suite_number::text || ' '::text
+END ||
+CASE
+WHEN COALESCE(a.street_number::text, ''::text) = ''::text THEN NULL::text
+ELSE ltrim(a.street_number::text, ' '::text)
+END
+ELSE 'No fixed address'::text
+END AS house,
+CASE
+WHEN COALESCE(a.no_fixed_address_flag, 'N'::character varying)::text = 'N'::text THEN
+CASE
+WHEN COALESCE(a.street::text, ''::text) = ''::text THEN NULL::text
+ELSE ltrim(a.street::text, ' '::text) || ' '::text
+END
+ELSE ' '::text
+END AS street,
+CASE
+WHEN COALESCE(a.no_fixed_address_flag, 'N'::character varying)::text = 'N'::text THEN substr(((
+CASE
+WHEN COALESCE(a.street_direction::text, ''::text) = ''::text THEN NULL::text
+ELSE a.street_direction::text || ' '::text
+END ||
+CASE
+WHEN COALESCE(a.city_name::text, ''::text) = ''::text THEN oms_miscellaneous_getdesccode('CITY'::character varying, a.city_code)
+ELSE a.city_name
+END::text) || ' '::text) ||
+CASE
+WHEN COALESCE(a.prov_state_code::text, ''::text) = ''::text THEN NULL::character varying
+ELSE oms_miscellaneous_getdesccode('PROV_STATE'::character varying, a.prov_state_code)
+END::text, 1, 80)
+ELSE ' '::text
+END AS area,
+substr(
+CASE
+WHEN COALESCE(a.country_code::text, ''::text) = ''::text THEN NULL::character varying
+ELSE oms_miscellaneous_getdesccode('COUNTRY'::character varying, a.country_code)
+END::text, 1, 40) AS country,
+a.suite_number,
+a.street_number,
+a.street_direction,
+substr(oms_miscellaneous_getdesccode('STREET_DIR'::character varying, a.street_direction)::text, 1, 40) AS street_direction_desc,
+CASE
+WHEN a.no_fixed_address_flag::text = 'Y'::text THEN 'No fixed address'::text
+ELSE substr(concat(
+CASE
+WHEN COALESCE(a.street_number::text, ''::text) = ''::text THEN NULL::text
+ELSE concat(ltrim(a.street_number::text, ' '::text), ' ')
+END,
+CASE
+WHEN COALESCE(a.street::text, ''::text) = ''::text THEN NULL::text
+ELSE concat(ltrim(a.street::text, ' '::text), ' ')
+END, oms_miscellaneous_getdesccode('STREET_DIR'::character varying, a.street_direction)), 1, 254)
+END AS street_information,
+a.city_code,
+substr(
+CASE
+WHEN COALESCE(a.city_name::text, ''::text) = ''::text THEN oms_miscellaneous_getdesccode('CITY'::character varying, a.city_code)
+ELSE a.city_name
+END::text, 1, 40) AS city_name,
+a.prov_state_code,
+substr(oms_miscellaneous_getdesccode('PROV_STATE'::character varying, a.prov_state_code)::text, 1, 40) AS prov_state_desc,
+a.zip_postal_code,
+a.country_code,
+substr(oms_miscellaneous_getdesccode('COUNTRY'::character varying, a.country_code)::text, 1, 40) AS country_desc,
+a.capacity,
+a.comment_text,
+a.primary_flag,
+a.mail_flag,
+a.services_flag,
+a.no_fixed_address_flag,
+substr(
+CASE
+WHEN COALESCE(a.special_needs_code::text, ''::text) = ''::text THEN NULL::character varying
+ELSE oms_miscellaneous_getdesccode('PS_NEEDS'::character varying, a.special_needs_code)
+END::text, 1, 40) AS special_needs,
+a.validated_paf_flag AS validated_flag,
+a.contact_person_name,
+a.business_hour,
+a.mail_care_of,longitude,latitude,mesh_block,is_address_valid,
+ADDRESS_LINE1
+FROM addresses a;

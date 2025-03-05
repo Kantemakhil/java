@@ -1,0 +1,3 @@
+OFFENDER_PRG_OBLIGATIONS_T1_INSERT_OFFENDER_PRG_OBLIGATION_HTY {
+insert into Offender_Prg_Obligation_HTY (OFFENDER_PRG_OBLIGATION_HTY_ID, OFFENDER_PRG_OBLIGATION_ID, STATUS, STATUS_CHANGE_DATE, STATUS_CHANGE_REASON, CREATE_USER_ID, CREATE_DATETIME, MODIFY_DATETIME, COMMENT_TEXT) values (nextval('OFFENDER_PRG_OBLIGATION_HTY_ID'), :offenderPrgObligationId, :status, :statusChangeDate, :statusChangeReason, :createUserId, current_timestamp, null , :commentText)         
+}

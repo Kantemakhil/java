@@ -1,0 +1,20 @@
+DO
+$body$
+DECLARE var_array text[];
+	i int;
+    seq_statement text;
+begin
+	var_array := ARRAY( select sequencename
+      from pg_catalog.pg_sequences
+    where schemaname = 'oms_owner'
+	  and cache_size <> 1);
+	  
+	for i in array_lower(var_array, 1) .. array_upper(var_array, 1)
+	loop
+	  seq_statement := 'ALTER SEQUENCE' || ' '||var_array[i] || ' CACHE 1';
+      EXECUTE  seq_statement;
+    end loop;
+END $body$ ;
+
+
+ 

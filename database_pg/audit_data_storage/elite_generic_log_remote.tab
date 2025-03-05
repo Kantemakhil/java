@@ -1,0 +1,2 @@
+create foreign table elite_generic_log_remote (audittime TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP NOT NULL , action bpchar(1) NOT NULL, username text NOT NULL, table_name text NOT NULL, row_data_new jsonb NULL, row_data_old jsonb NULL)  
+  SERVER remote_audit_log_srv OPTIONS (schema_name 'audit_log', table_name 'elite_audit_log');

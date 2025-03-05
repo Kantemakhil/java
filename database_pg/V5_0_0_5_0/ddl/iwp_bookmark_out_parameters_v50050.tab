@@ -1,0 +1,2 @@
+ALTER TABLE oms_owner.iwp_bookmark_out_parameters ADD parameter_desc varchar(500) NULL;
+COMMENT ON COLUMN oms_owner.iwp_bookmark_out_parameters.parameter_desc IS 'Parameter description';

@@ -1,0 +1,32 @@
+-- oms_owner.module_tables definition
+
+-- Drop table
+
+-- DROP TABLE oms_owner.module_tables;
+
+CREATE TABLE oms_owner.module_tables (
+	module_tab_id int8 NOT NULL,
+	object_name varchar(30) NOT NULL,
+	module_name varchar(20) NOT NULL,
+	modify_user_id varchar(32) NULL DEFAULT 'USER'::character varying,
+	modify_datetime timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+	create_datetime timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	create_user_id varchar(32) NOT NULL DEFAULT 'user'::character varying,
+	seal_flag varchar(1) NULL,
+	CONSTRAINT module_tables_pk PRIMARY KEY (module_tab_id),
+	CONSTRAINT mod_tabs_oms_mod_fk1 FOREIGN KEY (module_name) REFERENCES oms_owner.oms_modules(module_name)
+)
+TABLESPACE tag_setup_data
+;
+CREATE INDEX mod_tabs_oms_mod_fk1 ON oms_owner.module_tables USING btree (module_name);
+
+Map of tag modules objects to database tables, used to map some features such as the configuration key to form objects.
+
+The unique identifier of this record. Generated from sequence ( MODULE_TAB_ID )
+The name of a module block.
+The short name that uniquely identifies a form.
+The user account that last modified the record
+The timestamp when the record was last modified 
+The timestamp when the record was created
+The user account that created the record
+Flag to indicate whether the record has been sealed or not (Y/N).

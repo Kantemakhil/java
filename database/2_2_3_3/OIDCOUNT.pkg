@@ -1,0 +1,54 @@
+CREATE OR REPLACE PACKAGE oidcount
+IS
+/*
+|| Purpose: Package created for module OIDCOUNT
+||
+|| MODIFICATION HISTORY (Please put version history in a reverse-chronological order below)
+||
+|| -----------------------------------------------------------------------------------
+|| Person        Date          Version    Comments
+|| ------------  -----------   ---------  ------------------------------------
+|| Syscon        16-SEP-2020   1.24       TAS-16  dbms_jobs.submit not executing
+|| Nasir         28-NOV-2012   1.23       HPQC#18552  Modify set_temp_oidcount procedure.
+|| Aditya	 25-SEP-2012   1.22	  Commented the condition "Outcome is null" to fix defect# 20191.
+|| Himanshu      17-Jul-2012   1.21       HPQC#3728 Added function Show version and commented procedure show version
+|| NIKO          08-SEP-2008   1.20       Modified the  PROCEDURE set_temp_oidcount as per 10G data model
+|| EDWARD        27-FEB-2008   1.19       Added total_male_out, total_female_out, total_other_out to set_temp_oidcount.
+|| EDWARD        28-Jan-2008   1.18       Added total_male, total_female, total_other to set_temp_oidcount.
+|| Abu           13-Jan-2008   1.17       removed check on V$session for dead sessions.
+||                                           Count Job will be terminated only if User wishes to Cancel the job
+||                                           or Admin deletes record in Locked_Modules table.
+|| JASON         14-AUG-2007   1.16       modified to ADD PROCEDURE check_all_dead_jobs
+|| Abu           10-Dec-2006   1.10        modified to not retrieve zero counts
+|| JASON         18-SEP-2006   1.7        Created Module specific Package
+|| ====================================================================================
+*/
+--
+-- PROCEDURE to set temp_oidcount
+--
+   --PROCEDURE show_version;--Commented by Himanshu HPQC#3728
+    --Added by Himanshu HPQC#3728
+   FUNCTION show_version
+     RETURN VARCHAR2;
+	--End by Himanshu HPQC#3728
+   PROCEDURE submit_count_job (
+      p_session_id              NUMBER,
+      p_agy_loc_id         IN   agency_count_types.agy_loc_id%TYPE,
+      p_reporting_loc_id   IN   agency_location_counts.reporting_loc_id%TYPE,
+      p_count_type_id      IN   agency_location_counts.count_type_id%TYPE,
+      p_scheduled_time     IN   agency_count_types.scheduled_time%TYPE
+   );
+   PROCEDURE cancel_count (p_session_id NUMBER);
+   PROCEDURE remove_oidcount_job (p_session_id NUMBER, p_user_id VARCHAR2);
+   PROCEDURE set_temp_oidcount (
+      p_session_id         IN   temp_oidcount.session_id%TYPE,
+      p_agy_loc_id         IN   agency_count_types.agy_loc_id%TYPE,
+      p_reporting_loc_id   IN   agency_location_counts.reporting_loc_id%TYPE,
+      p_count_type_id      IN   agency_location_counts.count_type_id%TYPE,
+      p_scheduled_time     IN   agency_count_types.scheduled_time%TYPE
+   );
+   PROCEDURE commit_rollback (p_commit_rollback_flag VARCHAR2);
+   PROCEDURE check_remove_dead_jobs (p_session_id NUMBER);
+
+END;   -- Package spec
+/

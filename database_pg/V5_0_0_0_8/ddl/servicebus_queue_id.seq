@@ -1,0 +1,1 @@
+create sequence oms_owner.servicebus_queue_id increment 1 minvalue 1 no maxvalue start 1;

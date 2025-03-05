@@ -1,0 +1,59 @@
+CREATE table off_health_records (
+
+OFF_HEALTH_REC_ID int8 NOT NULL,
+
+OFFENDER_BOOK_ID int8 NOT NULL,
+
+HEALTH_TYPE varchar(12) NOT NULL,
+
+HEALTH_SUB_TYPE varchar(12) NOT NULL,
+
+DESCRIPTION varchar(240),
+
+FROM_DATE DATE NOT NULL,
+
+TO_DATE DATE,
+
+HEALTH_STATUS varchar(12),
+
+RECORD_CREATE_DATETIME timestamp(6) NOT NULL,
+
+create_datetime timestamp(6) NOT NULL DEFAULT systimestamp(),
+
+create_user_id varchar(32) NOT NULL,
+
+modify_datetime timestamp(6) NULL,
+
+modify_user_id varchar(32) NULL,
+
+seal_flag varchar(1) NULL,
+
+CONSTRAINT OFF_HEALTH_RECORDS_pk PRIMARY KEY (OFF_HEALTH_REC_ID),
+
+CONSTRAINT OFF_HEALTH_RECORDS_uk1 UNIQUE(OFF_HEALTH_REC_ID, HEALTH_TYPE , HEALTH_SUB_TYPE ),
+
+CONSTRAINT OFF_HEALTH_RECORDS_fk1 FOREIGN KEY (offender_book_id) REFERENCES oms_owner.offender_bookings(offender_book_id)
+
+)
+
+TABLESPACE tag_data;
+
+comment on table OFF_HEALTH_RECORDS is 'Offender health records';
+
+comment on column OFF_HEALTH_RECORDS.OFF_HEALTH_REC_ID is 'Unique identification of health record [db sequence = off_health_rec_id_seq]'; 
+
+comment on column OFF_HEALTH_RECORDS.OFFENDER_BOOK_ID is 'Offender booking unique id';
+
+comment on column OFF_HEALTH_RECORDS.HEALTH_TYPE is 'Health Type [ref domain=HEALTH]';
+
+comment on column OFF_HEALTH_RECORDS.HEALTH_SUB_TYPE is 'Health Sub Type [ref domain=HEALTH_PBLM]';
+
+comment on column OFF_HEALTH_RECORDS.DESCRIPTION is 'Health record description, free text';
+
+comment on column OFF_HEALTH_RECORDS.FROM_DATE is 'Start date of the health record';
+
+comment on column OFF_HEALTH_RECORDS.TO_DATE is 'End date of the health record';
+
+comment on column OFF_HEALTH_RECORDS.HEALTH_STATUS is 'Health Status [ref domain=HEALTH_STS].';
+
+comment on column OFF_HEALTH_RECORDS.RECORD_CREATE_DATETIME is 'The datetime the health record was entered in the system';

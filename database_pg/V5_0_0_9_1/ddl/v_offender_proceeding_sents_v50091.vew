@@ -1,0 +1,59 @@
+CREATE OR REPLACE VIEW oms_owner.v_offender_proceeding_sents
+AS SELECT op.offender_proceeding_id,
+    op.offender_book_id,
+    op.proceeding_type,
+    op.proceeding_agy_loc_id,
+    op.comment_text,
+    op.proceeding_status,
+    op.outcome_date,
+    ( SELECT
+                CASE
+                    WHEN count(*) = 0 THEN 'N'::text
+                    ELSE 'Y'::text
+                END AS "case"
+           FROM offender_proceeding_sents ops
+          WHERE op.offender_proceeding_id = ops.offender_proceeding_id AND os.offender_book_id = ops.offender_book_id AND os.sentence_seq = ops.sentence_seq) AS proceeding_sentence_flag,
+    os.sentence_seq,
+    os.sentence_calc_type,
+    os.sentence_category,
+    substr(oms_miscellaneous_getdesccode('CATEGORY'::character varying, os.sentence_category)::text, 1, 40) AS sentence_category_desc,
+    sct.description AS sentence_desc,
+    os.no_of_unexcused_absence,
+    os.start_date,
+    os.end_date,
+    os.case_id,
+    oc.case_info_prefix,
+    oc.case_info_number,
+    al.description AS case_court_desc
+   FROM sentence_calc_types sct,
+    offender_proceedings op,
+    offender_sentences os
+     LEFT JOIN offender_cases oc ON os.case_id = oc.case_id
+     LEFT JOIN agency_locations al ON oc.agy_loc_id::text = al.agy_loc_id::text
+  WHERE os.offender_book_id = op.offender_book_id AND os.sentence_calc_type::text = sct.sentence_calc_type::text AND os.sentence_category::text = sct.sentence_category::text
+UNION ALL
+ SELECT 0 AS offender_proceeding_id,
+    os.offender_book_id,
+    NULL::character varying AS proceeding_type,
+    NULL::character varying AS proceeding_agy_loc_id,
+    NULL::character varying AS comment_text,
+    NULL::character varying AS proceeding_status,
+    NULL::timestamp without time zone AS outcome_date,
+    'N'::text AS proceeding_sentence_flag,
+    os.sentence_seq,
+    os.sentence_calc_type,
+    os.sentence_category,
+    substr(oms_miscellaneous_getdesccode('CATEGORY'::character varying, os.sentence_category)::text, 1, 40) AS sentence_category_desc,
+    sct.description AS sentence_desc,
+    os.no_of_unexcused_absence,
+    os.start_date,
+    os.end_date,
+    os.case_id,
+    oc.case_info_prefix,
+    oc.case_info_number,
+    al.description AS case_court_desc
+   FROM sentence_calc_types sct,
+    offender_sentences os
+     LEFT JOIN offender_cases oc ON os.case_id = oc.case_id
+     LEFT JOIN agency_locations al ON oc.agy_loc_id::text = al.agy_loc_id::text
+  WHERE os.sentence_calc_type::text = sct.sentence_calc_type::text AND os.sentence_category::text = sct.sentence_category::text;

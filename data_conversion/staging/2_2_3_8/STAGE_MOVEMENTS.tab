@@ -1,0 +1,42 @@
+create table stage_movements
+(    offender_id_display  varchar2(10)    not null 
+   , booking_begin_date   date            not null
+   , movement_date        date            not null
+   , movement_time        date            not null
+   , move_type            varchar2(12)    not null
+   , move_reason_code     varchar2(12)    not null
+   , direction_code       varchar2(12)    not null
+   , arrest_agency_loc_id varchar2(6)     
+   , to_prov_stat_code    varchar2(12) 
+   , escort_code          varchar2(12) 
+   , from_agy_loc_id      varchar2(6)     not null
+   , to_agy_loc_id        varchar2(6)     not null
+   , comments             varchar2(240) 
+   , city                 varchar2(12) 
+   , invalid_reason       varchar2(256)
+   , invalid_flag         varchar2(1) 
+)
+tablespace tag_data;
+
+ALTER TABLE stage_movements
+  ADD CONSTRAINT stage_movements_uk UNIQUE(offender_id_display, booking_begin_date, movement_date, movement_time)
+      USING index tablespace TAG_INDX;
+
+
+comment on column stage_movements.offender_id_display is 'The user facing unique identifier of an offender. If padding is turned on, the value should be ten characters long, padded left with zeroes.';
+comment on column stage_movements.booking_begin_date is 'The start date of the incarceration period.';
+comment on column stage_movements.movement_date is 'The date of the movement.';
+comment on column stage_movements.movement_time is 'The date and time of the movement.';
+comment on column stage_movements.move_type is 'A code indicating the type of external movement (as defined on movement_reasons).';
+comment on column stage_movements.move_reason_code is 'A code indicating the reason for the movement (as defined on movement_reasons for the selected movement type).';
+comment on column stage_movements.direction_code is 'The direction of the movement. Values should be IN (if moving into the to location) or OUT (if moving out of the from location).';
+comment on column stage_movements.arrest_agency_loc_id is 'A code identifying the arresting location (only used for admission - ADM - movements). Optional. Codes defined on Reference Domain ARREST_AGY.';
+comment on column stage_movements.to_prov_stat_code is 'A code identifying the state or province of movement for a transfer outside jurisdiction (TRN movement, reason OJ). Codes defined on Reference Domain PROV_STATE.';
+comment on column stage_movements.escort_code is 'A code identifying the admission escort (only used for admission - ADM - movements). Optional. Codes defined on Reference Domain ESCORT.';
+comment on column stage_movements.from_agy_loc_id is 'A code identifying the location the offender is moving from (as defined in AGENCY_LOCATIONS). Populated for all movements except IN movements of movement_type TAP, which have CITY populated. Admission movement on a booking is from OUT.';
+comment on column stage_movements.to_agy_loc_id is 'A code identifying the location the offender is moving to (as defined in AGENCY_LOCATIONS). Populated for all movements except OUT movements of movement_type TAP, which have CITY populated. Release movement on a booking is to OUT.';
+comment on column stage_movements.comments is 'User entered comment about the movement.';
+comment on column stage_movements.city is 'The destination or return city for an offender''s Temporary Absence movement. Reference Domain (CITY)';
+comment on column stage_movements.invalid_reason is 'The reason the record will be skipped during conversion.';
+comment on column stage_movements.invalid_flag is 'A flag to indicate whether the record should be processed. Records marked with ''N'' will be skipped during conversion.';
+comment on table stage_movements is 'Movements to and from an institution by an offender. Movement types include: Admission, Release, Transfers, Temporary Absences, Court and Intermittent.';

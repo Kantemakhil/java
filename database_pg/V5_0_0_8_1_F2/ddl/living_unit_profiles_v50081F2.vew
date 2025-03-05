@@ -1,0 +1,11 @@
+CREATE OR REPLACE VIEW oms_owner.living_unit_profiles
+AS SELECT lu.living_unit_id,
+    tag_int_loc_location_profile_id(lu.living_unit_id, rd.domain) AS profile_id,
+    lu.agy_loc_id,
+    lu.description,
+    p.int_loc_profile_type,
+    p.int_loc_profile_code
+   FROM living_units_new lu,
+    agy_int_loc_profiles p,
+    reference_domains rd
+  WHERE p.internal_location_id = tag_int_loc_location_profile_id(lu.living_unit_id, rd.domain) AND p.int_loc_profile_type::text = rd.domain::text AND rd.parent_domain::text = 'INT_LOC_PFL'::text;

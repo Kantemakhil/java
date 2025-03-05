@@ -1,0 +1,44 @@
+CREATE TABLE oms_owner.off_fee_account_profile (
+	offender_fee_id int8 NOT NULL,
+	offender_book_id int8 NOT NULL,
+	caseload_id varchar(6) NOT NULL,
+	fee_code varchar(6) NOT NULL,
+	odp int4 NOT NULL,
+	amount int8 NOT NULL,
+	day_of_month int4 NULL,
+	start_date date NOT NULL,
+	effective_date date NULL,
+	expiry_date date NULL,
+	fee_act_status varchar(12) NOT NULL,
+	status_effective_date date NOT NULL,
+	info_number varchar(15) NULL,
+	service_date date NULL,
+	comment_text varchar(240) NULL,
+	create_datetime timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	create_user_id varchar(32) NOT NULL,
+	modify_datetime timestamp(6) NULL ,
+	modify_user_id varchar(32) NULL,
+	seal_flag varchar(1) NULL,
+	CONSTRAINT off_fee_account_profile_pk PRIMARY KEY (offender_fee_id),
+	CONSTRAINT off_fee_account_profile_fk1 FOREIGN KEY (offender_book_id) REFERENCES oms_owner.offender_bookings(offender_book_id),
+	CONSTRAINT off_fee_account_profile_fk2 FOREIGN KEY (caseload_id,fee_code) REFERENCES oms_owner.caseload_deduction_profiles(caseload_id,deduction_type)
+)
+TABLESPACE tag_data
+;
+
+COMMENT ON TABLE OMS_OWNER.OFF_FEE_ACCOUNT_PROFILE  IS 'Offender fee account details';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_ACCOUNT_PROFILE.OFFENDER_FEE_ID IS 'Unique fee account record id [existing sequence=DEDUCTION_ID ]';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_ACCOUNT_PROFILE.OFFENDER_BOOK_ID IS 'The system generated identifier for an offender booking';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_ACCOUNT_PROFILE.CASELOAD_ID IS 'Caseload id as per Maintain Fee Accounts Profile (OCMFAPRO)';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_ACCOUNT_PROFILE.FEE_CODE IS 'Deduction type as per Maintain Fee Accounts Profile (OCMFAPRO)';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_ACCOUNT_PROFILE.ODP IS 'Obligation priority';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_ACCOUNT_PROFILE.AMOUNT IS 'Offender fee account amount';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_ACCOUNT_PROFILE.DAY_OF_MONTH IS 'Billing day';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_ACCOUNT_PROFILE.START_DATE IS 'Fee Account start date ';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_ACCOUNT_PROFILE.EFFECTIVE_DATE IS 'Effective date of the account';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_ACCOUNT_PROFILE.EXPIRY_DATE IS 'Expiry date of an fee account';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_ACCOUNT_PROFILE.FEE_ACT_STATUS IS 'Fee account status';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_ACCOUNT_PROFILE.STATUS_EFFECTIVE_DATE IS 'Fee account status effective date';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_ACCOUNT_PROFILE.INFO_NUMBER IS 'Record docket / info number';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_ACCOUNT_PROFILE.SERVICE_DATE IS 'Service date ';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_ACCOUNT_PROFILE.COMMENT_TEXT IS 'The comment text of the Fee Account';

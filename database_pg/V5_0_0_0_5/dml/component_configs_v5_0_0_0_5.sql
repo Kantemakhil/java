@@ -1,0 +1,2 @@
+update component_configs set comp_config_def='{"defautView":"Day","eventEndTime":"2021-02-05T05:35:33","viewStart":"2021-02-05T06:44:04","viewEnd":"2021-02-05T13:22:08","courtEventColor":"#F1C40F","externalEventColor":"#4CC397","internalEventColor":"#57D","programEventColor":"#BE571E","temparoryEventColor":"#F02C3D","enabledViews":{"dayView":true,"weekView":true,"monthView":true,"agendaView":true,"monthAgenda":true,"workWeek":true,"timelineDayView":true,"timelineWeekView":true,"timelineWorkWeekView":true,"timelineMonthView":true}}' where comp_type='CAL';
+

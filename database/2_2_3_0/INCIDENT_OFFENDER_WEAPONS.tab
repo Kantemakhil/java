@@ -1,0 +1,16 @@
+create table INCIDENT_OFFENDER_WEAPONS
+(
+  agency_incident_id NUMBER(10) not null,
+  party_seq          NUMBER(6) default 1 not null,
+  offender_book_id   NUMBER(10) not null,
+  weapons_used       VARCHAR2(40) not null,
+  weapons_detail     VARCHAR2(240),
+  create_datetime    TIMESTAMP(9) default SYSTIMESTAMP not null,
+  create_user_id     VARCHAR2(32) default user not null,
+  modify_user_id     VARCHAR2(32),
+  modify_datetime    TIMESTAMP(9) default SYSTIMESTAMP,
+  seal_flag          VARCHAR2(1)
+);
+
+CREATE PUBLIC SYNONYM INCIDENT_OFFENDER_WEAPONS FOR INCIDENT_OFFENDER_WEAPONS;
+grant select, insert, update, delete on INCIDENT_OFFENDER_WEAPONS to TAG_USER; 

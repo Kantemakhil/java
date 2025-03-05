@@ -1,0 +1,1 @@
+\copy (select offender_id, offender_id_display, last_name, first_name from oms_owner.offenders where offender_id_display <> LTRIM(offender_id_display, '0')) TO 'offenders_leading_zeros.csv' (format CSV);

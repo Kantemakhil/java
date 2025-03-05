@@ -1,0 +1,40 @@
+insert
+	into
+	reference_domains
+(domain,
+	description,
+	domain_status,
+	owner_code,
+	appln_code,
+	old_code_table,
+	parent_domain,
+	code_length,
+	create_datetime,
+	create_user_id,
+	modify_datetime,
+	modify_user_id,
+	super_set_domain,
+	seal_flag)
+select
+	'DEL_DOC',
+	'Document Delete Reasons',
+	'ACTIVE',
+	'OMS_OWNER',
+	'OMS',
+	null,
+	null,
+	null,
+	CURRENT_TIMESTAMP,
+	'OMS_OWNER',
+	null,
+	null,
+	null,
+	null
+where
+	not exists (
+	select
+		1
+	from
+		reference_domains
+	where
+		domain = 'DEL_DOC');

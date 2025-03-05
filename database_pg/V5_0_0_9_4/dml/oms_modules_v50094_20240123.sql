@@ -1,0 +1,47 @@
+insert
+	into
+	OMS_MODULES (MODULE_NAME,
+	DESCRIPTION,
+	MODULE_TYPE,
+	PRINT_FORMAT_CODE,
+	PREVIEW_FLAG,
+	DEFAULT_COPY,
+	APPLN_CODE,
+	HELP_DIRECTORY,
+	CREATE_DATETIME,
+	CREATE_USER_ID,
+	MODIFY_DATETIME,
+	MODIFY_USER_ID,
+	SEAL_FLAG,
+	OUTPUT_TYPE,
+	PROCESS_WORKFLOW,
+	USER_TASK,
+	DYNAMIC_FORM,
+	INS_DASHBOARD)
+select
+	'OSIPSEARIDIALOG',
+	'Person Additional Names',
+	'SCREEN',
+	null,
+	null,
+	null,
+	'OMS',
+	null,
+	CURRENT_TIMESTAMP,
+	'OMS_OWNER',
+	CURRENT_TIMESTAMP,
+	'OMS_OWNER',
+	null,
+	null,
+	null,
+	null,
+	null,
+	null
+where
+	not exists (
+	select
+		1
+	from
+		OMS_MODULES
+	where
+		MODULE_NAME = 'OSIPSEARIDIALOG');

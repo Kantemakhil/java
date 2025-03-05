@@ -1,0 +1,13 @@
+ALTER TABLE staff_location_roles ADD COLUMN staff_loc_role_id int8;
+
+update staff_location_roles set staff_loc_role_id=nextval('staff_loc_role_id_seq');
+
+ALTER TABLE staff_location_roles ALTER COLUMN staff_loc_role_id SET NOT NULL;
+
+comment on column staff_location_roles.staff_loc_role_id is 'Unique numeric identifier for each table record [db sequence=staff_loc_role_id_seq]';
+
+ALTER TABLE staff_location_roles ADD CONSTRAINT staff_location_roles_uk1 UNIQUE (staff_loc_role_id );
+
+ALTER TABLE staff_location_roles ADD COLUMN fte_status NUMERIC(11,2);
+
+comment on column staff_location_roles.fte_status is 'Full time equivalency, numeric value indicating a ratio of scheduled hours / employer full time hours';

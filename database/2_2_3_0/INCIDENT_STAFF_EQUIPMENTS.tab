@@ -1,0 +1,16 @@
+create table INCIDENT_STAFF_EQUIPMENTS
+(
+  agency_incident_id NUMBER(10) not null,
+  party_seq          NUMBER(6) default 1 not null,
+  staff_id           NUMBER(10) not null,
+  equipment_used     VARCHAR2(40) not null,
+  equipment_detail   VARCHAR2(240),
+  create_datetime    TIMESTAMP(9) default SYSTIMESTAMP not null,
+  create_user_id     VARCHAR2(32) default user not null,
+  modify_user_id     VARCHAR2(32),
+  modify_datetime    TIMESTAMP(9) default SYSTIMESTAMP,
+  seal_flag          VARCHAR2(1)
+);
+
+CREATE PUBLIC SYNONYM INCIDENT_STAFF_EQUIPMENTS FOR INCIDENT_STAFF_EQUIPMENTS;
+grant select, insert, update, delete on INCIDENT_STAFF_EQUIPMENTS to TAG_USER; 

@@ -1,0 +1,7 @@
+alter table SERVICEBUS_FAILED_MSG_QUEUE rename column create_datetime to error_timestamp;
+
+alter table SERVICEBUS_FAILED_MSG_QUEUE drop column create_user_id;
+
+alter table SERVICEBUS_FAILED_MSG_QUEUE drop column modify_datetime;
+
+alter table SERVICEBUS_FAILED_MSG_QUEUE drop column modify_user_id;

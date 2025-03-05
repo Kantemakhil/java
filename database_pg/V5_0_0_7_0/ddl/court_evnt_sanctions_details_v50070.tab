@@ -1,0 +1,43 @@
+comment on table court_evnt_sanctions_details  is 'Court events sanctions details';
+
+--
+
+ALTER TABLE court_evnt_sanctions_details RENAME COLUMN court_event_appointment_id TO court_evnt_sanct_dtl_id;
+
+ALTER TABLE court_evnt_sanctions_details RENAME CONSTRAINT court_evnt_appoint_outcome_pk TO court_evnt_sanctions_details_pk;
+
+--moved to its own file ALTER SEQUENCE court_evnt_appoint_outcome_id RENAME TO court_evnt_sanct_dtl_id_seq;
+
+comment on column court_evnt_sanctions_details.court_evnt_sanct_dtl_id is 'Unique identifier for the court event sanction detail record [db sequence=court_evnt_sanct_dtl_id_seq]';
+
+--
+ALTER TABLE oms_owner.court_evnt_sanctions_details DROP CONSTRAINT court_evnt_appoint_outcome_fk1;
+
+ALTER TABLE court_evnt_sanctions_details 
+  ADD CONSTRAINT court_evnt_sanctions_details_fk1 FOREIGN KEY (court_event_id)
+   REFERENCES oms_owner.court_events(event_id)  ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE; 
+
+comment on column court_evnt_sanctions_details.court_event_id is 'Unique identifier for the parent court event record';
+
+--
+
+ALTER TABLE court_evnt_sanctions_details ADD record_type varchar(12);
+
+update court_evnt_sanctions_details set record_type = 'COMM_SCHD';
+
+ALTER TABLE court_evnt_sanctions_details ALTER COLUMN record_type SET NOT NULL;
+
+alter table court_evnt_sanctions_details add constraint court_evnt_sanctions_details_chk1 check (record_type in ('COMM_SCHD', 'COMM_PRG', 'COMM_PRG_APP', 'COMM_SRV'));
+
+comment on column court_evnt_sanctions_details.record_type is 'Type of sanction detail (community schedule appointment, community program ACP session, community program ACP appointment or community service session)';
+
+--
+
+ALTER TABLE court_evnt_sanctions_details RENAME COLUMN appointment_event_id TO record_event_id;
+comment on column court_evnt_sanctions_details.record_event_id is 'The event id for the record_type aka community schedule appointment record in offender_ind_schedules, community program ACP session attendance  record, community program ACP appointment record or community service session record in offender_course_attendances';
+
+--
+comment on column court_evnt_sanctions_details.comment_text is 'Comment';
+
+comment on column court_evnt_sanctions_details.link_flag is 'Link to court event flag';
+

@@ -1,0 +1,89 @@
+SET ECHO ON
+
+prompt please provide connect string to target database and password of OMS_OWNER account.
+
+disconnect;
+
+connect oms_conv@&connect_string
+
+COLUMN crt_inst NOPRINT NEW_VALUE crt_env;
+COLUMN crt_host NOPRINT NEW_VALUE crt_host;
+COLUMN crt_date NOPRINT NEW_VALUE crt_sysdate;
+
+SELECT upper(instance_name) AS crt_inst FROM v$INSTANCE;
+SELECT upper(host_name) AS crt_host FROM v$INSTANCE;
+SELECT to_char(sysdate,'DD_MON_YYYY_hh24_mi_ss') AS crt_date FROM dual;
+
+SPOOL 20_101_BATCH_OMS_CONV_&crt_host._&crt_env._&crt_sysdate..log
+
+
+SELECT instance_name, host_name, to_char(sysdate, 'DD-MON-YYYY HH24:MI:SS') DATE_OF_RUN
+  FROM v$instance;
+
+EXEC DBMS_UTILITY.COMPILE_SCHEMA('PUBLIC',FALSE);
+EXEC DBMS_UTILITY.COMPILE_SCHEMA('OMS_OWNER',FALSE);
+
+select substr(object_name, 1,35), substr(object_type, 1,15), substr(owner, 1,15) from dba_objects where status='INVALID' and owner in 
+(
+'OMS_OWNER', 
+'BAI_OWNER', 
+'IAFIS_OWNER', 
+'MEDISPAN_OWNER', 
+'COPAY_OWNER', 
+'AJIS_OWNER', 
+'JIMS_OWNER', 
+'MOBILEADMIN',
+'HOTPAGE_AQ',
+'TAGWF1',
+'TAGWF2',
+'TAGWFC1',
+'TAGWFC2', 
+'PUBLIC',
+'XELITE_OWNER',
+'SYS_REPJOBS',
+'SYS'
+)
+order by owner,object_type,object_name;
+
+set time on
+
+set array 1
+
+-- populate the list of triggers that is going to be disabled, enabled
+exec conv_utilities.populate_triggers;
+
+-- disable triggers
+exec conv_utilities.disable_triggers;
+
+EXEC DBMS_UTILITY.COMPILE_SCHEMA('PUBLIC',FALSE);
+EXEC DBMS_UTILITY.COMPILE_SCHEMA('OMS_OWNER',FALSE);
+
+
+select substr(object_name, 1,35), substr(object_type, 1,15), substr(owner, 1,15) from dba_objects where status='INVALID' and owner in 
+(
+'OMS_OWNER', 
+'BAI_OWNER', 
+'IAFIS_OWNER', 
+'MEDISPAN_OWNER', 
+'COPAY_OWNER', 
+'AJIS_OWNER', 
+'JIMS_OWNER', 
+'MOBILEADMIN',
+'HOTPAGE_AQ',
+'TAGWF1',
+'TAGWF2',
+'TAGWFC1',
+'TAGWFC2', 
+'PUBLIC',
+'XELITE_OWNER',
+'SYS_REPJOBS',
+'SYS'
+)
+order by owner,object_type,object_name;
+
+
+select to_char(sysdate,'dd-mm-yyyy hh24:mi:ss') from dual;
+
+set time off
+
+spool off

@@ -1,0 +1,1 @@
+alter table oms_owner.staff_members add mail_id varchar(100);

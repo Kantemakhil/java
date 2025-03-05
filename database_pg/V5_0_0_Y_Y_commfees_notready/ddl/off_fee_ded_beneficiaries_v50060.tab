@@ -1,0 +1,30 @@
+CREATE TABLE oms_owner.off_fee_ded_beneficiaries (
+	off_fee_ded_beneficiary_id int8 NOT NULL,
+	offender_fee_id int8 NOT NULL,
+	person_id int8 NULL,
+	corporate_id int8 NULL,
+	priority int4 NOT NULL,
+	amount int8 NOT NULL,
+	"percent" int8 NOT NULL,
+	create_datetime timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	create_user_id varchar(32) NOT NULL,
+	modify_datetime timestamp(6) NULL,
+	modify_user_id varchar(32) NULL,
+	seal_flag varchar(1) NULL,
+	CONSTRAINT off_fee_ded_beneficiaries_uk1 UNIQUE (offender_fee_id, person_id, corporate_id),
+	CONSTRAINT off_fee_ded_benficiaries_pk PRIMARY KEY (off_fee_ded_beneficiary_id),
+	CONSTRAINT off_fee_ded_beneficiaries_fk1 FOREIGN KEY (offender_fee_id) REFERENCES oms_owner.off_fee_account_profile(offender_fee_id),
+	CONSTRAINT off_fee_ded_beneficiaries_fk2 FOREIGN KEY (corporate_id) REFERENCES oms_owner.corporates(corporate_id),
+	CONSTRAINT off_fee_ded_beneficiaries_fk3 FOREIGN KEY (person_id) REFERENCES oms_owner.persons(person_id)
+)
+TABLESPACE tag_data
+;
+
+COMMENT ON TABLE OMS_OWNER.OFF_FEE_DED_BENEFICIARIES  IS 'Beneficiary details for the offender fee account';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_DED_BENEFICIARIES.OFF_FEE_DED_BENEFICIARY_ID IS 'Unique record id [existing sequence=BENEFICIARY_ID]';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_DED_BENEFICIARIES.OFFENDER_FEE_ID IS 'Offender fee account id';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_DED_BENEFICIARIES.PERSON_ID IS 'For person beneficiaries, uniquely identifies the person';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_DED_BENEFICIARIES.CORPORATE_ID IS 'For corporate beneficiaries, uniquely identifies the corporation';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_DED_BENEFICIARIES.PRIORITY IS 'The priority for the collection against the beneficiary in the context of multiple beneficiaries';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_DED_BENEFICIARIES.AMOUNT IS 'The Amount to be collected for the beneficiary';
+COMMENT ON COLUMN OMS_OWNER.OFF_FEE_DED_BENEFICIARIES.PERCENT IS 'Percentage of the amount collected to be applied to the beneficiary';

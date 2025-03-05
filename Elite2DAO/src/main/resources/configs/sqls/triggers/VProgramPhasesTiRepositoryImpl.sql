@@ -1,0 +1,3 @@
+V_PROGRAM_PHASES_TI_IINSERT{
+INSERT INTO program_services(program_id, parent_program_id, program_class, list_seq, phase_type, description,no_of_sessions, capacity, session_length,module_flag, module_type, break_allowed_flag,active_flag, expiry_date, comment_text)VALUES (:programPhaseId, :programId, 'PRG_PH', :listSeq, :phaseType, :description, :noOfSessions, :capacity, :sessionLength, :moduleFlag, :moduleType, :breakAllowedFlag, :activeFlag, :expiryDate, :commentText )
+}

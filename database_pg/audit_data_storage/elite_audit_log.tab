@@ -1,0 +1,36 @@
+CREATE TABLE audit_log.elite_audit_log (
+audittime     TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP NOT NULL ,
+action        bpchar(1) NOT NULL,
+username      text NOT NULL,
+table_name    text NOT NULL,
+row_data_new  jsonb NULL,
+row_data_old  jsonb NULL,
+CONSTRAINT elite_audit_log_action_chk1 CHECK ((action = ANY (ARRAY['I'::bpchar, 'U'::bpchar, 'D'::bpchar, 'T'::bpchar])))
+) PARTITION BY RANGE (audittime);
+
+CREATE TABLE audit_log.elite_audit_log_part_2023_jan PARTITION OF audit_log.elite_audit_log 
+ FOR VALUES FROM ('2023-01-01') TO ('2023-02-01');
+CREATE TABLE audit_log.elite_audit_log_part_2023_feb PARTITION OF audit_log.elite_audit_log  
+ FOR VALUES FROM ('2023-02-01') TO ('2023-03-01');
+CREATE TABLE audit_log.elite_audit_log_part_2023_mar PARTITION OF audit_log.elite_audit_log  
+ FOR VALUES FROM ('2023-03-01') TO ('2023-04-01');
+CREATE TABLE audit_log.elite_audit_log_part_2023_apr PARTITION OF audit_log.elite_audit_log  
+ FOR VALUES FROM ('2023-04-01') TO ('2023-05-01');
+CREATE TABLE audit_log.elite_audit_log_part_2023_may PARTITION OF audit_log.elite_audit_log  
+ FOR VALUES FROM ('2023-05-01') TO ('2023-06-01');
+CREATE TABLE audit_log.elite_audit_log_part_2023_jun PARTITION OF audit_log.elite_audit_log  
+ FOR VALUES FROM ('2023-06-01') TO ('2023-07-01');
+CREATE TABLE audit_log.elite_audit_log_part_2023_jul PARTITION OF audit_log.elite_audit_log  
+ FOR VALUES FROM ('2023-07-01') TO ('2023-08-01');
+CREATE TABLE audit_log.elite_audit_log_part_2023_aug PARTITION OF audit_log.elite_audit_log  
+ FOR VALUES FROM ('2023-08-01') TO ('2023-09-01');
+CREATE TABLE audit_log.elite_audit_log_part_2023_sep PARTITION OF audit_log.elite_audit_log  
+ FOR VALUES FROM ('2023-09-01') TO ('2023-10-01');
+CREATE TABLE audit_log.elite_audit_log_part_2023_oct PARTITION OF audit_log.elite_audit_log  
+ FOR VALUES FROM ('2023-10-01') TO ('2023-11-01');
+CREATE TABLE audit_log.elite_audit_log_part_2023_nov PARTITION OF audit_log.elite_audit_log  
+ FOR VALUES FROM ('2023-11-01') TO ('2023-12-01');
+CREATE TABLE audit_log.elite_audit_log_part_2023_dec PARTITION OF audit_log.elite_audit_log  
+ FOR VALUES FROM ('2023-12-01') TO ('2024-01-01');
+ 
+CREATE INDEX ON audit_log.elite_audit_log (audittime);

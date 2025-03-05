@@ -1,0 +1,26 @@
+CREATE table oms_owner.iwp_bookmark_out_parameters (
+    id                      BIGSERIAL, 
+    bookmark_name           VARCHAR(100) NOT NULL,
+	parameter_name          VARCHAR(100) NOT NULL,
+    create_datetime         TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL ,
+    create_user_id          VARCHAR(32) NOT NULL ,
+    modify_datetime         TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    modify_user_id          VARCHAR(32),
+    seal_flag               VARCHAR(1) 
+) tablespace tag_data;
+
+alter table oms_owner.iwp_bookmark_out_parameters  
+  add constraint iwp_bookmark_out_parameters_pk primary key (id)
+  using index tablespace tag_indx;
+  
+alter table oms_owner.iwp_bookmark_out_parameters add constraint iwp_bookmark_out_parameters_uk1 unique(bookmark_name,parameter_name);    
+
+comment on table iwp_bookmark_out_parameters is 'Tracks the output parameters of composite bookmarks';
+
+comment on column iwp_bookmark_out_parameters.id is 'Unique Id';
+comment on column iwp_bookmark_out_parameters.bookmark_name is 'Stores the bookmark name';
+comment on column iwp_bookmark_out_parameters.parameter_name is 'Stores the output parameter name';
+comment on column iwp_bookmark_out_parameters.create_datetime is 'Stores the created date and time';
+comment on column iwp_bookmark_out_parameters.create_user_id is 'Stores the created user id';
+comment on column iwp_bookmark_out_parameters.modify_datetime is 'Stores the modified date and time';
+comment on column iwp_bookmark_out_parameters.modify_user_id is 'Stores the modified user id';

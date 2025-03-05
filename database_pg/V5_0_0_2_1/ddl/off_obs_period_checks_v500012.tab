@@ -1,0 +1,44 @@
+-- Create table
+create table oms_owner.off_obs_period_checks
+(
+  check_id             integer not null,
+  obs_period_id        integer not null,
+  check_seq            integer not null,  
+  schedule_datetime		timestamp not null,  
+  check_datetime		timestamp,
+  performing_staff_id	integer,
+  comment_text			varchar(4000), 
+  create_datetime		timestamp not null default CURRENT_TIMESTAMP,
+  create_user_id		varchar(32) not null,
+  modify_datetime		timestamp default CURRENT_TIMESTAMP,
+  modify_user_id		varchar(32),
+  seal_flag				varchar(1)
+) tablespace tag_data;
+
+
+alter table oms_owner.off_obs_period_checks
+  add constraint off_obs_period_checks_pk primary key (check_id)
+  using index tablespace tag_indx;
+  
+alter table oms_owner.off_obs_period_checks
+  add constraint off_obs_period_checks_uk1 unique (obs_period_id, check_seq)
+  using index tablespace tag_indx;  
+  
+alter table oms_owner.off_obs_period_checks 
+  add constraint off_obs_period_checks_fk1 foreign key (obs_period_id)
+  references oms_owner.off_observation_periods (obs_period_id) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE;  
+  
+alter table oms_owner.off_obs_period_checks 
+  add constraint off_obs_period_checks_fk2 foreign key (performing_staff_id)
+  references oms_owner.staff_members (staff_id) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE;    
+  
+--
+comment on table oms_owner.off_obs_period_checks is 'Stores the Offender observation period checks details (offender data)';
+comment on column oms_owner.off_obs_period_checks.check_id is 'Surogate unique identifier for check (db seq=check_id_seq)';
+comment on column oms_owner.off_obs_period_checks.obs_period_id is 'Unique identifier for offender observation period';
+comment on column oms_owner.off_obs_period_checks.check_seq is 'Check sequence, starts at 1 for each offender observation period';
+comment on column oms_owner.off_obs_period_checks.schedule_datetime is 'The datetime when the check is scheduled to occur';
+comment on column oms_owner.off_obs_period_checks.check_datetime is 'Actual datetime when the check is performed';
+comment on column oms_owner.off_obs_period_checks.performing_staff_id is 'The staff who performs the period check (records the check datetime, thus executes the check)';  
+comment on column oms_owner.off_obs_period_checks.comment_text is 'The officer check detail note';
+  

@@ -1,0 +1,38 @@
+--echo everything (this eliminates the need to call psql -a)
+\set ECHO all
+
+--set the message level sent to client
+SET client_min_messages = warning;
+
+--print connection information
+\echo 'Database Information:'
+\conninfo
+
+--set psql session behaviour
+\set AUTOCOMMIT on
+\timing on
+\set footer on
+\x auto
+\pset null <NULL>
+\set VERBOSITY verbose
+\pset pager off
+
+show search_path;
+
+select current_timestamp;
+
+--execute sql scripts
+\i db_version_control.tab 
+\i db_version_control_patches.tab 
+\i log_db_version_control.prc 
+\i log_db_version_control_patches.prc 
+
+select current_timestamp;
+
+show search_path;
+
+
+
+
+
+

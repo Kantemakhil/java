@@ -1,0 +1,7 @@
+CREATE OR REPLACE VIEW oms_owner.agy_placements_v2
+AS SELECT a.program_code,
+    b.description,
+    COALESCE(b.cell, 0::bigint) AS cell
+   FROM program_services a
+     LEFT JOIN agy_placements_v1 b ON a.program_code::text = b.program_code::text
+  WHERE a.program_id = ANY (ARRAY[1::bigint, 2::bigint, 3::bigint, 4::bigint, 5::bigint, 7::bigint, 8::bigint, 9::bigint, 33::bigint, 54::bigint, 53::bigint]);

@@ -1,0 +1,17 @@
+alter table schedule_series_rule add start_date timestamp(6) not null;
+alter table schedule_series_rule add start_time timestamp(6) not null;
+alter table schedule_series_rule add end_time   timestamp(6);
+
+comment on column schedule_series_rule.start_date is 'Start Date of the recurring series';
+comment on column schedule_series_rule.start_time is 'Start Time of the recurring series';
+comment on column schedule_series_rule.end_time is 'End Time of the recurring series';
+
+alter table schedule_series_rule add ui_rules varchar(1000) not null;
+comment on column schedule_series_rule.ui_rules is 'Recurrence rule output formula'; 
+
+alter table schedule_series_rule drop column repeat_type;
+alter table schedule_series_rule drop column repeat_frequency;
+alter table schedule_series_rule drop column end_date;
+alter table schedule_series_rule drop column count;
+alter table schedule_series_rule drop column repeat_on;
+

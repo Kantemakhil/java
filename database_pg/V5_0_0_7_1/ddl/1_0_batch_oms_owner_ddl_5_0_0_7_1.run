@@ -1,0 +1,58 @@
+--echo everything (this eliminates the need to use -a)
+\set ECHO all
+
+--set the message level sent to client
+SET client_min_messages = warning;
+
+--print connection information
+\echo 'Database Information:'
+\conninfo
+
+--set client session behaviour
+\set AUTOCOMMIT on
+\timing on
+\set footer on
+\x auto
+\pset null <NULL>
+\set VERBOSITY verbose
+\pset pager off
+
+show search_path;
+
+select current_timestamp;
+
+--record scripts version
+call log_db_version_control('5', 'initial PostgreSql Elite db version ');
+call log_db_version_control_patches('5', '5_0_0_7_1', 'ddl set 1_0 of patch 5_0_0_7_1', '1_0_batch_oms_owner_ddl_5_0_0_7_1.run');
+
+--execute sql scripts
+\i drop_views_v50071.vew
+\i offender_ind_schedules_v50071.tab
+\i sms_email_sent_notifications_v50071.tab
+\i v_offender_all_schedules_2_v50071.vew
+\i v_offender_all_schedules_v50071.vew
+\i v_assign_offender_trips_v50071.vew
+\i v_local_trip_occupancy_v50071.vew
+\i v_local_trip_offenders_v50071.vew
+\i v_off_sch_overview_v50071.vew
+\i v_offender_all_schedules_new_v50071.vew
+\i v_offender_scheduled_trips_v50071.vew
+\i v_route_occupancy_v50071.vew
+\i v_transfer_waiting_lists_v50071.vew
+\i ocdlegls_data_pending_calculation_v50071.tab
+\i ocdlegls_data_pending_calculation_id_seq.seq
+\i external_system_response_v50071.tab
+\i person_additional_names_v50071.tab
+\i court_events_v50071.tab
+
+select current_timestamp;
+
+show search_path;
+
+ 
+ 
+
+
+
+
+

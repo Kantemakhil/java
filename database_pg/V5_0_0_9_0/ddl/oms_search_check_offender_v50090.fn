@@ -1,0 +1,31 @@
+CREATE OR REPLACE FUNCTION oms_owner.oms_search_check_offender(p_lastname text, p_birthdate timestamp without time zone)
+ RETURNS bigint
+ LANGUAGE plpgsql
+AS $function$
+DECLARE
+
+    --
+    --
+    ret_Exists numeric;
+
+BEGIN
+    SELECT     1
+        INTO STRICT      ret_Exists
+        FROM     offenders
+        WHERE  regexp_replace(upper(last_name),
+	'[- \,''"]',
+	'',
+	'g') = regexp_replace(upper(p_LastName), '[- \,''"]',
+	'',
+	'g')
+        AND         birth_date::date =
+                       p_BirthDate::date;
+    RETURN ret_Exists;
+    EXCEPTION
+        WHEN no_data_found THEN
+            RETURN 0;
+        WHEN too_many_rows THEN
+            RETURN 1;
+  END;
+$function$
+;

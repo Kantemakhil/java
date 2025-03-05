@@ -1,0 +1,2 @@
+insert into oms_owner.system_profiles (profile_type,profile_code,description,profile_value,profile_value_2,modify_user_id,old_table_name,create_datetime,create_user_id,modify_datetime, seal_flag)
+ values('SYSTEM', 'SYSTEM', 'To configure the staff id of system  user', 'SYSTEM', null, null, null, current_timestamp, 'OMS_OWNER', null, null);

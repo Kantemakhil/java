@@ -1,0 +1,1 @@
+update iwp_template_modules set module_name='OCDCORDS' where module_name='OCDLEGLO';

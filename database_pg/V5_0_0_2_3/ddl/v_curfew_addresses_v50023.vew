@@ -1,0 +1,24 @@
+CREATE OR REPLACE VIEW oms_owner.v_curfew_addresses
+AS SELECT cur_addr.curfew_address_id,
+    cur_addr.offender_book_id,
+    cur_addr.offender_curfew_id,
+    cur_addr.address_id,
+    cur_addr.active_flag,
+    cur_addr.electricity_flag,
+    cur_addr.phone_flag,
+    cur_addr.phone_no,
+    cur_addr.ext_no,
+    addr.house,
+    addr.street,
+    addr.area,
+    addr.zip_postal_code,
+    addr.country,
+    cur_addr.electricity_confirm_flag,
+    cur_addr.phone_confirm_flag,
+    cur_addr.phone_no_confirm_flag,
+    addr.primary_flag,
+    addr.mail_flag,
+    addr.active_flag AS address_active_flag
+   FROM curfew_addresses cur_addr,
+    v_addresses addr
+  WHERE cur_addr.address_id = addr.address_id;

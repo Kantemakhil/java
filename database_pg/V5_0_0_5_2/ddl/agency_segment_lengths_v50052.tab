@@ -1,0 +1,1 @@
+ALTER TABLE oms_owner.AGENCY_SEGMENT_LENGTHS ALTER COLUMN segment_length TYPE numeric USING segment_length::numeric;

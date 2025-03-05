@@ -1,0 +1,27 @@
+
+OIMOICMP_FIND_CGFKOICSLOICSANCTIONCODE {
+ 	SELECT REF_CODE1.CODE  OIC_SANCTION_CODE ,REF_CODE1.DESCRIPTION  DSP_DESCRIPTION        ,REF_CODE1.LIST_SEQ  DSP_LIST_SEQ FROM   REFERENCE_CODES REF_CODE1 WHERE   DOMAIN = 'OIC_SANCT' AND (::MODE = 'ENTER-QUERY' OR ACTIVE_FLAG = 'Y' ) ORDER BY  REF_CODE1.LIST_SEQ        ,REF_CODE1.DESCRIPTION
+}
+
+OIMOICMP_FIND_CGFKOICSLOICHEARINGTYPE {
+ 	SELECT REF_CODE.CODE  OIC_HEARING_TYPE ,REF_CODE.DESCRIPTION  DSP_DESCRIPTION2        ,REF_CODE.LIST_SEQ  DSP_LIST_SEQ2 FROM   REFERENCE_CODES REF_CODE WHERE   DOMAIN = 'OIC_HEAR'  AND (::MODE = 'ENTER-QUERY' OR ACTIVE_FLAG = 'Y' ) ORDER BY  REF_CODE.LIST_SEQ        ,REF_CODE.DESCRIPTION
+}
+
+OIMOICMP_OICSL_FIND_OIC_SANCTION_LIMITS {
+SELECT oic_hearing_type, oic_sanction_code, description, max_month, max_days, compensation_amount, create_datetime, create_user_id, modify_datetime, modify_user_id, seal_flag, ROW_ID::text FROM oic_sanction_limits ORDER BY oic_hearing_type, oic_sanction_code
+}
+OIMOICMP_OICSL_INSERT_OIC_SANCTION_LIMITS {
+insert into OIC_SANCTION_LIMITS(OIC_HEARING_TYPE , OIC_SANCTION_CODE , DESCRIPTION , MAX_MONTH , MAX_DAYS , COMPENSATION_AMOUNT , SEAL_FLAG, create_user_id, create_datetime, modify_datetime ) values(:oicHearingType , :oicSanctionCode , :description , :maxMonth , :maxDays , :compensationAmount , :sealFlag, :createUserId, current_timestamp, null )
+}
+
+OIMOICMP_OICSL_UPDATE_OIC_SANCTION_LIMITS {
+update OIC_SANCTION_LIMITS set OIC_HEARING_TYPE = :oicHearingType , OIC_SANCTION_CODE = :oicSanctionCode , DESCRIPTION = :description , MAX_MONTH = :maxMonth , MAX_DAYS = :maxDays , COMPENSATION_AMOUNT = :compensationAmount , SEAL_FLAG = :sealFlag, modify_user_id = :modifyUserId , modify_datetime = current_timestamp where ROW_ID = (:rowId::bigint)
+}
+
+OIMOICMP_OICSL_DELETE_OIC_SANCTION_LIMITS { 
+	DELETE FROM OIC_SANCTION_LIMITS where ROW_ID = (:rowId::bigint)
+}
+
+OIMOICMP_SYSPFL_FIND_SYSTEM_PROFILES {
+ 	SELECT PROFILE_TYPE ,PROFILE_CODE ,DESCRIPTION ,PROFILE_VALUE ,PROFILE_VALUE_2 ,MODIFY_USER_ID ,OLD_TABLE_NAME ,CREATE_DATETIME ,CREATE_USER_ID ,MODIFY_DATETIME ,SEAL_FLAG   FROM SYSTEM_PROFILES  /* where  */
+}

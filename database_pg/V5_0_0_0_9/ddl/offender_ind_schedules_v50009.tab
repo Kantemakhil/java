@@ -1,0 +1,6 @@
+alter table offender_ind_schedules add series_id bigint;
+comment on column offender_ind_schedules.series_id is 'To indentify created scheduled is manually scheduled or scheduled from recurring';
+
+alter table offender_ind_schedules 
+	add constraint offender_ind_schedules_fk1 foreign key (series_id) 
+	references schedule_series_rule(series_id) on delete no action not deferrable initially immediate;

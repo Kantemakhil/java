@@ -1,0 +1,3 @@
+INSERT INTO OMS_OWNER.SYSTEM_SETTINGS(SETTING_TYPE,SETTING_PROVIDER_CODE,SETTING_VALUE,create_datetime,create_user_id,modify_datetime,modify_user_id) 
+ VALUES ('SMS','CLICKSEND_SMS','[{"KEY_DESC":"Clicksend user to post SMS","KEY_CODE":"POST_SMS_USR","VALUE":"Corrections.Dev@syscon.justice.ca"}, {"KEY_DESC":"Clicksend pwd to post SMS","KEY_CODE":"POST_SMS_PWD","VALUE":"passvalue"}]',current_timestamp,'OMS_OWNER',current_timestamp,NULL);
+ 

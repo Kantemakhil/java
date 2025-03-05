@@ -1,0 +1,12 @@
+OFF_OBS_PRD_T1_AUTH_CHECK_CUR{
+SELECT profile_value FROM system_profiles WHERE profile_type = 'CLIENT' AND profile_code = 'OO_USE_MOB'
+}
+OFF_OBS_PRD_T1_GET_FREQ_CUR{
+SELECT frequency FROM off_obs_characteristics WHERE observation_type = :observationType  AND characteristics_code = :characteristicsCode
+}
+OFF_OBS_PRD_T1_GET_PERIOD_FREQ_CUR{
+SELECT frequency, status_code FROM off_observation_periods WHERE offender_book_id = :offenderBookId  AND obs_period_id = :obsPeriodId
+}
+OFF_OBS_PRD_T1_OFF_OBS_PRD_CHARACTERISTICS_GET{
+SELECT OFFENDER_BOOK_ID,OBS_PERIOD_ID,OBSERVATION_TYPE,CHARACTERISTICS_CODE,START_DATE,END_REASON_CODE,END_DATE,STATUS_CODE,CREATE_DATETIME,CREATE_USER_ID,MODIFY_DATETIME,MODIFY_USER_ID,SEAL_FLAG,OBS_PRD_CHAR_ID OFF_OBS_PRD_CHARACTERISTICS WHERE OBS_PRD_CHAR_ID=:obsPrdCharId
+}

@@ -1,0 +1,28 @@
+-- Create table
+create table oms_owner.off_obs_add_details
+(
+  obs_type_version_id	integer not null,
+  detail_type			varchar(12) not null,
+  detail_code			varchar(12) not null,
+  create_datetime		timestamp not null default CURRENT_TIMESTAMP,
+  create_user_id		varchar(32) not null,
+  modify_datetime		timestamp default CURRENT_TIMESTAMP,
+  modify_user_id		varchar(32),
+  seal_flag				varchar(1)
+) tablespace tag_data;
+
+-- Create/Recreate primary, unique and foreign key constraints 
+alter table oms_owner.off_obs_add_details
+  add constraint off_obs_add_details_pk primary key (obs_type_version_id, detail_type, detail_code)
+  using index tablespace tag_indx;
+  
+alter table oms_owner.off_obs_add_details
+  add constraint off_obs_add_details_fk1 foreign key (obs_type_version_id)
+  references oms_owner.offender_observation_types (obs_type_version_id) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE;  
+  
+--
+comment on table oms_owner.off_obs_add_details is 'Stores details options for the offender observation type  (maintenance table)';
+comment on column oms_owner.off_obs_add_details.obs_type_version_id is 'Unique identifier for a specific version of an observation type';
+comment on column oms_owner.off_obs_add_details.detail_type is 'Observation detail type (static values CELL_CNDITNS,ACTIVITY,COM_DET_CAT,NOT_IN_CELL)';
+comment on column oms_owner.off_obs_add_details.detail_code is 'Observation detail type [ref domain=CELL_CNDITNS,ACTIVITY,COM_DET_CAT,NOT_IN_CELL]';
+  

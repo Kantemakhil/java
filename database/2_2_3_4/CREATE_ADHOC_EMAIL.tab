@@ -1,0 +1,36 @@
+CREATE TABLE CREATE_ADHOC_EMAIL 
+(EMAIL_ID    NUMBER(10),
+OFFENDER_BOOK_ID    NUMBER(10),
+WORK_ID    NUMBER(10),
+EMAIL_SUBJECT    VARCHAR2(240),
+EMAIL_BODY    CLOB,
+EMAIL_SENDER    VARCHAR2(240),
+EMAIL_FROM    VARCHAR2(240) 
+) 
+tablespace TAG_DATA
+  pctfree 10
+  initrans 1
+  maxtrans 255
+  storage
+  (
+    initial 2M
+    next 2M
+    minextents 1
+    maxextents unlimited
+  );
+
+
+ALTER TABLE CREATE_ADHOC_EMAIL  
+  add constraint CREATE_ADHOC_EMAIL_PK primary key(EMAIL_ID) 
+  using index 
+tablespace TAG_INDX
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 1M
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );

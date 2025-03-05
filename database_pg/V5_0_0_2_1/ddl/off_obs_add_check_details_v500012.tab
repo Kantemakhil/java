@@ -1,0 +1,43 @@
+
+-- Create table
+create table oms_owner.off_obs_add_check_details 
+( 
+  check_id              integer not null,  
+  obs_type_version_id	integer not null,
+  detail_type			varchar(12) not null,
+  detail_code			varchar(12) not null, 
+  detail_datetime		timestamp not null,  
+  reporting_staff_id	integer not null,
+  create_datetime		timestamp not null default CURRENT_TIMESTAMP,
+  create_user_id		varchar(32) not null,
+  modify_datetime		timestamp default CURRENT_TIMESTAMP,
+  modify_user_id		varchar(32),
+  seal_flag				varchar(1)
+) tablespace tag_data;
+
+
+alter table oms_owner.off_obs_add_check_details
+  add constraint off_obs_add_check_details_pk primary key (check_id, detail_type, detail_code)
+  using index tablespace tag_indx;
+  
+alter table oms_owner.off_obs_add_check_details 
+  add constraint off_obs_add_check_details_fk1 foreign key (check_id)
+  references oms_owner.off_obs_period_checks (check_id) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE;  
+  
+alter table oms_owner.off_obs_add_check_details 
+  add constraint off_obs_add_check_details_fk2 foreign key (obs_type_version_id, detail_type, detail_code)
+  references oms_owner.off_obs_add_details (obs_type_version_id, detail_type, detail_code) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE;    
+  
+alter table oms_owner.off_obs_add_check_details 
+  add constraint off_obs_add_check_details_fk3 foreign key (reporting_staff_id)
+  references oms_owner.staff_members (staff_id) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE; 
+  
+--
+comment on table oms_owner.off_obs_add_check_details is 'Stores the offender observation additional check details (offender data)';
+comment on column oms_owner.off_obs_period_checks.check_id is 'Unique identifier for offender observation period check';
+comment on column oms_owner.off_obs_add_check_details.obs_type_version_id is 'Unique identifier for a specific version of an observation type';
+comment on column oms_owner.off_obs_add_check_details.detail_type is 'Check detail type (static values CELL_CNDITNS,ACTIVITY,COM_DET_CAT,NOT_IN_CELL)';  
+comment on column oms_owner.off_obs_add_check_details.detail_code is 'Check detail code [ref domain=CELL_CNDITNS,ACTIVITY,COM_DET_CAT,NOT_IN_CELL]';
+comment on column oms_owner.off_obs_add_check_details.detail_datetime is 'The datetime when the check detail is created';
+comment on column oms_owner.off_obs_add_check_details.reporting_staff_id is 'The staff who records the check detail'; 
+  

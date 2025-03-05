@@ -1,0 +1,64 @@
+create table oms_owner.sms_email_sent_notifications (
+	offender_book_id int8 not null,
+	notification_sent_datetime timestamp(6) not null,
+	case_note_id int8 not null,
+	notification_type varchar(12) not null,
+	event_sch_type varchar(12) not null,
+	event_id int8 null,
+	off_prgref_id int8 null,
+	crs_acty_id int8 null,
+	event_date date null,
+	event_start_time timestamp(6) null,
+	event_end_time timestamp(6) null,
+	create_datetime timestamp not null default CURRENT_TIMESTAMP,
+	create_user_id varchar(32) not null,
+	modify_datetime timestamp,
+	modify_user_id varchar(32) null,
+	seal_flag varchar(1) null,
+	reference_id int8 null)
+tablespace tag_data
+;
+
+alter table sms_email_sent_notifications add constraint sms_email_sent_notifications_check1 check (((((event_sch_type)::text = any ((array['COMM_SCH'::character varying,
+'CRT_EVNT'::character varying])::text[]))
+and (off_prgref_id is null)
+and (crs_acty_id is null)
+and (event_id is not null))
+or (((event_sch_type)::text = 'COMM_ACP'::text)
+and (off_prgref_id is not null)
+and ((event_id is not null)
+or (reference_id is not null)))
+or (((event_sch_type)::text = 'COMM_SRV'::text)
+and (off_prgref_id is not null)
+and (crs_acty_id is not null)
+and ((event_id is not null)
+or (reference_id is not null)))));
+
+alter table sms_email_sent_notifications add constraint sms_email_sent_notifications_event_sch_type_check check (((event_sch_type)::text = any (array[('COMM_SCH'::character varying)::text,
+('COMM_ACP'::character varying)::text,
+('COMM_SRV'::character varying)::text,
+('CRT_EVNT'::character varying)::text])));
+
+alter table sms_email_sent_notifications add constraint sms_email_sent_notifications_notification_type_check check (((notification_type)::text = any (array[('SMS'::character varying)::text,
+('MAIL'::character varying)::text])));
+
+alter table sms_email_sent_notifications add constraint sms_email_sent_notifications_fk1 foreign key (offender_book_id) references oms_owner.offender_bookings(offender_book_id);
+
+alter table sms_email_sent_notifications add constraint sms_email_sent_notifications_fk2 foreign key (case_note_id) references oms_owner.offender_case_notes(case_note_id);
+
+alter table sms_email_sent_notifications add constraint sms_email_sent_notifications_fk3 foreign key (off_prgref_id) references oms_owner.offender_program_profiles(off_prgref_id);
+
+alter table sms_email_sent_notifications add constraint sms_email_sent_notifications_fk4 foreign key (crs_acty_id) references oms_owner.course_activities(crs_acty_id);
+
+create index sms_email_sent_notifications_ind1 on
+oms_owner.sms_email_sent_notifications
+	using btree (offender_book_id,
+event_sch_type);
+
+create index sms_email_sent_notifications_ind2 on
+oms_owner.sms_email_sent_notifications
+	using btree (event_id);
+
+create index sms_email_sent_notifications_ind3 on
+oms_owner.sms_email_sent_notifications
+	using btree (reference_id);

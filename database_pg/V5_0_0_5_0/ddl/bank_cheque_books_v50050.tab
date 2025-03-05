@@ -1,0 +1,1 @@
+ALTER TABLE bank_cheque_books ADD COLUMN row_id bigserial NOT NULL;

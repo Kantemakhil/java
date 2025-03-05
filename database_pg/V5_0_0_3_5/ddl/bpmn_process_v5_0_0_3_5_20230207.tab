@@ -1,0 +1,22 @@
+CREATE INDEX bpmn_process_in1
+    ON bpmn_process
+	  ( process_key)
+  tablespace tag_indx
+; 
+  
+comment on table oms_owner.bpmn_process is 'The list of automated Elite business processes and their version history.';
+
+comment on column oms_owner.bpmn_process.process_id is 'Unique internal key for the record. [sequence=bpmn_process_process_id_seq]';
+comment on column oms_owner.bpmn_process.process_key is 'Internal name of the process. Based on the process_desc, but formatted to be accepted by process engine. All historical records for the same unique process share the same process_key.';
+comment on column oms_owner.bpmn_process.deploye_id is 'Id of a particular version of the process as registered on the automation server. This will be NULL for undeployed versions of the process.';
+comment on column oms_owner.bpmn_process.process_desc is 'Name for the process, as defined by the user.';
+comment on column oms_owner.bpmn_process.bpmn_file is 'Payload for the bpmn process definition.';
+comment on column oms_owner.bpmn_process.deploy_flag is 'A flag (Y/N) indicating whether this version of the process has been deployed on the automation server.';
+comment on column oms_owner.bpmn_process.history_flag is 'A flag (Y/N) indicating whether there are historical version of this process.';
+comment on column oms_owner.bpmn_process.proc_def_id is 'Id of a particular version of the deployed process as registered on the automation server. This will be NULL for undeployed versions of the process.';
+comment on column oms_owner.bpmn_process.def_version is 'The version number of the process. Together with the process_key, this value uniquely identifies the version of a particular process.';
+comment on column oms_owner.bpmn_process.trigger_id is 'For processes that are initiated by application events, identifies the trigger as defined in module_triggers.'; 
+comment on column oms_owner.bpmn_process.deploy_datetime is 'The date and time the process was deployed to the automation server.';
+comment on column oms_owner.bpmn_process.deploy_user_id is 'The user who deployed the process to the automation server.';
+comment on column oms_owner.bpmn_process.common_process is 'A flag indicating that the process is to be called by other processes, and can be used by multiple processes as part of their business process. I.e., these are common processes that defined once, and used across multiple processes. [Y] indicates this is a common process.';
+comment on column oms_owner.bpmn_process.category is 'A code indicating the process category. [ref domain=PROCESS_CATE]';

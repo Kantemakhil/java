@@ -1,0 +1,1 @@
+create sequence oms_owner.offender_cond_transfer_id increment 1 minvalue 1 no maxvalue start 1 cache 20;

@@ -1,0 +1,1 @@
+update course_schedules set start_time = (SELECT DATE_TRUNC('minute', start_time));

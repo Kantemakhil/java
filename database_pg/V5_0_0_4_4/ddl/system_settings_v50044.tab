@@ -1,0 +1,3 @@
+alter table system_settings add  column selected_provider varchar(1) default 'N';
+
+comment on column system_settings.selected_provider is 'Indicates the selected provider';

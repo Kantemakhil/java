@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.4.0.final using JasperReports Library version 6.4.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="OCRDRECE" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="f0aed029-db99-427d-885b-ad9871dd7c0b">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<queryString>
+		<![CDATA[]]>
+	</queryString>
+	<field name="fClient" class="java.lang.String"/>
+	<field name="fClDesc" class="java.lang.String"/>
+	<field name="fTxnDate" class="java.util.Date"/>
+	<field name="fRecNo" class="java.lang.String"/>
+	<field name="payee" class="java.lang.String"/>
+	<field name="totalAmount" class="java.lang.Double"/>
+	<field name="forAmount" class="java.lang.String"/>
+	<field name="fOffName" class="java.lang.String"/>
+	<field name="fTxnDesc" class="java.lang.String"/>
+	<field name="fOffId" class="java.lang.String"/>
+	<field name="userId" class="java.lang.String"/>
+	<field name="fLocName" class="java.lang.String"/>
+	<field name="fLocation" class="java.lang.String"/>
+	<field name="fAmt" class="java.lang.Double"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<pageHeader>
+		<band height="70" splitType="Stretch">
+			<rectangle>
+				<reportElement x="0" y="0" width="555" height="70" backcolor="#BFDFFF" uuid="7f86ffb9-1d67-4999-9bd3-c208242e7113"/>
+				<graphicElement>
+					<pen lineColor="#B4B4B4"/>
+				</graphicElement>
+			</rectangle>
+			<textField isBlankWhenNull="true">
+				<reportElement x="10" y="5" width="370" height="25" forecolor="#000080" backcolor="#BFDFFF" uuid="54a11c6f-0b08-41d8-9722-6014f26660ff"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{fClient}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="29" width="555" height="1" uuid="9b529b6c-6816-4d36-8c71-8a41ec1a4656"/>
+				<graphicElement>
+					<pen lineColor="#B4B4B4"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement x="10" y="40" width="110" height="19" forecolor="#000080" uuid="ca8da436-3b11-4704-87ba-ce48011d44b5"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[RECEIPT]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="140" y="40" width="248" height="18" forecolor="#000080" backcolor="#BFDFFF" uuid="a080933d-7d5b-487b-ad6b-2da8441e12dd"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[SAVE THIS OFFICIAL REPORT]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="420" splitType="Stretch">
+			<rectangle>
+				<reportElement x="0" y="0" width="169" height="27" uuid="467ab028-2eeb-428d-a8e8-af913a77f523"/>
+			</rectangle>
+			<staticText>
+				<reportElement x="10" y="8" width="110" height="20" uuid="c80cc1b6-8a00-48f9-9c07-9ae635cd75ad"/>
+				<text><![CDATA[OFFICE/CITY]]></text>
+			</staticText>
+			<rectangle>
+				<reportElement x="0" y="0" width="555" height="338" uuid="cf66bb88-8d80-4a65-bc16-45a8b59f547a"/>
+				<graphicElement>
+					<pen lineColor="#B4B4B4"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="230" y="8" width="90" height="18" forecolor="#0080FF" uuid="c6041c76-c56d-4438-a018-b31ae6d1947c"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[DATE]]></text>
+			</staticText>
+			<rectangle>
+				<reportElement x="0" y="28" width="220" height="30" uuid="7f20a753-cd65-40dd-9416-8958f914388d"/>
+				<graphicElement>
+					<pen lineColor="#B4B4B4"/>
+				</graphicElement>
+			</rectangle>
+			<textField isBlankWhenNull="true">
+				<reportElement x="10" y="40" width="150" height="15" uuid="c0f1e9b4-f153-44f2-843f-88601c4cb74a"/>
+				<textFieldExpression><![CDATA[$F{fClDesc}]]></textFieldExpression>
+			</textField>
+			<rectangle>
+				<reportElement x="220" y="28" width="109" height="31" uuid="55f77c0c-6a34-46cf-b24d-24c75e63d999"/>
+				<graphicElement>
+					<pen lineColor="#B4B4B4"/>
+				</graphicElement>
+			</rectangle>
+			<textField isBlankWhenNull="true">
+				<reportElement x="230" y="40" width="90" height="14" uuid="83bf0600-2d26-4a72-828f-27b16be616ab"/>
+				<textFieldExpression><![CDATA[new SimpleDateFormat("dd/MM/yyyy").format($F{fTxnDate})]]></textFieldExpression>
+			</textField>
+			<rectangle>
+				<reportElement x="329" y="28" width="226" height="30" uuid="99032a42-3be0-4cc2-bb45-14438dbd5c68"/>
+				<graphicElement>
+					<pen lineColor="#B4B4B4"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="340" y="40" width="90" height="14" forecolor="#0080FF" uuid="baf43414-51be-4c42-8796-f2ef3cff4b81"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[RECEIPT NO:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="440" y="40" width="92" height="15" uuid="4b0e95ee-acc6-4bbd-9bc5-2807a538edb9"/>
+				<textFieldExpression><![CDATA[$F{fRecNo}]]></textFieldExpression>
+			</textField>
+			<rectangle>
+				<reportElement x="0" y="58" width="555" height="60" uuid="c47806e9-b03e-4814-9a80-d50f137fd00e">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<graphicElement>
+					<pen lineColor="#B4B4B4"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="10" y="70" width="112" height="20" forecolor="#0080FF" uuid="e834b812-6405-416a-8974-3c7fc6c84f64"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[PAYEE]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="480" y="99" width="64" height="19" uuid="3590f46a-3993-4285-9778-21b3e29ae45c"/>
+				<textFieldExpression><![CDATA[$F{totalAmount}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="340" y="99" width="99" height="19" forecolor="#0080FF" uuid="281ad6fa-f005-4900-9f95-f50afc307c9a"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[TOTAL:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="10" y="99" width="170" height="20" uuid="066fcbc7-41b4-427b-a396-70f2d2573260"/>
+				<textFieldExpression><![CDATA[$F{payee}]]></textFieldExpression>
+			</textField>
+			<rectangle>
+				<reportElement x="0" y="118" width="555" height="70" uuid="deefea25-e8cf-4c13-8738-fa805aaabd2b">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<graphicElement>
+					<pen lineColor="#B4B4B4"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="10" y="120" width="111" height="20" forecolor="#0080FF" uuid="1d187c86-796c-42d7-8346-180f43618ab2"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[FOR]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="420" y="170" width="99" height="20" forecolor="#0080FF" uuid="b8966f5e-f7de-4daa-a8ab-9d3a06c587b3"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[DOLLOR(S)]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="10" y="150" width="535" height="20" forecolor="#000000" uuid="fbc3d877-a4f8-4655-9bf6-bfec57e9aa79"/>
+				<textFieldExpression><![CDATA[$F{forAmount}]]></textFieldExpression>
+			</textField>
+			<rectangle>
+				<reportElement x="0" y="188" width="280" height="30" backcolor="#EBEBEB" uuid="25bfd2a9-dacf-49b3-b450-d64aa1d9eace">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<graphicElement>
+					<pen lineColor="#B4B4B4"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement x="280" y="188" width="275" height="30" backcolor="#EBEBEB" uuid="da06ae4f-aadf-4aaf-b3f2-562523c84d4d">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<graphicElement>
+					<pen lineColor="#B4B4B4"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="10" y="200" width="199" height="20" forecolor="#0080FF" uuid="c10ef5bb-110d-4912-88b2-4f94e55e29de">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[FOR THE ACCOUNT OF]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="439" y="200" width="106" height="20" forecolor="#0080FF" uuid="9e49a23f-f200-4359-bc56-3a99e2a5cc38">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[NUMBER]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="10" y="7" width="118" height="19" forecolor="#0080FF" uuid="2c6cb68e-d19a-41db-9302-4af29d7d8f9b"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[OFFICE/CITY]]></text>
+			</staticText>
+			<rectangle>
+				<reportElement x="0" y="218" width="280" height="30" uuid="b6b50c8d-e334-4bb7-b5f3-d8110472defb">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<graphicElement>
+					<pen lineColor="#B4B4B4"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement x="280" y="218" width="275" height="30" uuid="e8ca7213-8723-4086-b4dd-8056ab8e412e">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<graphicElement>
+					<pen lineColor="#B4B4B4"/>
+				</graphicElement>
+			</rectangle>
+			<textField isBlankWhenNull="true">
+				<reportElement x="9" y="230" width="199" height="20" uuid="cfa6c21e-92c3-491e-8530-42e98253bb98">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$F{fOffName}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="439" y="230" width="106" height="20" uuid="a2791920-7a45-4c09-84f6-c3f93c47e0ec">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$F{fOffId}]]></textFieldExpression>
+			</textField>
+			<rectangle>
+				<reportElement x="0" y="248" width="280" height="30" uuid="aeec332a-6051-4097-bd72-60869d5d2a73">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<graphicElement>
+					<pen lineColor="#B4B4B4"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement x="280" y="248" width="275" height="30" uuid="c3a5d4ba-fc03-4a31-a062-411fdad8d221">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<graphicElement>
+					<pen lineColor="#B4B4B4"/>
+				</graphicElement>
+			</rectangle>
+			<textField isBlankWhenNull="true">
+				<reportElement x="9" y="260" width="199" height="20" uuid="79f47dcc-bef4-49ed-9f9f-decb5e4b1e9b">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$F{fTxnDesc}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="299" y="260" width="160" height="20" uuid="6153da7d-94bb-4f13-af4d-a4b57db4e3c8">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$F{userId}]]></textFieldExpression>
+			</textField>
+			<rectangle>
+				<reportElement x="0" y="278" width="555" height="30" uuid="9c64e7f3-3881-40d2-9512-9e22d4c9df9a">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<graphicElement>
+					<pen lineColor="#B4B4B4"/>
+				</graphicElement>
+			</rectangle>
+			<textField isBlankWhenNull="true">
+				<reportElement x="10" y="290" width="80" height="20" forecolor="#0080FF" uuid="9d2d4947-55c8-4c43-8a11-92f1d7fec8d9">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$F{fLocName}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="100" y="290" width="339" height="20" forecolor="#000000" uuid="38e77a94-67a7-4272-9bcf-d2b359b4c1ee">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$F{fLocation}]]></textFieldExpression>
+			</textField>
+			<rectangle>
+				<reportElement x="0" y="308" width="555" height="30" backcolor="#EBEBEB" uuid="f24733ee-7638-4054-9cd5-af9534f76cd1">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<graphicElement>
+					<pen lineColor="#B4B4B4"/>
+				</graphicElement>
+			</rectangle>
+			<textField isBlankWhenNull="true">
+				<reportElement x="420" y="320" width="99" height="20" uuid="dca22c17-b176-4565-9d5e-ea24999d3b46">
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$F{fAmt}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="45" splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="54" splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band height="42" splitType="Stretch"/>
+	</summary>
+</jasperReport>

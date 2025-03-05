@@ -1,0 +1,7 @@
+ALTER TABLE dmn_process ADD category varchar(12);
+
+update  dmn_process set category ='PRODUCT';
+
+alter table dmn_process alter column category set not null;
+
+comment on column dmn_process.category is 'Indicates the decision process category';

@@ -1,0 +1,44 @@
+create table oms_owner.sentence_custody_status (
+	sentence_category varchar(12) NOT null,
+	sentence_calc_type varchar(12) NOT null,
+	legal_class varchar(12) NOT null,	
+	sentence_order_status varchar(12) not null,	
+	custody_status varchar(12) not null,
+	create_datetime timestamp(6) not null default CURRENT_TIMESTAMP,
+	create_user_id varchar(32) not null,
+	modify_datetime timestamp(6),
+	modify_user_id varchar(32),
+	seal_flag varchar(1)
+)
+tablespace tag_setup_data;
+
+ALTER TABLE sentence_custody_status  
+  ADD CONSTRAINT sentence_custody_status_chk1 CHECK (sentence_category='CUST');   
+
+ALTER TABLE sentence_custody_status  
+  ADD CONSTRAINT sentence_custody_status_chk2 CHECK (legal_class='CUST');     
+
+ALTER TABLE sentence_custody_status
+ ADD CONSTRAINT sentence_custody_status_pk PRIMARY KEY (sentence_category, sentence_calc_type, legal_class, sentence_order_status, custody_status) using index tablespace tag_indx;
+
+ALTER TABLE sentence_custody_status  
+  ADD CONSTRAINT sentence_custody_status_fk1 FOREIGN KEY (sentence_category, sentence_calc_type)
+   REFERENCES oms_owner.sentence_calc_types(sentence_category, sentence_calc_type)  ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE; 
+
+ALTER TABLE sentence_custody_status  
+  ADD CONSTRAINT sentence_custody_status_fk2 FOREIGN KEY (legal_class, sentence_order_status)
+   REFERENCES oms_owner.legal_update_usages(legal_class, update_reason_code)  ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE; 
+
+  ALTER TABLE sentence_custody_status  
+  ADD CONSTRAINT sentence_custody_status_fk3 FOREIGN KEY (custody_status)
+   REFERENCES oms_owner.legal_custody_statuses (status_code)  ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE; 
+
+comment on table sentence_custody_status is 'Maintain custodial orders(sentences) statuses and offender custody statuses combinations';
+
+comment on column sentence_custody_status.sentence_category is ' Sentence category [domain=CATEGORY]';
+comment on column sentence_custody_status.sentence_calc_type is 'Sentence calculation type';
+comment on column sentence_custody_status.legal_class is 'Legal class [domain=LEGAL_BLOCK]';
+comment on column sentence_custody_status.sentence_order_status is 'Sentence/Order Status';
+comment on column sentence_custody_status.custody_status is 'Custody Status';
+
+

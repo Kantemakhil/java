@@ -1,0 +1,35 @@
+DISPLAY_KEY_DATES{
+SELECT REF_CODE.DESCRIPTION DSP_DESCRIPTION, 
+ SYS_PFL.PROFILE_VALUE PROFILE_TYPE,SYS_PFL.PROFILE_VALUE_2 PROFILE_TYPE_2 ,REF_CODE.LIST_SEQ DSP_LIST_SEQ
+    FROM REFERENCE_CODES REF_CODE, SYSTEM_PROFILES SYS_PFL
+   WHERE     REF_CODE.CODE = SYS_PFL.PROFILE_CODE
+         AND REF_CODE.domain = 'SENT_DT_DISP'
+         AND REF_CODE.active_flag = 'Y'
+         AND REF_CODE.expired_date IS NULL
+ORDER BY REF_CODE.LIST_SEQ
+}
+
+FETECH_KEY_DATE_COLUMN_NAME{
+SELECT COLUMN_NAME 
+   FROM all_tab_cols
+WHERE table_name = 'OFFENDER_SENT_CALCULATIONS'
+and SUBSTR (COLUMN_NAME, 1, INSTR (COLUMN_NAME, '_') - 1)=SUBSTR (:profileType, 1, INSTR (:profileType, '_') - 1)
+and COLUMN_NAME not like '%OVER%'
+}
+
+FETECH__OVERRIDE_KEY_DATE_COLUMN_NAME {
+ SELECT COLUMN_NAME 
+   FROM all_tab_cols
+WHERE table_name = 'OFFENDER_SENT_CALCULATIONS'
+and SUBSTR (COLUMN_NAME, 1, INSTR (COLUMN_NAME, '_') - 1)=SUBSTR (:profileTypeOvr, 1, INSTR (:profileTypeOvr, '_') - 1)
+and COLUMN_NAME  like '%OVER%'
+
+}
+
+FETCH_STAFF_ID {
+ select staff_id from staff_members where last_name=:staffName
+}
+
+FETCH_STAFF_ID_USER_NAME {
+ select staff_id from staff_members where USER_ID=:staffName
+}

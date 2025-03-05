@@ -1,0 +1,3 @@
+ALTER TABLE oms_owner.addresses ADD COLUMN verified_payload varchar(4000);
+
+comment on column oms_owner.addresses.verified_payload is 'The verified address payload as received from vendor in the vendor format';

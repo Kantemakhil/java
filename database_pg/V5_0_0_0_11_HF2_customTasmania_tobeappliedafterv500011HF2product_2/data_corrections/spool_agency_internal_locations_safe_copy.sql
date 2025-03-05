@@ -1,0 +1,1 @@
+\copy (select * from agency_internal_locations) TO 'agency_internal_locations_safe_copy.csv' (format CSV);

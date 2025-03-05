@@ -1,0 +1,22 @@
+CREATE TABLE oms_owner.schedules_and_mvmnt_settings (
+    setting_code VARCHAR(50) NOT NULL,
+    setting_description VARCHAR(50) NOT NULL,
+    setting_value BYTEA NULL,
+    create_datetime TIMESTAMP(6) NOT NULL,
+    create_user_id VARCHAR(32) NOT NULL,
+    modify_datetime TIMESTAMP(6),
+    modify_user_id VARCHAR(32),
+    seal_flag VARCHAR(1),
+    CONSTRAINT schedules_and_mvmnt_settings_pk PRIMARY KEY (setting_code)
+) TABLESPACE tag_data;
+
+COMMENT ON TABLE oms_owner.schedules_and_mvmnt_settings IS 'Schedules and movements module specific maintenance settings';
+
+COMMENT ON COLUMN oms_owner.schedules_and_mvmnt_settings.setting_code IS 'Setting code that is system dependent (possible values: TAP_SCH_CONFLICT is used to identify temporary absence statuses that initiate a scheduling conflict check)';
+COMMENT ON COLUMN oms_owner.schedules_and_mvmnt_settings.setting_description IS 'Description of the setting';
+COMMENT ON COLUMN oms_owner.schedules_and_mvmnt_settings.setting_value IS 'Property setting values (setting code TAP_SCH_CONFLICT has possible values from domain TA_STATUS)';
+COMMENT ON COLUMN oms_owner.schedules_and_mvmnt_settings.create_datetime IS 'The timestamp when the record was created';
+COMMENT ON COLUMN oms_owner.schedules_and_mvmnt_settings.create_user_id IS 'The user account that created the record';
+COMMENT ON COLUMN oms_owner.schedules_and_mvmnt_settings.modify_datetime IS 'Date and time when the record was last modified';
+COMMENT ON COLUMN oms_owner.schedules_and_mvmnt_settings.modify_user_id IS 'The user account that last modified the record';
+

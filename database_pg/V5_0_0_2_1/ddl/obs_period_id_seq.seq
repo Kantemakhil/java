@@ -1,0 +1,3 @@
+--sequence that populates off_observation_periods.obs_period_id
+create sequence oms_owner.obs_period_id_seq start with 1 increment by 1;
+

@@ -1,0 +1,563 @@
+
+OIDPACTI_FIND_RGESTABLISHMENT {
+ 	SELECT AL.LIST_SEQ , AL.DESCRIPTION  , AL.AGY_LOC_ID CODE   FROM AGENCY_LOCATIONS AL  WHERE AL.AGENCY_LOCATION_TYPE = 'INST'    AND AL.AGY_LOC_ID NOT IN ('IN' , 'OUT' , 'TRN' )    AND (AL.ACTIVE_FLAG = 'Y' OR '' = 'ENTER-QUERY' )    AND EXISTS         (SELECT CA.AGY_LOC_ID           FROM CASELOAD_AGENCY_LOCATIONS CA        
+ 	WHERE CA.CASELOAD_ID = :CASELOADID            AND CA.AGY_LOC_ID = AL.AGY_LOC_ID )    AND EXISTS         (SELECT AGY_LOC_ID           FROM COURSE_ACTIVITIES CA          WHERE CA.COURSE_ACTIVITY_TYPE = 'IA'         /*   AND CA.CASELOAD_ID = ::CASELOADID*/            AND CA.AGY_LOC_ID = AL.AGY_LOC_ID            AND EXISTS (SELECT 1                          FROM CASELOAD_AGENCY_LOCATIONS CAL              
+ 	WHERE CAL.CASELOAD_ID = :CASELOADID                           AND CA.AGY_LOC_ID = CAL.AGY_LOC_ID ) )   ORDER BY AL.LIST_SEQ , AL.DESCRIPTION
+}
+
+OIDPACTI_FIND_RGSERVICES {
+ 	select
+	distinct VCP.LIST_SEQ ,
+	VCP.SERVICE DESCRIPTION ,
+	to_char(VCP.PROGRAM_ID) CODE,
+	VCP.PROGRAM_CODE ,
+	VCP.AGY_LOC_ID
+,
+	case
+		when (
+		select
+			count(*)
+		from
+			V_PRISON_ACTIVITIES
+		where
+			VCP.AGY_LOC_ID =:AGYLOCID
+			and VCP.ACTIVE_FLAG = 'Y'
+	)>0 then 'Y'
+		else 'N'
+	end CHECK_FLAG
+from
+	V_PRISON_ACTIVITIES VCP
+order by
+	LIST_SEQ ,
+	DESCRIPTION
+ }
+OIDPACTI_FIND_SERVICES_ONLOAD {
+ 	SELECT    VCP.SERVICE DESCRIPTION , to_char(VCP.PROGRAM_ID) CODE, VCP.PROGRAM_CODE    FROM V_PRISON_ACTIVITIES VCP  WHERE  ACTIVE_FLAG = 'Y'   ORDER BY LIST_SEQ , DESCRIPTION
+}
+OIDPACTI_FIND_RGENDREASON {
+ 	select
+	DESCRIPTION ,
+	CODE
+from
+	REFERENCE_CODES
+where
+	domain = 'PS_END_RSN'
+	and ACTIVE_FLAG = 'Y'
+order by
+	LIST_SEQ ,
+	DESCRIPTION ,
+	CODE
+}
+
+OIDPACTI_FIND_PGPSREJRSN {
+select
+	DESCRIPTION REASON ,
+	CODE
+from
+	REFERENCE_CODES
+where
+	domain = 'PS_REJ_RSN'
+	and ACTIVE_FLAG = 'Y'
+order by
+	LIST_SEQ ,
+	DESCRIPTION ,
+	CODE
+
+}
+
+OIDPACTI_FIND_RGPERFORMANCE {
+select
+	REFERENCE_CODES.DESCRIPTION REASON ,
+	REFERENCE_CODES.CODE CODE
+from
+	REFERENCE_CODES
+where
+	domain = 'PERFORMANCE'
+	and (( ACTIVE_FLAG = 'Y'
+		and EXPIRED_DATE is null )
+)
+order by
+	LIST_SEQ ,
+	DESCRIPTION ,
+	CODE
+}
+
+OIDPACTI_FIND_RGPRIORITY {
+select
+	REFERENCE_CODES.DESCRIPTION PRIORITY ,
+	REFERENCE_CODES.CODE CODE ,
+	PARENT_CODE
+from
+	REFERENCE_CODES
+where
+	domain = 'PS_PRIORITY'
+	and ( ACTIVE_FLAG = 'Y'
+)
+order by
+	LIST_SEQ ,
+	DESCRIPTION ,
+	CODE
+}
+
+OIDPACTI_FIND_RGDECISION {
+ select
+	DESCRIPTION ,
+	CODE ,
+	case
+		when
+(
+		select
+			count(*)
+		from
+			REFERENCE_CODES
+		where
+			ref.DOMAIN = 'PS_ACT_DEC'
+			and (ref.ACTIVE_FLAG = 'Y')
+			and (('' = 'NORMAL'
+				and '' in ('NEW' , 'INSERT' )
+					and ref.CODE <> 'ALLOC' )
+			or ref.CODE not in ('ALL' , 'PEN' , 'ALLOC' ) ) )>0 then 'Y'
+		else 'N'
+	end SEAL_FLAG
+from
+	REFERENCE_CODES ref
+where
+	domain = 'PS_ACT_DEC'
+order by
+	LIST_SEQ ,
+	DESCRIPTION ,
+	CODE
+}
+
+OIDPACTI_FIND_RGATTENDENCE {
+ 	select
+	REFERENCE_CODES.DESCRIPTION DESCRIPTION ,
+	REFERENCE_CODES.CODE CODE
+from
+	REFERENCE_CODES
+where
+	domain = 'PS_PA_OC'
+	and ( ACTIVE_FLAG = 'Y')
+	and (:PSHOWOUTCOME is null
+		or CODE in ('CANC') )
+order by
+	LIST_SEQ ,
+	DESCRIPTION ,
+	CODE
+}
+
+OIDPACTI_FIND_LOVSERVICES2 {
+select
+	distinct VCP.LIST_SEQ ,
+	VCP.SERVICE DESCRIPTION ,
+	VCP.PROGRAM_ID ID ,
+	VCP.PROGRAM_CODE CODE
+from
+	V_PRISON_ACTIVITIES VCP
+where
+	VCP.AGY_LOC_ID = :AGYLOCID
+	and (ACTIVE_FLAG = 'Y')
+order by
+	LIST_SEQ ,
+	DESCRIPTION
+
+}
+
+OIDPACTI_OFFPROGPROF_FIND_OFFENDER_PROGRAM_PROFILES {
+ select OFF_PRGREF_ID, OFFENDER_BOOK_ID, PROGRAM_ID, OFFENDER_START_DATE, OFFENDER_PROGRAM_STATUS, OFFENDER_START_DATE as oldStartDate, CRS_ACTY_ID, REFERRAL_PRIORITY, REFERRAL_DATE, REFERRAL_COMMENT_TEXT, OFFENDER_END_REASON, OFFENDER_END_REASON OFFENDREASONVAL, AGREED_TRAVEL_FARE, AGREED_TRAVEL_HOUR, OFFENDER_END_COMMENT_TEXT, OFFENDER_END_COMMENT_TEXT OFFENDCOMMENTVAL, REJECT_DATE, WAITLIST_DECISION_CODE, REFERRAL_STAFF_ID, OFFENDER_END_DATE, OFFENDER_END_DATE OFF_END_DATE, CREDIT_WORK_HOURS, CREDIT_OTHER_HOURS, SUSPENDED_FLAG, REJECT_REASON_CODE, AGY_LOC_ID, CREATE_DATETIME, CREATE_USER_ID, MODIFY_DATETIME, MODIFY_USER_ID, REVIEWED_BY, OFFENDER_SENT_CONDITION_ID, SENTENCE_SEQ, HOLIDAY_FLAG, START_SESSION_NO, PARENT_OFF_PRGREF_ID, OFFENDER_PRG_OBLIGATION_ID, PROGRAM_OFF_PRGREF_ID, PROFILE_CLASS, COMPLETION_DATE, NEEDED_FLAG, COMMENT_TEXT, EARLY_END_REASON, OFFENDER_ID, MEDICAL_RECORD_SEQ, PARAMETER_1, SEAL_FLAG , (SELECT COUNT(*) FROM V_OFFENDER_COURSE_EVENTS V WHERE OFF_PRGREF_ID =opp.OFF_PRGREF_ID AND EVENT_OUTCOME IS NOT NULL ) as CONFIRMEDRECORD, ( select SCHEDULE_START_DATE from COURSE_ACTIVITIES where CRS_ACTY_ID = opp.CRS_ACTY_ID) as SCHEDULE_START_DATE, ( select SCHEDULE_END_DATE from COURSE_ACTIVITIES where CRS_ACTY_ID = opp.CRS_ACTY_ID) as SCHEDULE_END_DATE, ( select count(*) from offender_program_profiles where offender_book_id = opp.OFFENDER_BOOK_ID and crs_acty_id = opp.crs_acty_id and program_id = opp.program_id and offender_program_status = 'ALLOC' and offender_end_date is null) CHK_ACTIVE_IA_ALLOCATION, (select count(1) from(SELECT CASE WHEN V.EVENT_ID IS NOT NULL THEN (SELECT PAY_FLAG FROM OFFENDER_COURSE_ATTENDANCES WHERE EVENT_ID = V.EVENT_ID) ELSE 'N' END PAYFLAG FROM V_OFFENDER_COURSE_EVENTS V WHERE OFF_PRGREF_ID = opp.OFF_PRGREF_ID AND EVENT_OUTCOME IS NOT NULL) as a where a.PAYFLAG = 'Y') as PAYFLAG_COUNT from OMS_OWNER.OFFENDER_PROGRAM_PROFILES opp where OFFENDER_BOOK_ID = :OFFENDER_BOOK_ID and OFFENDER_PROGRAM_STATUS <> 'WAIT' and opp.offender_start_date is not null and PROGRAM_ID in ( select PROGRAM_ID from PROGRAM_SERVICES where PROGRAM_CATEGORY = 'INST_ACT' and PROGRAM_CLASS = 'PRG' ) order by case when coalesce (offender_end_date, '31-DEC-2382') > current_timestamp then 0 else 1 end, offender_start_date desc
+}
+OIDPACTI_OFFPROGPROF_INSERT_OFFENDER_PROGRAM_PROFILES {
+	insert into OMS_OWNER.OFFENDER_PROGRAM_PROFILES(OFF_PRGREF_ID, OFFENDER_BOOK_ID, PROGRAM_ID, OFFENDER_START_DATE, OFFENDER_PROGRAM_STATUS, CRS_ACTY_ID, REFERRAL_PRIORITY, REFERRAL_DATE, REFERRAL_COMMENT_TEXT, OFFENDER_END_REASON, AGREED_TRAVEL_FARE, AGREED_TRAVEL_HOUR, OFFENDER_END_COMMENT_TEXT, REJECT_DATE, WAITLIST_DECISION_CODE, REFERRAL_STAFF_ID, OFFENDER_END_DATE, CREDIT_WORK_HOURS, CREDIT_OTHER_HOURS, SUSPENDED_FLAG, REJECT_REASON_CODE, AGY_LOC_ID, CREATE_DATETIME, CREATE_USER_ID, MODIFY_DATETIME, REVIEWED_BY, OFFENDER_SENT_CONDITION_ID, SENTENCE_SEQ, HOLIDAY_FLAG, START_SESSION_NO, PARENT_OFF_PRGREF_ID, OFFENDER_PRG_OBLIGATION_ID, PROGRAM_OFF_PRGREF_ID, PROFILE_CLASS, COMPLETION_DATE, NEEDED_FLAG, COMMENT_TEXT, EARLY_END_REASON, OFFENDER_ID, MEDICAL_RECORD_SEQ, PARAMETER_1, SEAL_FLAG) values(:offPrgrefId, :offenderBookId, :programId, :offenderStartDate::date, :offenderProgramStatus, :crsActyId, :referralPriority, :referralDate, :referralCommentText, :offenderEndReason, :agreedTravelFare, :agreedTravelHour, :offenderEndCommentText, :rejectDate, :waitlistDecisionCode, :referralStaffId, :offenderEndDate, :creditWorkHours, :creditOtherHours, :suspendedFlag, :rejectReasonCode, :agyLocId, CURRENT_TIMESTAMP, :createUserId, null , :reviewedBy, :offenderSentConditionId, :sentenceSeq, :holidayFlag, :startSessionNo, :parentOffPrgrefId, :offenderPrgObligationId, :programOffPrgrefId, :profileClass, :completionDate, :neededFlag, :commentText, :earlyEndReason, :offenderId, :medicalRecordSeq, :parameter1, :sealFlag)
+	}
+
+OIDPACTI_OFFPROGPROF_UPDATE_OFFENDER_PROGRAM_PROFILES {
+	UPDATE OMS_OWNER.OFFENDER_PROGRAM_PROFILES 
+    SET  OFFENDER_BOOK_ID=:offenderBookId, PROGRAM_ID=:programId, OFFENDER_START_DATE=:offenderStartDate, OFFENDER_PROGRAM_STATUS=:offenderProgramStatus, CRS_ACTY_ID=:crsActyId, REFERRAL_PRIORITY=:referralPriority, REFERRAL_DATE=:referralDate, REFERRAL_COMMENT_TEXT=:referralCommentText, OFFENDER_END_REASON=:offenderEndReason
+    , AGREED_TRAVEL_FARE=:agreedTravelFare, AGREED_TRAVEL_HOUR=:agreedTravelHour, OFFENDER_END_COMMENT_TEXT=:offenderEndCommentText, REJECT_DATE=:rejectDate, WAITLIST_DECISION_CODE=:waitlistDecisionCode, REFERRAL_STAFF_ID=:referralStaffId, OFFENDER_END_DATE=:offenderEndDate, CREDIT_WORK_HOURS=:creditWorkHours, CREDIT_OTHER_HOURS=:creditOtherHours, SUSPENDED_FLAG=:suspendedFlag, REJECT_REASON_CODE=:rejectReasonCode, AGY_LOC_ID=:agyLocId, MODIFY_DATETIME=CURRENT_TIMESTAMP, MODIFY_USER_ID=:modifyUserId
+    , REVIEWED_BY=:reviewedBy, OFFENDER_SENT_CONDITION_ID=:offenderSentConditionId, SENTENCE_SEQ=:sentenceSeq, HOLIDAY_FLAG=:holidayFlag, START_SESSION_NO=:startSessionNo, PARENT_OFF_PRGREF_ID=:parentOffPrgrefId, OFFENDER_PRG_OBLIGATION_ID=:offenderPrgObligationId, PROGRAM_OFF_PRGREF_ID=:programOffPrgrefId, PROFILE_CLASS=:profileClass, COMPLETION_DATE=:completionDate, NEEDED_FLAG=:neededFlag, COMMENT_TEXT=:commentText, EARLY_END_REASON=:earlyEndReason, OFFENDER_ID=:offenderId, MEDICAL_RECORD_SEQ=:medicalRecordSeq, PARAMETER_1=:parameter1, SEAL_FLAG=:sealFlag
+    WHERE OFF_PRGREF_ID=:offPrgrefId
+}
+
+OIDPACTI_OFFPROGPROF_DELETE_OFFENDER_PROGRAM_PROFILES { 
+	DELETE FROM OFFENDER_PROGRAM_PROFILES  WHERE OFF_PRGREF_ID=:offPrgrefId
+}
+OIDPACTI_OFFPROGPROF_FIND_OFFENDER_PROGRAM_PROFILES_TWO {
+select
+	OFF_PRGREF_ID,
+	OFFENDER_BOOK_ID,
+	PROGRAM_ID,
+	OFFENDER_START_DATE,
+	OFFENDER_PROGRAM_STATUS,
+	CRS_ACTY_ID,
+	REFERRAL_PRIORITY,
+	REFERRAL_DATE,
+	REFERRAL_COMMENT_TEXT,
+	REFERRAL_COMMENT_TEXT REFCOMMENTVAL ,
+	OFFENDER_END_REASON,
+	AGREED_TRAVEL_FARE,
+	AGREED_TRAVEL_HOUR,
+	OFFENDER_END_COMMENT_TEXT,
+	REJECT_DATE,
+	REJECT_DATE REJDATE,
+	WAITLIST_DECISION_CODE,
+	WAITLIST_DECISION_CODE DECISION,
+	REFERRAL_STAFF_ID,
+	OFFENDER_END_DATE,
+	CREDIT_WORK_HOURS,
+	CREDIT_OTHER_HOURS,
+	SUSPENDED_FLAG,
+	REJECT_REASON_CODE,
+	REJECT_REASON_CODE REJREASON,
+	AGY_LOC_ID,
+	CREATE_DATETIME,
+	CREATE_USER_ID,
+	MODIFY_DATETIME,
+	MODIFY_USER_ID,
+	REVIEWED_BY,
+	OFFENDER_SENT_CONDITION_ID,
+	SENTENCE_SEQ,
+	HOLIDAY_FLAG,
+	START_SESSION_NO,
+	PARENT_OFF_PRGREF_ID,
+	OFFENDER_PRG_OBLIGATION_ID,
+	PROGRAM_OFF_PRGREF_ID,
+	PROFILE_CLASS,
+	COMPLETION_DATE,
+	NEEDED_FLAG,
+	COMMENT_TEXT,
+	EARLY_END_REASON,
+	OFFENDER_ID,
+	MEDICAL_RECORD_SEQ,
+	PARAMETER_1,
+	SEAL_FLAG ,
+	(
+	select
+		to_char(tag_prg_course_vacancy(opp.CRS_ACTY_ID))
+	from
+		dual) VACANCY,
+	(
+	select
+		SCHEDULE_START_DATE
+	from
+		COURSE_ACTIVITIES
+	where
+		CRS_ACTY_ID = opp.CRS_ACTY_ID) as SCHEDULE_START_DATE,
+	(
+	select
+		SCHEDULE_END_DATE
+	from
+		COURSE_ACTIVITIES
+	where
+		CRS_ACTY_ID = opp.CRS_ACTY_ID) as SCHEDULE_END_DATE
+from
+	OFFENDER_PROGRAM_PROFILES opp
+where
+	OFFENDER_BOOK_ID = :OFFENDER_BOOK_ID
+		and (OFFENDER_PROGRAM_STATUS = 'WAIT' or  (offender_start_date is  null and OFFENDER_PROGRAM_STATUS ='ALLOC'))
+	and PROGRAM_ID in (
+	select
+		program_id
+	from
+		program_services
+	where
+		program_category = 'INST_ACT'
+		and program_class = 'PRG' )
+order by
+	case
+		when WAITLIST_DECISION_CODE = 'APP' then 1
+		when WAITLIST_DECISION_CODE = 'PEN' then 2
+		when WAITLIST_DECISION_CODE = 'REJ' then 3
+	end,
+	
+ REFERRAL_DATE desc,
+	OMS_MISCELLANEOUS_GETDESCCODE('PS_PRIORITY',
+	REFERRAL_PRIORITY) desc
+}
+OIDPACTI_VOFFCOURSEEVNTS_FIND_V_OFFENDER_COURSE_EVENTS {
+SELECT EVENT_ID, OFFENDER_BOOK_ID, EVENT_CLASS, EVENT_TYPE, EVENT_SUB_TYPE, OFF_PRGREF_ID, REFERENCE_ID, CRS_SCH_ID, CRS_APPT_ID, PROGRAM_ID, COURSE_CODE, DESCRIPTION, CRS_ACTY_ID, WEEKDAY, EVENT_DATE, START_TIME,START_TIME DB_START_TIME, END_TIME,END_TIME DB_END_TIME, IN_TIME, OUT_TIME, EVENT_STATUS,  AGY_LOC_ID, TO_INTERNAL_LOCATION_ID, COMMENT_TEXT, OUTCOME_REASON_CODE, PIECE_WORK, ENGAGEMENT_CODE, UNDERSTANDING_CODE, CREDITED_HOURS, AGREED_TRAVEL_HOUR, BEHAVIOUR_CODE, ACTION_CODE, SICK_NOTE_RECEIVED_DATE, SICK_NOTE_EXPIRY_DATE, PERFORMANCE_CODE, TO_AGY_LOC_ID, TO_ADDRESS_ID, PERFORMANCE_DESC, EVENT_OUTCOME_DESC, SUPERVISOR_STAFF_ID, UNEXCUSED_ABSENCE_FLAG, DIRECTION_CODE, EXT_MOVE_OUT_TIME, EXT_MOVE_IN_TIME, SCHEDULE_MOVEMENT_TIME, SESSION_NO, RECORD_SOURCE, CHECK_SUM 
+,CASE WHEN (V.EVENT_OUTCOME IS  NULL AND EVENT_DATE <= current_timestamp) THEN (SELECT INST_ACT_DEFAULT_ATT_CODE FROM PROGRAMS_PAY_SETTINGS ) ELSE  V.EVENT_OUTCOME END EVENT_OUTCOME
+,CASE WHEN V.EVENT_ID IS NOT NULL  THEN (SELECT PAY_FLAG FROM OFFENDER_COURSE_ATTENDANCES WHERE EVENT_ID = V.EVENT_ID) ELSE 'N' END PAYFLAG
+,CASE WHEN V.EVENT_ID IS NOT NULL  THEN (SELECT PAY_BATCH_ID FROM OFFENDER_COURSE_ATTENDANCES WHERE EVENT_ID = V.EVENT_ID) ELSE NULL END PAY_BATCH_ID
+FROM V_OFFENDER_COURSE_EVENTS V
+ 	WHERE  
+}
+OIDPACTI_VOFFCOURSEEVNTS_UPDATE_V_OFFENDER_COURSE_EVENTS {
+	update V_OFFENDER_COURSE_EVENTS set EVENT_ID = nextval('EVENT_ID'), EVENT_OUTCOME = :eventOutcome,EVENT_DATE =:eventDate, COMMENT_TEXT =:commentText , PERFORMANCE_CODE = :performanceCode 
+where REFERENCE_ID = :referenceId and OFFENDER_BOOK_ID =:offenderBookId
+}
+
+OIDPACTI_VOFFCOURSEEVNTS_DELETE_V_OFFENDER_COURSE_EVENTS { 
+	DELETE FROM offender_course_attendances WHERE EVENT_ID = :eventId
+}
+
+
+OIDPACTI_OFF_BKG_ONCHECKDELETEMASTER_ {
+	SELECT 1 FROM OFFENDER_PROGRAM_PROFILES O WHERE O.OFFENDER_BOOK_ID = :OFFENDERBOOKID
+}
+
+OIDPACTI_OFF_BKG_ONCHECKDELETEMASTER_ {
+	SELECT 1 FROM OFFENDER_PROGRAM_PROFILES O WHERE O.OFFENDER_BOOK_ID = :OFFENDERBOOKID
+}
+
+OIDPACTI_OFF_PROG_PROF_WHENVALIDATERECORD_ {
+select
+	MIN(OFFENDER_START_DATE)
+from
+	OFFENDER_PROGRAM_PROFILES
+where
+	OFFENDER_BOOK_ID in (
+	select
+		distinct NS_OFFENDER_BOOK_ID
+	from
+		OFFENDER_NA_DETAILS ONA
+	where
+		OFFENDER_BOOK_ID =:OFFENDERBOOKID
+		and current_timestamp between ONA.NS_EFFECTIVE_DATE and coalesce (ONA.NS_EXPIRY_DATE,
+		TO_DATE('01/01/3000', 'DD/MM/YYYY')))
+	and OFFENDER_END_DATE is null
+	and PROGRAM_ID =:PROGRAMID
+
+}
+
+OIDPACTI_OFF_PROG_PROF_WHENCREATERECORD_ {
+	SELECT DISTINCT CA.AGY_LOC_ID, CA.LIST_SEQ, AGY.DESCRIPTION FROM COURSE_ACTIVITIES CA, PROGRAM_SERVICES PS, V_PRISON_ACTIVITIES VPA, AGENCY_LOCATIONS AGY WHERE CA.PROGRAM_ID = PS.PROGRAM_ID AND CA.AGY_LOC_ID = AGY.AGY_LOC_ID AND CA.CASELOAD_ID = :CASELOADID AND CA.CRS_ACTY_ID = VPA.CRS_ACTY_ID AND PS.PROGRAM_CATEGORY = 'INST_ACT' AND (CA.ACTIVE_FLAG = 'Y') ORDER BY CA.LIST_SEQ, AGY.DESCRIPTION
+}
+
+OIDPACTI_DELETE_V_OFFENDER_COURSE_EVENTS {
+	DELETE FROM V_OFFENDER_COURSE_EVENTS WHERE OFF_PRGREF_ID = :OFFPRGREFID
+	
+}
+
+OIDPACTI_DELETE_OFFENDER_COURSE_APPT_GRPS {
+	DELETE FROM OFFENDER_COURSE_APPT_GRPS WHERE OFF_PRGREF_ID = :OFFPRGREFID
+}
+
+OIDPACTI_DELETE_OFFENDER_COURSE_ATTENDANCES {
+	DELETE FROM OFFENDER_COURSE_ATTENDANCES WHERE OFF_PRGREF_ID = :OFFPRGREFID
+}
+
+OIDPACTI_OIDPACTI_WHENNEWFORMINSTANCE {
+select
+	DESCRIPTION,
+	CODE
+from
+	REFERENCE_CODES
+where
+	domain = 'PS_ACT_DEC'
+	and CODE = 'PEN'
+
+}
+
+OIDPACTI_UPD_OFFENDER_MEDICAL_RECORDS_ {
+	SELECT PLAN_NOTE FROM OFFENDER_MEDICAL_RECORDS WHERE OFFENDER_ID = :ROOTOFFENDERID AND MEDICAL_RECORD_SEQ = :MEDICALRECORDSEQ
+}
+
+OIDPACTI_UPD_OFFENDER_MEDICAL_RECORDS_ {
+	SELECT PLAN_NOTE FROM OFFENDER_MEDICAL_RECORDS WHERE OFFENDER_ID = :ROOTOFFENDERID AND MEDICAL_RECORD_SEQ = :MEDICALRECORDSEQ
+}
+
+OIDPACTI_CHK_ACTIVE_IA_ALLOCATION_ {
+	SELECT COUNT(*) FROM OFFENDER_PROGRAM_PROFILES WHERE OFFENDER_BOOK_ID = :OFFENDERBOOKID AND CRS_ACTY_ID = :CRSACTYID AND PROGRAM_ID = :PROGRAMID AND OFFENDER_PROGRAM_STATUS = 'ALLOC' AND OFFENDER_END_DATE IS NULL
+}
+
+OIDPACTI_CHECK_DUP {
+	    SELECT count(*) 
+        FROM offender_program_profiles
+       WHERE offender_book_id = :OFFENDER_BOOK_ID
+         AND crs_acty_id = :crs_acty_id
+         AND program_id  = :program_id
+         AND agy_loc_id  = :AGY_LOC_ID
+         AND offender_program_status = 'ALLOC'
+         AND (offender_end_date IS NULL                                      
+             OR offender_end_date >= :offender_end_date
+             OR offender_start_date >= :offender_start_date  
+             OR offender_end_date >= :offender_start_date)  
+             }
+
+OIDPACTI_CHECK_ASSIGN_CONFLICT_WAIT_ {
+select
+	MIN(OFFENDER_START_DATE)
+from
+	OFFENDER_PROGRAM_PROFILES
+where
+	OFFENDER_BOOK_ID in (
+	select
+		distinct NS_OFFENDER_BOOK_ID
+	from
+		OFFENDER_NA_DETAILS ONA
+	where
+		OFFENDER_BOOK_ID =:OFFENDERBOOKID
+		and current_timestamp between ONA.NS_EFFECTIVE_DATE and coalesce (ONA.NS_EXPIRY_DATE,
+		TO_DATE('01/01/3000', 'DD/MM/YYYY')))
+	and OFFENDER_END_DATE is null
+	and PROGRAM_ID =:PROGRAMID
+
+}
+
+OIDPACTI_CHECK_ASSIGN_CONFLICT_WAIT_ {
+select
+	MIN(OFFENDER_START_DATE)
+from
+	OFFENDER_PROGRAM_PROFILES
+where
+	OFFENDER_BOOK_ID in (
+	select
+		distinct NS_OFFENDER_BOOK_ID
+	from
+		OFFENDER_NA_DETAILS ONA
+	where
+		OFFENDER_BOOK_ID =:OFFENDERBOOKID
+		and current_timestamp between ONA.NS_EFFECTIVE_DATE and coalesce (ONA.NS_EXPIRY_DATE,
+		TO_DATE('01/01/3000', 'DD/MM/YYYY')))
+	and PROGRAM_ID =:PROGRAMID
+	and OFFENDER_START_DATE between :OFFENDERSTARTDATE and :OFFENDERENDDATE
+
+}
+OIDPACTI_OFF_PRG_PROFILE_PRE_INSERT{
+select NEXTVAL('off_prgref_id') from dual
+}
+OIDPACTI_CNT_ASN_CUR {
+      select
+	COUNT (*)
+from
+	offender_program_profiles
+where
+	agy_loc_id = :agy_loc_id
+	and offender_book_id = :offender_book_id
+	and crs_acty_id = :crs_acty_id
+	and offender_program_status = 'ALLOC'
+	and offender_start_date is not null
+	and (offender_end_date is null
+		or offender_end_date >= current_timestamp)
+      }
+OIDPACTI_GET_PROFILE_VALUE {
+select
+	coalesce (OMS_MISCELLANEOUS_GET_PROFILE_VALUE('CLIENT',
+	'ASOFF_DEL'),
+	'N')
+from
+	DUAL
+}
+
+OIDPACTI_CHECK_CONFLICT_GET_NA_PRG_SRV {
+select
+	off.offender_id_display offender_id_display,
+	off.last_name last_name,
+	off.first_name first_name,
+	off.offender_id offender_id
+from
+	offender_bookings bkg,
+	offender_na_details ona,
+	offenders off
+where
+	bkg.offender_id = off.offender_id
+	and bkg.root_offender_id = ona.ns_offender_id
+	and ((bkg.active_flag = 'Y')
+		or
+                (bkg.active_flag = 'N'
+			and
+                bkg.offender_book_id =
+                (
+			select
+				MAX(ob2.offender_book_id)
+			from
+				offender_bookings ob2
+			where
+				ob2.root_offender_id = bkg.root_offender_id
+				and not exists
+                    (
+				select
+					'X'
+				from
+					offender_bookings ob3
+				where
+					ob3.root_offender_id = bkg.root_offender_id
+					and ob3.active_flag = 'Y'))))
+	and ona.offender_id =
+                (
+	select
+		distinct root_offender_id
+	from
+		offenders
+	where
+		offender_id = :p_offender_id)
+	and current_timestamp between ona.ns_effective_date and
+                coalesce (ona.ns_expiry_date,
+	to_date('01/01/3000', 'DD/MM/YYYY'))
+	and exists
+          (
+	select
+		'1'
+	from
+		v_offender_program_profiles opp
+	where
+		opp.crs_acty_id = :p_crs_acty_id
+		and opp.offender_program_status = 'ALLOC'
+		and (:p_offender_start_date) between (offender_start_date) and 
+                    coalesce ((offender_end_date),
+		(:p_offender_start_date))
+			and off.root_offender_id =
+                        (
+			select
+				distinct root_offender_id
+			from
+				offenders
+			where
+				offender_id = opp.offender_id))
+               }
+ OIDPACTI_CHECK_CONFLICT_GET_STG_NA_PRG_SRV {
+  SELECT off.offender_id_display offender_id_display,
+                off.last_name           last_name,
+                off.first_name          first_name,
+                off.offender_id         offender_id
+           FROM offender_stg_affiliations osa,
+                offender_stg_affiliations osa_enemy,
+                stg_relationships         sr,
+                offender_bookings         ob,
+                offenders                 off
+          WHERE osa.offender_book_id = :p_offender_book_id
+            AND ob.offender_id = off.offender_id
+            AND osa.active_flag = 'Y'
+            AND osa.stg_id = sr.stg_id
+            AND sr.relationship_type = 'ENEMY'
+            AND sr.active_flag = 'Y'
+            AND sr.related_stg_id = osa_enemy.stg_id
+            AND osa_enemy.offender_book_id = ob.offender_book_id
+            AND osa_enemy.active_flag = 'Y'
+            AND ob.active_flag = 'Y'
+            AND EXISTS
+          (SELECT '1'
+                   FROM v_offender_program_profiles opp
+                  WHERE opp.crs_acty_id = :p_crs_acty_id
+                    AND opp.offender_program_status = 'ALLOC'
+                    AND opp.offender_book_id = ob.offender_book_id)
+ }
+ CKECK_CONFLICT_GET_OFFENDER_DETAILS {
+ SELECT o.offender_id_display offender_id_display,
+			    o.last_name           last_name,
+			    o.first_name          first_name
+           FROM offenders o
+          WHERE o.offender_id = :p_offender_id
+          }
+
+          CKECK_V_OFFENDER_COURSE_EVENTS{
+          select * from V_OFFENDER_COURSE_EVENTS where crs_sch_id =:crsSchId
+          }
+ OIDPACTI_GETTING_OLD_VALUE_DELETE_V_OFFENDER_COURSE_EVENTS{         
+  select * from V_OFFENDER_COURSE_EVENTS where offender_book_id =:offenderBookId;
+  }
+
+  OIDPACTI_INSERT_OFF_SCH_GENERATE_PAY { 
+  INSERT INTO OFF_SCH_GENERATE_PAY (EVENT_ID,OFFENDER_BOOK_ID,PROGRAM_ID,CRS_ACTIVITY_ID,EVENT_DATE,START_TIME,END_TIME,CREATE_DATETIME,CREATE_USER_ID,RATE,AMOUNT,PAY_FLAG,BATCH_NO)
+(SELECT EVENT_ID,OFFENDER_BOOK_ID,PROGRAM_ID,CRS_ACTY_ID,EVENT_DATE,START_TIME,END_TIME,current_timestamp,:createUserId,RATE,DUARATION*RATE,PAYFLAG,NULL FROM
+(SELECT OCA.EVENT_ID,OCA.OFFENDER_BOOK_ID ,OCA.PROGRAM_ID ,OCA.CRS_ACTY_ID ,OCA.EVENT_DATE ,OCA.START_TIME ,OCA.END_TIME ,
+(SELECT RATE FROM MAINT_COMPENSATION_RATE MCR WHERE PROGRAM_CATEGORY =OCA.PROGRAM_CATEGORY 
+AND  PROGRAM_TYPE IN(SELECT PROGRAM_CODE FROM PROGRAM_SERVICES WHERE PROGRAM_ID = OCA.PROGRAM_ID)
+AND CODE IN (SELECT CODE FROM COURSE_ACTIVITIES WHERE CRS_ACTY_ID = OCA.CRS_ACTY_ID)) RATE
+,(ABS((EXTRACT(EPOCH FROM OCA.START_TIME- OCA.END_TIME)/3600)) ) DUARATION,'Y' PAYFLAG,NULL
+FROM V_OFFENDER_COURSE_ATTENDANCES OCA WHERE OCA.OFFENDER_BOOK_ID = :OFFENDER_BOOK_ID AND OCA.START_TIME IS NOT NULL AND OCA.END_TIME IS NOT NULL
+AND OCA.EVENT_ID  IN (SELECT EVENT_ID FROM OFFENDER_COURSE_ATTENDANCES WHERE PAY_FLAG = 'N')) A)
+  }
+ 
+  
+  

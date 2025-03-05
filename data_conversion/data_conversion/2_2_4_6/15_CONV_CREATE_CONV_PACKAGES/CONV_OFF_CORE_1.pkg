@@ -1,0 +1,1350 @@
+CREATE OR REPLACE PACKAGE CONV_OFF_CORE_1 IS
+
+   FUNCTION show_version RETURN VARCHAR2;
+       --
+   PROCEDURE offenders;
+     --
+   PROCEDURE rank_offender_movements; 
+   PROCEDURE map_offender_bookings;
+     --       
+   PROCEDURE offender_bookings;
+   PROCEDURE offender_booking_details;
+   --
+   PROCEDURE offender_external_movements;
+   --
+   PROCEDURE bed_assignment_histories;
+   
+   --
+   PROCEDURE main;
+
+END CONV_OFF_CORE_1;
+/
+CREATE OR REPLACE PACKAGE BODY CONV_OFF_CORE_1 IS
+  -- ====================================================================================
+   vcp_version CONSTANT VARCHAR2(60) := '12.1.1.0 11-JAN-2021';
+  -- ====================================================================================
+  /*
+     MODIFICATION HISTORY (Please put version history in a reverse-chronological order below)
+     --------------------
+     Person      Date         Version       Comments
+     ---------   ---------    ---------     -----------------------------------
+     Syscon     11-JAN-2021   12.1.1.0      Initial version: offenders, offender_identifiers,
+                                                             institutional bookings only, bed histories, external movements
+                                            Source data is the stage tables defined in schema oms_stage                  
+  */
+  --------------------------------------------------------------------------------------------
+   g_max_limit    PLS_INTEGER := 10000;
+
+ --------------------------------------------------------------------------------------------
+
+   FUNCTION show_version RETURN VARCHAR2 IS
+   BEGIN
+      RETURN(vcp_version);
+   END show_version;
+
+  
+ /*-------------------------------------------------------------------------------------------
+   PROCEDURE offenders -- Migrating to offenders
+ -------------------------------------------------------------------------------------------*/
+-- Procedure to process the Offenders information
+   PROCEDURE offenders IS  
+     
+      lv_padding_flag VARCHAR2(1) := NVL(oms_miscellaneous.GET_PROFILE_VALUE('CLIENT','ID_DISPLAY'), 'N');
+   
+      --application business logic:
+        --the application marks the name it creates for an inmate first time as name sequence 1; this record has the offender_id and the root_offender_id equal;
+        --any subsequent names created for an inmate are aliases, and they get the root id and the offender id display of the original created name and refer to the first created offender_id;
+        --name type is no longer used in the application to establish the working name and it is NULL in the offenders table
+      
+      --data migration iteration 1 business logic:
+        --the data migration created the name with sequence 1 for an inmate first, generates the offender id and establishes the offender_id_display; this is achieved by cursor offname1_cur;
+        --for the first iteration, the data migration identifies the record name to be created initialy based on the staging table column name type = 'WORKING'; 
+        --although the application no longer uses column name type, the staging table uses the name type to identify one working name per inmate that will be used for all bookings; 
+        --table stage_offenders expects one and only one working name for each inmate;
+        --all the other inmate records in stage_offenders will be alliases; 
+        --two separate cursors are used below, cursor offname1_cur to create the initial inmate record in table offenders based on column name type = 'WORKING' in stage table and cursor offalias_cur to create the other aliases ;
+        --the criteria for identifying the initial inmate name record and the working name to be linked for each booking might change in the next dm iterations;
+        --regardless of the future criteria, there will always be an initial inmate name creation that establishes the root id and the offender id display that any other alias has to refer to;  
+      
+      CURSOR offname1_cur 
+      IS
+        SELECT offender_id.nextval as offender_id,       --mandatory
+               1 as  offender_name_seq,   --mandatory for the first inmate name 
+               'USER' as id_source_code,  --mandatory
+              stg_off.last_name as last_name,         --mandatory
+             NULL as name_type,     --no longer used by the application       
+             stg_off.first_name as first_name,          --mandatory (although not by dm)
+             stg_off.middle_name as middle_name,
+             TRUNC(stg_off.birth_date) as birth_date,          --mandatory (although not by dm)
+             stg_off.gender as sex_code,              --mandatory 
+             stg_off.suffix as suffix,
+             SOUNDEX(stg_off.last_name) as last_name_soundex, --mandatory (although not by dm)
+             NULL as birth_place,
+             stg_off.COUNTRY as birth_country_code,
+             TRUNC(SYSDATE) as create_date, --mandatory  --??? should this come from stage table 
+             oms_miscellaneous.return_key(stg_off.last_name) as last_name_key,   --mandatory (although not by dm)
+             NULL as alias_offender_id,  --NULL for the first inmate name 
+             oms_miscellaneous.return_key (stg_off.first_name) as first_name_key,
+             oms_miscellaneous.return_key (stg_off.middle_name) as middle_name_key,
+             stg_off.offender_id_display as stage_offender_id_display,  --this is the offender_id_display as provided by the client in stage_offenders
+             DECODE(lv_padding_flag, 'Y', LPAD (LTRIM (stg_off.offender_id_display, '0'), 10, '0'), stg_off.offender_id_display) as offender_id_display,  --mandatory (although not by dm)  --this is the offender_id_display stored in the application  
+             offender_id.currval as root_offender_id,   --mandatory (although not by dm)  
+             stg_off.caseload_type as caseload_type, --mandatory (although not by dm)
+             'WORKING' as alias_name_type, 
+             stg_off.ethnicity as race_code,
+             stg_off.birth_state as birth_state,  
+             NULL            as middle_name_2,
+             NULL            as title,
+             NULL            as age,
+             NULL            as name_sequence,
+             SUBSTR (stg_off.last_name, 1 , 1) as last_name_alpha_key,        
+             CONV_UTILITIES.g_conv_user  as create_user_id,
+             SYSTIMESTAMP as create_datetime,
+             CONV_UTILITIES.g_conv_user as modify_user_id,
+             SYSTIMESTAMP as modify_datetime,
+             NULL as seal_flag
+        FROM oms_stage.stage_offenders stg_off 
+        WHERE stg_off.name_type = 'WORKING'; 
+
+      TYPE typ_offname1_tab IS TABLE OF offname1_cur%ROWTYPE INDEX BY PLS_INTEGER;
+      lv_offname1  typ_offname1_tab;
+      
+      CURSOR offalias_cur 
+      IS
+        SELECT offender_id.nextval as offender_id,       --mandatory
+               NULL as  offender_name_seq,   --mandatory for the first inmate name only
+               'USER' as id_source_code,  --mandatory
+             stg_off.last_name as last_name,         --mandatory
+             NULL as name_type, --no longer used by the application 
+             stg_off.first_name as first_name,          --mandatory (although not by dm)
+             stg_off.middle_name as middle_name,
+             TRUNC(stg_off.birth_date) as birth_date,          --mandatory (although not by dm)
+             stg_off.gender as sex_code,               --mandatory 
+             stg_off.suffix as suffix, 
+             SOUNDEX(stg_off.last_name) as last_name_soundex, --mandatory (although not by dm)
+             NULL as birth_place,
+             stg_off.COUNTRY as birth_country_code,
+             TRUNC(SYSDATE) as create_date, --mandatory --??? should this come from stage table
+             oms_miscellaneous.return_key(stg_off.last_name) as last_name_key,   --mandatory (although not by dm)
+             conv_map_offenders.offender_id as alias_offender_id,  --populated for subsequent inmate names
+             oms_miscellaneous.return_key (stg_off.first_name) as first_name_key,
+             oms_miscellaneous.return_key (stg_off.middle_name) as middle_name_key,
+             stg_off.offender_id_display as stage_offender_id_display,  --this is the offender_id_display as provided by the client in stage_offenders
+             conv_map_offenders.offender_id_display as offender_id_display,  --mandatory (although not by dm) 
+             conv_map_offenders.root_offender_id  as root_offender_id,   --mandatory (although not by dm)  
+             stg_off.caseload_type as caseload_type, --mandatory (although not by dm)
+             'A' as alias_name_type, 
+             stg_off.ethnicity as race_code,
+             stg_off.birth_state as birth_state,  
+             NULL            as middle_name_2,
+             NULL            as title,
+             NULL            as age,
+             NULL            as name_sequence,
+             SUBSTR (stg_off.last_name, 1 , 1) as last_name_alpha_key,        
+             CONV_UTILITIES.g_conv_user  as create_user_id,
+             SYSTIMESTAMP as create_datetime,
+             CONV_UTILITIES.g_conv_user as modify_user_id,
+             SYSTIMESTAMP as modify_datetime,
+             NULL as seal_flag
+        FROM oms_stage.stage_offenders stg_off, conv_map_offenders  
+        WHERE (stg_off.name_type IS NULL OR stg_off.name_type <> 'WORKING') 
+          AND stg_off.offender_id_display = conv_map_offenders.stage_offender_id_display  
+          AND conv_map_offenders.offender_id = conv_map_offenders.root_offender_id;
+
+      TYPE typ_tab IS TABLE OF offalias_cur%ROWTYPE INDEX BY PLS_INTEGER;
+      lv_offalias  typ_tab;
+
+
+    -- User defined exceptions
+    dml_errors         EXCEPTION;
+    lv_bulk_error_indx NUMBER := 0;
+    lv_error_count     NUMBER := 0;
+    lv_error_count1    NUMBER := 0;
+    lv_error_countmap  NUMBER := 0;
+    lv_error_countmap1 NUMBER := 0;
+  
+    PRAGMA EXCEPTION_INIT(dml_errors, -24381);
+  
+  BEGIN
+  --
+  -- Initialize variables and log message
+     conv_utilities.logging('OFFENDERS', NULL, NULL, 'START', 'procedure starts at: ' || systimestamp);
+     
+  ----
+     EXECUTE IMMEDIATE 'TRUNCATE TABLE conv_map_offenders';
+  ----
+  
+     lv_error_count1 := 0;
+
+     OPEN offname1_cur;
+     LOOP
+        FETCH offname1_cur BULK COLLECT INTO lv_offname1 LIMIT g_max_limit;
+     --
+     -- Exit when no rows to process
+        EXIT WHEN lv_offname1.count = 0;
+     --
+        BEGIN
+           FORALL i IN lv_offname1.first .. lv_offname1.last SAVE EXCEPTIONS
+              INSERT /*+ APPEND */ INTO offenders
+                (offender_id,
+                 offender_name_seq,
+                 id_source_code,
+                 last_name,
+                 name_type,
+                 first_name,
+                 middle_name,
+                 birth_date,
+                 sex_code,
+                 suffix,
+                 last_name_soundex,
+                 birth_place,
+                 birth_country_code,
+                 create_date,
+                 last_name_key,
+                 alias_offender_id,
+                 first_name_key,
+                 middle_name_key,
+                 offender_id_display,
+                 root_offender_id,
+                 caseload_type,
+                 alias_name_type,
+                 race_code,
+                 birth_state,
+                 middle_name_2,
+                 title,
+                 age,
+                 name_sequence,
+                 last_name_alpha_key,
+                 create_user_id,        
+                 create_datetime,
+                 modify_user_id,
+                 modify_datetime,
+                 seal_flag)
+              VALUES
+                (lv_offname1(i).offender_id,
+                 lv_offname1(i).offender_name_seq,
+                 lv_offname1(i).id_source_code,
+                 lv_offname1(i).last_name,
+                 lv_offname1(i).name_type,
+                 lv_offname1(i).first_name,
+                 lv_offname1(i).middle_name,
+                 lv_offname1(i).birth_date,
+                 lv_offname1(i).sex_code,
+                 lv_offname1(i).suffix,
+                 lv_offname1(i).last_name_soundex,
+                 lv_offname1(i).birth_place,
+                 lv_offname1(i).birth_country_code,
+                 lv_offname1(i).create_date,
+                 lv_offname1(i).last_name_key,
+                 lv_offname1(i).alias_offender_id,
+                 lv_offname1(i).first_name_key,
+                 lv_offname1(i).middle_name_key,
+                 lv_offname1(i).offender_id_display,
+                 lv_offname1(i).root_offender_id,
+                 lv_offname1(i).caseload_type,
+                 lv_offname1(i).alias_name_type,
+                 lv_offname1(i).race_code,
+                 lv_offname1(i).birth_state,
+                 lv_offname1(i).middle_name_2,
+                 lv_offname1(i).title,
+                 lv_offname1(i).age,
+                 lv_offname1(i).name_sequence,
+                 lv_offname1(i).last_name_alpha_key,
+                 lv_offname1(i).create_user_id,                
+                 lv_offname1(i).create_datetime,
+                 lv_offname1(i).modify_user_id,
+                 lv_offname1(i).modify_datetime,
+                 lv_offname1(i).seal_flag);
+         EXCEPTION
+            WHEN dml_errors THEN 
+              lv_error_count1 := lv_error_count1 + SQL%bulk_exceptions.count;
+              FOR j IN 1 .. SQL%bulk_exceptions.count
+              LOOP
+                lv_bulk_error_indx := SQL%BULK_EXCEPTIONS(j).error_index;        
+                conv_utilities.logging('OFFENDERS-inmate-first-record', NULL, NULL, 'ERROR -- offender_id: ' || lv_offname1(lv_bulk_error_indx).offender_id || ' :offender_id_display: ' || lv_offname1(lv_bulk_error_indx).offender_id_display 
+                       || ' :last_name: ' || lv_offname1(lv_bulk_error_indx).last_name || ' :first_name: ' || lv_offname1(lv_bulk_error_indx).first_name,
+                      SQLERRM(-sql%BULK_EXCEPTIONS(j).error_code));          
+              END LOOP;
+         END;
+         COMMIT; 
+         
+         ---------------------------------
+         --load data in mapping table                  
+         BEGIN
+         lv_error_countmap1 := 0;
+         FORALL i IN lv_offname1.first .. lv_offname1.last SAVE EXCEPTIONS 
+            INSERT /*+ APPEND */ INTO conv_map_offenders
+             (
+                offender_id,
+                root_offender_id, 
+                offender_id_display,
+                stage_offender_id_display,
+                stage_last_name,
+                stage_first_name,
+                stage_middle_name,
+                stage_birth_date,
+                stage_suffix 
+              )
+            VALUES
+               (lv_offname1(i).offender_id,
+                lv_offname1(i).root_offender_id,
+                lv_offname1(i).offender_id_display,
+                lv_offname1(i).stage_offender_id_display,
+                lv_offname1(i).last_name,
+                lv_offname1(i).first_name,
+                lv_offname1(i).middle_name,
+                lv_offname1(i).birth_date,
+                lv_offname1(i).suffix 
+                );
+         EXCEPTION
+            WHEN dml_errors THEN
+               lv_error_countmap1 := lv_error_countmap1 + SQL%bulk_exceptions.count;
+               FOR j IN 1 .. SQL%bulk_exceptions.count
+               LOOP
+                lv_bulk_error_indx := SQL%BULK_EXCEPTIONS(j).error_index;
+                 conv_utilities.logging('mapping_offender_bookings', NULL, NULL, 'ERROR -- offender_id: ' ||  lv_offname1(lv_bulk_error_indx).offender_id 
+                       || ' :root_offender_id: ' || lv_offname1(lv_bulk_error_indx).root_offender_id 
+                       || ' :offender_id_display: ' || lv_offname1(lv_bulk_error_indx).offender_id_display  
+                       || ' :stage_offender_id_display: ' || lv_offname1(lv_bulk_error_indx).stage_offender_id_display 
+                       || ' :stage_last_name: ' || lv_offname1(lv_bulk_error_indx).last_name 
+                       || ' :stage_first_name: ' || lv_offname1(lv_bulk_error_indx).first_name 
+                       || ' :stage_middle_name: ' || lv_offname1(lv_bulk_error_indx).middle_name 
+                       || ' :stage_birth_date: ' || TO_CHAR(lv_offname1(lv_bulk_error_indx).birth_date, 'DD-MON-YYYY HH24:MI:SS') 
+                       || ' :stage_suffix: ' || lv_offname1(lv_bulk_error_indx).suffix ,
+                    SQLERRM(-sql%BULK_EXCEPTIONS(j).error_code));
+                END LOOP;
+         END;
+         COMMIT; 
+        
+         ---------------------------------
+         
+         
+         lv_offname1.delete;
+         EXIT WHEN offname1_cur%NOTFOUND;
+      END LOOP;
+      lv_offname1.delete;
+    
+      COMMIT;
+      CLOSE offname1_cur;  
+      
+  ----
+      DBMS_STATS.GATHER_TABLE_STATS(ownname=>'OMS_OWNER',tabname=>'OFFENDERS',cascade=>TRUE);           
+      DBMS_STATS.GATHER_TABLE_STATS(ownname=>'OMS_CONV',tabname=>'CONV_MAP_OFFENDERS',cascade=>TRUE);             
+  ----
+  ----
+     lv_error_count := 0;
+
+     OPEN offalias_cur;
+     LOOP
+        FETCH offalias_cur BULK COLLECT INTO lv_offalias LIMIT g_max_limit;
+     --
+     -- Exit when no rows to process
+        EXIT WHEN lv_offalias.count = 0;
+     --
+        BEGIN
+           FORALL i IN lv_offalias.first .. lv_offalias.last SAVE EXCEPTIONS
+              INSERT /*+ APPEND */ INTO offenders
+                (offender_id,
+                 offender_name_seq,
+                 id_source_code,
+                 last_name,
+                 name_type,
+                 first_name,
+                 middle_name,
+                 birth_date,
+                 sex_code,
+                 suffix,
+                 last_name_soundex,
+                 birth_place,
+                 birth_country_code,
+                 create_date,
+                 last_name_key,
+                 alias_offender_id,
+                 first_name_key,
+                 middle_name_key,
+                 offender_id_display,
+                 root_offender_id,
+                 caseload_type,
+                 alias_name_type,
+                 race_code,
+                 birth_state,
+                 middle_name_2,
+                 title,
+                 age,
+                 name_sequence,
+                 last_name_alpha_key,
+                 create_user_id,        
+                 create_datetime,
+                 modify_user_id,
+                 modify_datetime,
+                 seal_flag)
+              VALUES
+                (lv_offalias(i).offender_id,
+                 lv_offalias(i).offender_name_seq,
+                 lv_offalias(i).id_source_code,
+                 lv_offalias(i).last_name,
+                 lv_offalias(i).name_type,
+                 lv_offalias(i).first_name,
+                 lv_offalias(i).middle_name,
+                 lv_offalias(i).birth_date,
+                 lv_offalias(i).sex_code,
+                 lv_offalias(i).suffix,
+                 lv_offalias(i).last_name_soundex,
+                 lv_offalias(i).birth_place,
+                 lv_offalias(i).birth_country_code,
+                 lv_offalias(i).create_date,
+                 lv_offalias(i).last_name_key,
+                 lv_offalias(i).alias_offender_id,
+                 lv_offalias(i).first_name_key,
+                 lv_offalias(i).middle_name_key,
+                 lv_offalias(i).offender_id_display,
+                 lv_offalias(i).root_offender_id,
+                 lv_offalias(i).caseload_type,
+                 lv_offalias(i).alias_name_type,
+                 lv_offalias(i).race_code,
+                 lv_offalias(i).birth_state,
+                 lv_offalias(i).middle_name_2,
+                 lv_offalias(i).title,
+                 lv_offalias(i).age,
+                 lv_offalias(i).name_sequence,
+                 lv_offalias(i).last_name_alpha_key,
+                 lv_offalias(i).create_user_id,                
+                 lv_offalias(i).create_datetime,
+                 lv_offalias(i).modify_user_id,
+                 lv_offalias(i).modify_datetime,
+                 lv_offalias(i).seal_flag);
+         EXCEPTION
+            WHEN dml_errors THEN 
+              lv_error_count := lv_error_count + SQL%bulk_exceptions.count;
+              FOR j IN 1 .. SQL%bulk_exceptions.count
+              LOOP
+                lv_bulk_error_indx := SQL%BULK_EXCEPTIONS(j).error_index;        
+                conv_utilities.logging('OFFENDERS-inmate-aliases', NULL, NULL, 'ERROR -- offender_id: ' || lv_offalias(lv_bulk_error_indx).offender_id || ' :offender_id_display: ' || lv_offalias(lv_bulk_error_indx).offender_id_display 
+                       || ' :last_name: ' || lv_offalias(lv_bulk_error_indx).last_name || ' :first_name: ' || lv_offalias(lv_bulk_error_indx).first_name,
+                      SQLERRM(-sql%BULK_EXCEPTIONS(j).error_code));          
+              END LOOP;
+         END;
+         COMMIT;
+         
+                  ---------------------------------
+         --load data in mapping table                  
+         BEGIN
+         lv_error_countmap := 0;
+         FORALL i IN lv_offalias.first .. lv_offalias.last SAVE EXCEPTIONS 
+            INSERT /*+ APPEND */ INTO conv_map_offenders
+             (
+                offender_id,
+                root_offender_id, 
+                offender_id_display,
+                stage_offender_id_display,
+                stage_last_name,
+                stage_first_name,
+                stage_middle_name,
+                stage_birth_date,
+                stage_suffix 
+              )
+            VALUES
+               (lv_offalias(i).offender_id,
+                lv_offalias(i).root_offender_id,
+                lv_offalias(i).offender_id_display,
+                lv_offalias(i).stage_offender_id_display,
+                lv_offalias(i).last_name,
+                lv_offalias(i).first_name,
+                lv_offalias(i).middle_name,
+                lv_offalias(i).birth_date,
+                lv_offalias(i).suffix 
+                );
+         EXCEPTION
+            WHEN dml_errors THEN
+               lv_error_countmap := lv_error_countmap + SQL%bulk_exceptions.count;
+               FOR j IN 1 .. SQL%bulk_exceptions.count
+               LOOP
+                lv_bulk_error_indx := SQL%BULK_EXCEPTIONS(j).error_index;
+                 conv_utilities.logging('mapping_offender_bookings', NULL, NULL, 'ERROR -- offender_id: ' ||  lv_offalias(lv_bulk_error_indx).offender_id 
+                       || ' :root_offender_id: ' || lv_offalias(lv_bulk_error_indx).root_offender_id 
+                       || ' :offender_id_display: ' || lv_offalias(lv_bulk_error_indx).offender_id_display  
+                       || ' :stage_offender_id_display: ' || lv_offalias(lv_bulk_error_indx).stage_offender_id_display 
+                       || ' :stage_last_name: ' || lv_offalias(lv_bulk_error_indx).last_name 
+                       || ' :stage_first_name: ' || lv_offalias(lv_bulk_error_indx).first_name 
+                       || ' :stage_middle_name: ' || lv_offalias(lv_bulk_error_indx).middle_name 
+                       || ' :stage_birth_date: ' || TO_CHAR(lv_offalias(lv_bulk_error_indx).birth_date, 'DD-MON-YYYY HH24:MI:SS') 
+                       || ' :stage_suffix: ' || lv_offalias(lv_bulk_error_indx).suffix ,
+                    SQLERRM(-sql%BULK_EXCEPTIONS(j).error_code));
+                END LOOP;
+         END;
+         COMMIT; 
+        
+         ---------------------------------        
+         
+         lv_offalias.delete;
+         EXIT WHEN offalias_cur%NOTFOUND;
+      END LOOP;
+      lv_offalias.delete;
+    
+      COMMIT;
+      CLOSE offalias_cur;
+
+    DBMS_STATS.GATHER_TABLE_STATS(ownname=>'OMS_OWNER',tabname=>'OFFENDERS',cascade=>TRUE);     
+    DBMS_STATS.GATHER_TABLE_STATS(ownname=>'OMS_CONV',tabname=>'CONV_MAP_OFFENDERS',cascade=>TRUE);       
+			
+    conv_utilities.logging('OFFENDERS', NULL, NULL, 'END', 'Number of failures: ' || TO_CHAR(NVL(lv_error_count,0) +  NVL(lv_error_countmap,0) +  NVL(lv_error_count1,0) +  NVL(lv_error_countmap1,0)) ||'.  Procedure ends at time : ' || systimestamp);			
+		
+   EXCEPTION
+     WHEN OTHERS THEN
+        IF offname1_cur%ISOPEN THEN CLOSE offname1_cur; END IF;  
+        IF offalias_cur%ISOPEN THEN CLOSE offalias_cur; END IF;      
+        conv_utilities.logging('OFFENDERS', NULL, NULL, 'EXCEPTION','Procedure generates exception. ' ||SQLERRM || ' at time: ' || systimestamp);	
+        RAISE; --unexpected errors should abort the data migration	   
+   END offenders;   
+   
+ ------------------------------------------------
+   PROCEDURE map_offender_bookings
+   IS 
+      --generate offender_book_id key in correct order for multiple bookings of the same offender; 
+      --the offender_id_display and the booking_begin_date in the stage_bookings table are used to uniquely identify a booking;
+      --the booking_begin_date in the stage table is expected to have a time portion to account for bookings of the same inmate that might have occured on the same day;
+      CURSOR lv_rec_cur  
+      IS
+        SELECT stg_bkg.offender_id_display as stage_offender_id_display,           
+               stg_bkg.booking_begin_date as stage_booking_begin_date,
+               stg_bkg.booking_end_date   as stage_booking_end_date,              
+               stg_bkg.booking_no as stage_booking_no
+          FROM oms_stage.stage_bookings stg_bkg 
+         ORDER BY stg_bkg.offender_id_display, stg_bkg.booking_begin_date; --order the records to generate oracle seq offender_book_id in order for multiple bookings for the same offender
+         
+      TYPE typ_tab IS TABLE OF lv_rec_cur%ROWTYPE INDEX BY PLS_INTEGER;
+      lv_rec typ_tab;
+
+   -- User defined exceptions
+      dml_errors         EXCEPTION;
+      lv_bulk_error_indx NUMBER;
+      lv_error_count     NUMBER := 0;
+         
+   BEGIN 
+      conv_utilities.logging('MAP_OFFENDER_BOOKINGS', NULL, NULL, 'START', 'Procedure map_offender_bookings starts at: '|| systimestamp);
+      
+      --
+      EXECUTE IMMEDIATE  'TRUNCATE TABLE conv_map_bookings';
+      --
+      
+      lv_error_count := 0;
+
+      OPEN lv_rec_cur;
+      LOOP
+         FETCH lv_rec_cur BULK COLLECT
+          INTO lv_rec LIMIT g_max_limit;
+      --
+      -- Exit when no records to process
+         EXIT WHEN lv_rec.count = 0;
+               --load data in mapping table
+         BEGIN
+            lv_error_count := 0;
+            FORALL i IN lv_rec.first .. lv_rec.last SAVE EXCEPTIONS 
+               INSERT /*+ APPEND */ INTO conv_map_bookings
+               (
+                offender_book_id,
+                stage_offender_id_display,
+                stage_booking_begin_date,
+                stage_booking_end_date,
+                stage_booking_no
+               )
+               VALUES
+               (offender_book_id.nextval,
+                lv_rec(i).stage_offender_id_display,
+                lv_rec(i).stage_booking_begin_date,
+                lv_rec(i).stage_booking_end_date,
+                lv_rec(i).stage_booking_no
+                );
+            EXCEPTION
+               WHEN dml_errors THEN
+                  lv_error_count := lv_error_count + SQL%bulk_exceptions.count;
+                  FOR j IN 1 .. SQL%bulk_exceptions.count
+                  LOOP
+                     lv_bulk_error_indx := SQL%BULK_EXCEPTIONS(j).error_index;
+                     conv_utilities.logging('MAP_OFFENDER_BOOKINGS', NULL, NULL, 'ERROR -- stage_offender_id_display: ' || lv_rec(lv_bulk_error_indx).stage_offender_id_display 
+                       || ' :stage_booking_begin_date: ' || TO_CHAR(lv_rec(lv_bulk_error_indx).stage_booking_begin_date, 'DD-MON-YYYY HH24:MI:SS') 
+                       || ' :stage_booking_end_date: ' || TO_CHAR(lv_rec(lv_bulk_error_indx).stage_booking_end_date, 'DD-MON-YYYY HH24:MI:SS') 
+                       || ' :stage_booking_no: ' || lv_rec(lv_bulk_error_indx).stage_booking_no,
+                    SQLERRM(-sql%BULK_EXCEPTIONS(j).error_code));
+                  END LOOP;
+            END;
+            COMMIT; 
+      
+         -------------
+      
+         lv_rec.delete;
+         EXIT WHEN lv_rec_cur%NOTFOUND;
+      END LOOP;
+	  
+      COMMIT;
+      CLOSE lv_rec_cur;       
+
+      DBMS_STATS.GATHER_TABLE_STATS(ownname=>'OMS_CONV',tabname=>'CONV_MAP_BOOKINGS',cascade=>TRUE);        
+			
+      conv_utilities.logging('MAP_OFFENDER_BOOKINGS', NULL, NULL, 'END', 'Number of failures: ' || lv_error_count ||'.  Procedure ends at time : ' || systimestamp);			
+	     
+   EXCEPTION
+      WHEN OTHERS THEN
+         IF lv_rec_cur%ISOPEN THEN CLOSE lv_rec_cur; END IF;
+         conv_utilities.logging('MAP_OFFENDER_BOOKINGS', NULL, NULL, 'EXCEPTION','Procedure generates exception. ' ||SQLERRM || ' at time: ' || systimestamp);	
+         RAISE; --unexpected errors should abort the data migration	   
+   END map_offender_bookings;   
+   
+ ------------------------------------------------
+   PROCEDURE rank_offender_movements 
+   IS 
+      CURSOR lv_rec_cur  
+      IS
+        SELECT offender_id_display, booking_begin_date, movement_datetime, move_type, move_reason_code, direction_code  
+              ,ROW_NUMBER() OVER (PARTITION BY offender_id_display, booking_begin_date ORDER BY movement_datetime ASC)  rank_asc
+              ,ROW_NUMBER() OVER (PARTITION BY offender_id_display,booking_begin_date ORDER BY movement_datetime DESC) rank_desc
+         FROM oms_stage.stage_movements;
+                      
+      TYPE typ_tab IS TABLE OF lv_rec_cur%ROWTYPE INDEX BY PLS_INTEGER;
+      lv_rec typ_tab;
+
+   -- User defined exceptions
+      dml_errors         EXCEPTION;
+      lv_bulk_error_indx NUMBER;
+      lv_error_count     NUMBER := 0;
+   BEGIN 
+      conv_utilities.logging('RANK_OFFENDER_MOVEMENTS', NULL, NULL, 'START', 'Procedure rank_offender_movements starts at: '|| systimestamp);
+      
+      --
+      EXECUTE IMMEDIATE  'TRUNCATE TABLE CONV_RANK_MOVEMENTS';
+      --
+      
+      lv_error_count := 0;
+
+      OPEN lv_rec_cur;
+      LOOP
+         FETCH lv_rec_cur BULK COLLECT
+          INTO lv_rec LIMIT g_max_limit;
+      --
+      -- Exit when no records to process
+         EXIT WHEN lv_rec.count = 0;               
+         BEGIN
+            lv_error_count := 0;
+            FORALL i IN lv_rec.first .. lv_rec.last SAVE EXCEPTIONS 
+               INSERT /*+ APPEND */ INTO CONV_RANK_MOVEMENTS 
+               (   stage_offender_id_display  
+                  ,stage_booking_begin_date   
+                  ,stage_movement_datetime        
+                  ,stage_move_type
+                  ,stage_move_reason_code
+                  ,stage_direction_code          
+                  ,rank_asc                   
+                  ,rank_desc                  
+               )
+               VALUES 
+               (lv_rec(i).offender_id_display,
+                lv_rec(i).booking_begin_date,
+                lv_rec(i).movement_datetime,
+                lv_rec(i).move_type, 
+                lv_rec(i).move_reason_code, 
+                lv_rec(i).direction_code,  
+                lv_rec(i).rank_asc,
+                lv_rec(i).rank_desc 
+                );               
+            EXCEPTION
+               WHEN dml_errors THEN
+                  lv_error_count := lv_error_count + SQL%bulk_exceptions.count;
+                  FOR j IN 1 .. SQL%bulk_exceptions.count
+                  LOOP
+                     lv_bulk_error_indx := SQL%BULK_EXCEPTIONS(j).error_index;
+                     conv_utilities.logging('RANK_OFFENDER_MOVEMENTS', NULL, NULL, 'ERROR -- stage_offender_id_display: ' || lv_rec(lv_bulk_error_indx).offender_id_display 
+                       || ' :stage_booking_begin_date: ' || TO_CHAR(lv_rec(lv_bulk_error_indx).booking_begin_date, 'DD-MON-YYYY HH24:MI:SS') 
+                       || ' :stage_movement_datetime: ' || TO_CHAR(lv_rec(lv_bulk_error_indx).movement_datetime, 'DD-MON-YYYY HH24:MI:SS') 
+                       || ' :rank_asc: ' || lv_rec(lv_bulk_error_indx).rank_asc 
+                       || ' :rank_desc: ' || lv_rec(lv_bulk_error_indx).rank_desc,
+                    SQLERRM(-sql%BULK_EXCEPTIONS(j).error_code));
+                  END LOOP;
+            END;
+            COMMIT; 
+      
+         -------------
+      
+         lv_rec.delete;
+         EXIT WHEN lv_rec_cur%NOTFOUND;
+      END LOOP;
+	  
+      COMMIT;
+      CLOSE lv_rec_cur;       
+      
+      conv_utilities.logging('RANK_OFFENDER_MOVEMENTS', NULL, NULL, 'END', 'Number of failures: ' || lv_error_count ||'.  Procedure ends at time : ' || systimestamp);			 
+   EXCEPTION
+      WHEN OTHERS THEN 
+         conv_utilities.logging('RANK_OFFENDER_MOVEMENTS', NULL, NULL, 'EXCEPTION','Procedure generates exception. ' ||SQLERRM || ' at time: ' || systimestamp);	
+         RAISE; --unexpected errors should abort the data migration	 
+   END rank_offender_movements;
+ ------------------------------------------------
+   PROCEDURE offender_bookings
+   IS
+      --the offender_id_display and the booking_begin_date in the stage_bookings table are used to uniquely identify a booking;
+      --the booking_begin_date in the stage table is expected to have a time portion to account for bookings of the same inmate that might have occured on the same day;
+      CURSOR lv_rec_cur
+      IS 
+        SELECT conv_map_bookings.offender_book_id as offender_book_id, --mandatory
+               stg_bkg.offender_id_display as stage_offender_id_display, 
+               stg_bkg.offender_id_display as offender_id_display, 
+               stg_bkg.booking_begin_date as stage_booking_begin_date,
+               trunc(stg_bkg.booking_begin_date) as booking_begin_date,  --mandatory 
+               stg_bkg.booking_end_date as stage_booking_end_date, 
+               trunc(stg_bkg.booking_end_date) as booking_end_date,
+               stg_bkg.booking_no as stage_booking_no,  
+               stg_bkg.booking_no as booking_no,  
+               offenders.offender_id  as offender_id,  --mandatory 
+               DECODE(stg_bkg.booking_end_date, NULL, stg_bkg.agy_loc_id, 'OUT') as agy_loc_id, --mandatory for INST
+               agency_internal_locations.internal_location_id  as living_unit_id, --mandatory when inmate is IN
+               'N' as disclosure_flag,
+               DECODE(last_mvnt.STAGE_DIRECTION_CODE, 'OUT', 'OUT', 'IN')as in_out_status, --mandatory for INST booking 
+               DECODE(stg_bkg.booking_end_date, NULL, 'Y', 'N') as active_flag,  --mandatory for INST booking
+               DECODE(stg_bkg.booking_end_date, NULL, 'O', 'C') as booking_status, --mandatory for INST booking
+               'N' as youth_adult_code, --not used
+               NULL as finger_printed_staff_id,  --not used
+               NULL search_staff_id,  --not used
+               NULL photo_taking_staff_id,  --not used
+               NVL(staff_members.staff_id, CONV_UTILITIES.g_conv_staff_id) as assigned_staff_id, --mandatory (although not by dm)
+               stg_bkg.create_agy_loc_id as create_agy_loc_id,  --mandatory for INST
+               'INST' as booking_type,  --mandatory --dealing with INSt only --??? maybe it should come 
+               stg_bkg.booking_begin_date as booking_created_date,  --doesn't seem to be populated consistently in Elite
+               offenders.root_offender_id  as root_offender_id,  
+               NULL as agency_iml_id,  --not available in the stage table
+               NULL as service_fee_flag,
+               NULL as earned_credit_level,
+               NULL as ekstrand_credit_level,
+               NULL intake_agy_loc_id,  --mandatory for community, but not available in the stage table at the moment
+               NULL as activity_date, --community, but not available in the stage table at the moment
+               NULL as  intake_caseload_id, --mandatory for community, but not available in the stage table at the moment
+               NULL as  intake_user_id, --community, but not available in the stage table at the moment
+               NULL as  case_officer_id,  --community, but not available in the stage table at the moment
+               NULL as  case_date,        --community, but not available in the stage table at the moment
+               NULL as  case_time,        --community, but not available in the stage table at the moment
+               'N' as community_active_flag,  --dealing with INST bookings for now, not available in the stage table at the moment
+               NULL as create_intake_agy_loc_id,  --mandatory for community, but not available in the stage table at the moment
+               NULL as comm_staff_id,  --mandatory for community, but not available in the stage table at the moment
+               NULL as comm_status,  --mandatory for community, but not available in the stage table at the moment
+               NULL as community_agy_loc_id,  --mandatory for community, but not available in the stage table at the moment
+               NULL as no_comm_agy_loc_id,  --mandatory for community, but not available in the stage table at the moment
+               NULL as comm_staff_role,  --mandatory for community, but not available in the stage table at the moment
+               NULL as agy_loc_id_list,  --mandatory for community, but not available in the stage table at the moment
+               last_mvnt.stage_move_type || '-' || last_mvnt.stage_move_reason_code as status_reason,  --mandatory for INST  
+               NULL          AS total_unexcused_absences,
+               NULL          AS request_name,
+               NULL          AS record_user_id,
+               NULL          AS intake_agy_loc_assign_date,
+               conv_utilities.g_conv_user create_user_id,
+               NVL(stg_bkg.booking_begin_date, SYSTIMESTAMP) as create_datetime,
+               NULL as modify_user_id, 
+               NVL(stg_bkg.booking_begin_date, SYSTIMESTAMP) as modify_datetime,
+               NULL as seal_flag
+          FROM oms_stage.stage_bookings stg_bkg
+              , offenders , agency_internal_locations, staff_members
+              , conv_map_bookings  
+              , conv_rank_movements last_mvnt 
+         WHERE stg_bkg.offender_id_display = offenders.offender_id_display(+)
+           AND offenders.offender_name_seq(+) = 1   -- based on the logic agreed for the first iteration of data migration, name_seq = 1 represents the working name for all bookings
+           AND stg_bkg.agy_loc_id = agency_internal_locations.agy_loc_id(+) 
+           AND stg_bkg.bed_location = agency_internal_locations.description(+) 
+           AND stg_bkg.assigned_user_id = staff_members.user_id(+)
+           AND stg_bkg.offender_id_display = conv_map_bookings.stage_offender_id_display(+)
+           AND stg_bkg.booking_begin_date = conv_map_bookings.stage_booking_begin_date(+) 
+           AND stg_bkg.offender_id_display = last_mvnt.stage_offender_id_display(+)
+           AND stg_bkg.booking_begin_date = last_mvnt.stage_booking_begin_date(+)
+           AND last_mvnt.rank_desc(+) = 1;          
+         
+
+      TYPE typ_tab IS TABLE OF lv_rec_cur%ROWTYPE INDEX BY PLS_INTEGER;
+      lv_rec typ_tab;
+
+   -- User defined exceptions
+      dml_errors         EXCEPTION;
+      lv_bulk_error_indx NUMBER;
+      lv_error_count     NUMBER := 0;
+      PRAGMA EXCEPTION_INIT(dml_errors, -24381);
+   BEGIN 
+      conv_utilities.logging('offender_bookings', NULL, NULL, 'START', 'Procedure offender_bookings starts at: '|| systimestamp);
+      
+      lv_error_count := 0;
+
+      OPEN lv_rec_cur;
+      LOOP
+         FETCH lv_rec_cur BULK COLLECT
+          INTO lv_rec LIMIT g_max_limit;
+      --
+      -- Exit when no records to process
+         EXIT WHEN lv_rec.count = 0;
+      BEGIN
+        FORALL i IN lv_rec.first .. lv_rec.last SAVE EXCEPTIONS
+          INSERT /*+ APPEND */ INTO offender_bookings
+          (
+             offender_book_id,
+             booking_begin_date,
+             booking_end_date,
+             booking_no,
+             offender_id,
+             agy_loc_id,
+             living_unit_id,
+             disclosure_flag,
+             in_out_status,
+             active_flag,
+             booking_status,
+             youth_adult_code,
+             finger_printed_staff_id,
+             search_staff_id,
+             photo_taking_staff_id,
+             assigned_staff_id,
+             create_agy_loc_id,
+             booking_type,
+             booking_created_date,
+             root_offender_id,
+             agency_iml_id,
+             service_fee_flag,
+             earned_credit_level,
+             ekstrand_credit_level,
+             intake_agy_loc_id,
+             activity_date,
+             intake_caseload_id,
+             intake_user_id,
+             case_officer_id,
+             case_date,
+             case_time,
+             community_active_flag,
+             create_intake_agy_loc_id,
+             comm_staff_id,
+             comm_status,
+             community_agy_loc_id,
+             no_comm_agy_loc_id,
+             comm_staff_role,
+             agy_loc_id_list,
+             status_reason,
+             total_unexcused_absences,
+             request_name,
+             record_user_id,
+             intake_agy_loc_assign_date,
+             create_user_id,
+             create_datetime,
+             modify_user_id,
+             modify_datetime,
+             seal_flag)
+          VALUES
+            (lv_rec(i).offender_book_id,
+             lv_rec(i).booking_begin_date,
+             lv_rec(i).booking_end_date,
+             lv_rec(i).booking_no,
+             lv_rec(i).offender_id,
+             lv_rec(i).agy_loc_id,
+             lv_rec(i).living_unit_id,
+             lv_rec(i).disclosure_flag,
+             lv_rec(i).in_out_status,
+             lv_rec(i).active_flag,
+             lv_rec(i).booking_status,
+             lv_rec(i).youth_adult_code,
+             lv_rec(i).finger_printed_staff_id,
+             lv_rec(i).search_staff_id,
+             lv_rec(i).photo_taking_staff_id,
+             lv_rec(i).assigned_staff_id,
+             lv_rec(i).create_agy_loc_id,
+             lv_rec(i).booking_type,
+             lv_rec(i).booking_created_date,
+             lv_rec(i).root_offender_id,
+             lv_rec(i).agency_iml_id,
+             lv_rec(i).service_fee_flag,
+             lv_rec(i).earned_credit_level,
+             lv_rec(i).ekstrand_credit_level,
+             lv_rec(i).intake_agy_loc_id,
+             lv_rec(i).activity_date,
+             lv_rec(i).intake_caseload_id,
+             lv_rec(i).intake_user_id,
+             lv_rec(i).case_officer_id,
+             lv_rec(i).case_date,
+             lv_rec(i).case_time,
+             lv_rec(i).community_active_flag,
+             lv_rec(i).create_intake_agy_loc_id,
+             lv_rec(i).comm_staff_id,
+             lv_rec(i).comm_status,
+             lv_rec(i).community_agy_loc_id,
+             lv_rec(i).no_comm_agy_loc_id,
+             lv_rec(i).comm_staff_role,
+             lv_rec(i).agy_loc_id_list,
+             lv_rec(i).status_reason,
+             lv_rec(i).total_unexcused_absences,
+             lv_rec(i).request_name,
+             lv_rec(i).record_user_id,
+             lv_rec(i).intake_agy_loc_assign_date,             
+             lv_rec(i).create_user_id,
+             lv_rec(i).create_datetime,
+             lv_rec(i).modify_user_id,
+             lv_rec(i).modify_datetime,
+             lv_rec(i).seal_flag);
+      EXCEPTION
+        WHEN dml_errors THEN
+          lv_error_count := lv_error_count + SQL%bulk_exceptions.count;
+          FOR j IN 1 .. SQL%bulk_exceptions.count
+          LOOP
+            lv_bulk_error_indx := SQL%BULK_EXCEPTIONS(j).error_index;
+            conv_utilities.logging('offender_bookings', NULL, NULL, 'ERROR -- offender_book_id: ' ||  lv_rec(lv_bulk_error_indx).offender_book_id || ' :stage_offender_id_display: ' || lv_rec(lv_bulk_error_indx).stage_offender_id_display 
+                       || ' :stage_booking_no: ' || lv_rec(lv_bulk_error_indx).stage_booking_no || ' :stage_booking_begin_date: ' || TO_CHAR(lv_rec(lv_bulk_error_indx).stage_booking_begin_date, 'DD-MON-YYYY HH24:MI:SS') 
+                       || ' :stage_booking_end_date: ' || TO_CHAR(lv_rec(lv_bulk_error_indx).stage_booking_end_date, 'DD-MON-YYYY HH24:MI:SS'),
+                    SQLERRM(-sql%BULK_EXCEPTIONS(j).error_code));
+          END LOOP;
+      END;
+      COMMIT;      
+      
+      lv_rec.delete;
+      EXIT WHEN lv_rec_cur%NOTFOUND;
+      END LOOP;
+	  
+      COMMIT;
+      CLOSE lv_rec_cur;
+	  
+	  DBMS_STATS.GATHER_TABLE_STATS(ownname=>'OMS_OWNER',tabname=>'OFFENDER_BOOKINGS',cascade=>TRUE);
+	  
+    conv_utilities.logging('offender_bookings', NULL, NULL,  'END', 'Number of failures: ' || lv_error_count ||   '.  Procedure ends at: ' || systimestamp);
+     
+   EXCEPTION
+      WHEN OTHERS THEN
+         IF lv_rec_cur%ISOPEN THEN CLOSE lv_rec_cur; END IF;
+         conv_utilities.logging('offender_bookings', NULL, NULL, 'EXCEPTION',  SQLERRM ||   'Procedure generates exception at time: ' || systimestamp);
+         RAISE; ----unexpected errors should abort the data migration	as this is core data   
+   END offender_bookings;
+
+------------------------------------------------
+
+   PROCEDURE offender_booking_details
+    IS
+
+      CURSOR lv_rec_cur
+       IS
+         SELECT off_bkg.offender_book_id
+              , 'Y'           AS cell_sharing_alert_flag
+              , NVL(off_bkg.booking_created_date, SYSTIMESTAMP) AS create_datetime   
+              , conv_utilities.g_conv_user AS create_user_id    
+              , NVL(off_bkg.booking_created_date, SYSTIMESTAMP)   AS modify_datetime   
+              , NULL          AS modify_user_id    
+              , NULL          AS special_needs_text
+              , NULL          AS availability_text
+              , NULL seal_flag
+           FROM offender_bookings off_bkg, conv_map_bookings
+            WHERE off_bkg.offender_book_id = conv_map_bookings.offender_book_id;        
+
+       TYPE typ_tab IS TABLE OF lv_rec_cur%ROWTYPE INDEX BY PLS_INTEGER;
+       lv_rec       typ_tab;
+    --
+    -- User defined exceptions
+       dml_errors         EXCEPTION;
+      lv_bulk_error_indx NUMBER;
+      lv_error_count     NUMBER;
+      PRAGMA EXCEPTION_INIT(dml_errors, -24381);
+   BEGIN    
+      conv_utilities.logging('offender_booking_details', NULL, NULL, 'START', 'Procedure starts at: ' || systimestamp);
+      lv_error_count := 0;
+
+      OPEN lv_rec_cur;
+      LOOP
+         FETCH lv_rec_cur BULK COLLECT
+           INTO lv_rec LIMIT g_max_limit;
+      --
+      -- Exit when no records to process
+         EXIT WHEN lv_rec.count = 0;
+      --
+      -- Bulk Process
+         BEGIN
+            FORALL i IN lv_rec.first .. lv_rec.last SAVE EXCEPTIONS
+               INSERT INTO offender_booking_details VALUES lv_rec(i);
+         EXCEPTION
+            WHEN dml_errors THEN
+               lv_error_count := lv_error_count + SQL%bulk_exceptions.count;
+               FOR j IN 1 .. SQL%bulk_exceptions.count
+               LOOP
+                  lv_bulk_error_indx := SQL%BULK_EXCEPTIONS(j).error_index;
+                  conv_utilities.logging('offender_booking_details',NULL, NULL, 'ERROR -- offender_book_id: ' ||
+                       lv_rec(lv_bulk_error_indx).offender_book_id,
+                       SQLERRM(-sql%BULK_EXCEPTIONS(j).error_code));
+              END LOOP;
+         END;
+
+         COMMIT;
+         lv_rec.DELETE;
+         EXIT WHEN lv_rec_cur%NOTFOUND;
+      END LOOP;
+
+      COMMIT;
+      lv_rec.DELETE;
+      CLOSE lv_rec_cur;
+	  
+	    DBMS_STATS.GATHER_TABLE_STATS(ownname=>'OMS_OWNER',tabname=>'OFFENDER_BOOKING_DETAILS',cascade=>TRUE);
+	  
+      conv_utilities.logging('offender_booking_details', NULL, NULL, 'END', 'Number of failures: ' || lv_error_count ||  '.  Procedure ends at: ' || systimestamp);
+
+   EXCEPTION
+      WHEN OTHERS THEN
+        IF lv_rec_cur%ISOPEN THEN CLOSE lv_rec_cur; END IF;
+        conv_utilities.logging('offender_booking_details', NULL, NULL,  'EXCEPTION', SQLERRM || 'Procedure generates exception at time: ' || systimestamp);
+        RAISE; ----unexpected errors should abort the data migration	as this is core data              
+   END offender_booking_details;
+
+--------------------------------------------------------------------------------------------   
+
+   PROCEDURE offender_external_movements
+   IS
+
+      CURSOR lv_rec_cur IS
+        SELECT conv_map_bookings.offender_book_id as offender_book_id,   --mandatory 
+               stg_mvnts.offender_id_display, 
+               stg_mvnts.booking_begin_date, 
+               conv_rank_movements.rank_asc as movement_seq,  
+               TRUNC(stg_mvnts.movement_datetime) as movement_date,  --mandatory 
+               stg_mvnts.movement_datetime as movement_time,  --mandatory 
+               NULL as internal_schedule_type,  --not available in stage table
+               NULL as internal_schedule_reason_code,  --not available in stage table
+               stg_mvnts.move_type as movement_type,   --mandatory (although not by dm)
+               stg_mvnts.move_reason_code as movement_reason_code,   --mandatory (although not by dm)
+               stg_mvnts.direction_code as direction_code,    --mandatory (although not by dm)
+               stg_mvnts.arrest_agency_loc_id as arrest_agency_loc_id, --mandatory (although not by dm)
+               NULL as to_prov_stat_code,
+               stg_mvnts.escort_code as escort_code,
+               stg_mvnts.from_agy_loc_id as from_agy_loc_id,   --mandatory (although not by dm)
+               stg_mvnts.to_agy_loc_id as to_agy_loc_id,       --mandatory (although not by dm)
+               DECODE(conv_rank_movements.rank_desc, 1, 'Y', 'N') as active_flag,   --mandatory 
+               NULL as escort_text,
+               stg_mvnts.comments comment_text,
+               NULL as reporting_date,
+               DECODE(stg_mvnts.direction_code, 'OUT', stg_mvnts.city, NULL) as to_city,
+               DECODE(stg_mvnts.direction_code, 'IN', stg_mvnts.city, NULL) as from_city,
+               NULL as reporting_time,
+               NULL event_id,
+               NULL parent_event_id,
+               NULL to_country_code,
+               NULL oj_location_code,
+               NULL application_date,
+               NULL application_time,
+               NULL to_address_id,
+               NULL from_address_id,
+               NULL proposed_mvmnt_seq,                
+               conv_utilities.g_conv_user create_user_id,
+               SYSTIMESTAMP create_datetime,
+               NULL AS   modify_user_id, 
+               SYSTIMESTAMP AS modify_datetime,               
+               NULL seal_flag 
+          FROM oms_stage.stage_movements stg_mvnts,
+               conv_map_bookings, conv_rank_movements 
+           WHERE stg_mvnts.offender_id_display = conv_map_bookings.stage_offender_id_display(+)
+             AND stg_mvnts.booking_begin_date = conv_map_bookings.stage_booking_begin_date(+)
+             AND stg_mvnts.offender_id_display = conv_rank_movements.stage_offender_id_display(+)
+             AND stg_mvnts.booking_begin_date = conv_rank_movements.stage_booking_begin_date(+)
+             AND stg_mvnts.movement_datetime = conv_rank_movements.stage_movement_datetime(+);
+ 
+
+      TYPE typ_tab IS TABLE OF lv_rec_cur%ROWTYPE INDEX BY PLS_INTEGER;
+      lv_rec typ_tab;
+
+      -- User defined exceptions
+       dml_errors         EXCEPTION;
+      lv_bulk_error_indx NUMBER;
+      lv_error_count     NUMBER;
+
+      PRAGMA EXCEPTION_INIT(dml_errors, -24381);
+   BEGIN
+      conv_utilities.logging('offender_external_movements', NULL, NULL, 'START', 'Procedure starts at: ' || systimestamp);
+      lv_error_count := 0;
+
+   -- Main cursor processes to convert external movements data
+      OPEN lv_rec_cur;
+      LOOP
+        FETCH lv_rec_cur BULK COLLECT
+         INTO lv_rec LIMIT 10000;
+      --
+      -- Exit when no records to process
+         EXIT WHEN lv_rec.count = 0;
+
+        BEGIN
+          FORALL i IN lv_rec.first .. lv_rec.last SAVE EXCEPTIONS
+            INSERT /*+ APPEND */ INTO offender_external_movements
+              (offender_book_id,
+               movement_seq,
+               movement_date,
+               movement_time,
+               internal_schedule_type,
+               internal_schedule_reason_code,
+               movement_type,
+               movement_reason_code,
+               direction_code,
+               arrest_agency_loc_id,
+               to_prov_stat_code,
+               escort_code,
+               from_agy_loc_id,
+               to_agy_loc_id,
+               active_flag,
+               escort_text,
+               comment_text,
+               reporting_date,
+               to_city,
+               from_city,
+               reporting_time,
+               event_id,
+               parent_event_id,
+               to_country_code,
+               oj_location_code,
+               application_date,
+               application_time,
+               to_address_id,
+               from_address_id,
+			         proposed_mvmnt_seq, 
+               create_user_id,
+               create_datetime,
+               modify_user_id,
+               modify_datetime,               
+               seal_flag)
+            VALUES
+              (lv_rec(i).offender_book_id,
+               lv_rec(i).movement_seq,
+               lv_rec(i).movement_date,
+               lv_rec(i).movement_time,
+               lv_rec(i).internal_schedule_type,
+               lv_rec(i).internal_schedule_reason_code,
+               lv_rec(i).movement_type,
+               lv_rec(i).movement_reason_code,
+               lv_rec(i).direction_code,
+               lv_rec(i).arrest_agency_loc_id,
+               lv_rec(i).to_prov_stat_code,
+               lv_rec(i).escort_code,
+               lv_rec(i).from_agy_loc_id,
+               lv_rec(i).to_agy_loc_id,
+               lv_rec(i).active_flag,
+               lv_rec(i).escort_text,
+               lv_rec(i).comment_text,
+               lv_rec(i).reporting_date,
+               lv_rec(i).to_city,
+               lv_rec(i).from_city,
+               lv_rec(i).reporting_time,
+               lv_rec(i).event_id,
+               lv_rec(i).parent_event_id,
+               lv_rec(i).to_country_code,
+               lv_rec(i).oj_location_code,
+               lv_rec(i).application_date,
+               lv_rec(i).application_time,
+               lv_rec(i).to_address_id,
+               lv_rec(i).from_address_id,
+			         lv_rec(i).proposed_mvmnt_seq, 
+               lv_rec(i).create_user_id,
+               lv_rec(i).create_datetime,
+               lv_rec(i).modify_user_id,
+               lv_rec(i).modify_datetime,               
+               lv_rec(i).seal_flag);
+        EXCEPTION
+          WHEN dml_errors THEN 
+            lv_error_count := lv_error_count + SQL%bulk_exceptions.count;
+            FOR j IN 1 .. SQL%bulk_exceptions.count
+            LOOP
+              lv_bulk_error_indx := SQL%BULK_EXCEPTIONS(j).error_index;
+              conv_utilities.logging('offender_external_movements', NULL, NULL,
+                      'ERROR -- offender_book_id: ' || lv_rec(lv_bulk_error_indx).offender_book_id ||
+                      ', movement_seq: '||lv_rec(lv_bulk_error_indx).movement_seq || ' :offender_id_display: ' || lv_rec(lv_bulk_error_indx).offender_id_display 
+                       || ' :booking_begin_date: ' || TO_CHAR(lv_rec(lv_bulk_error_indx).booking_begin_date, 'DD-MON-YYYY HH24:MI:SS')
+                       || ' :movement_date: ' || TO_CHAR(lv_rec(lv_bulk_error_indx).movement_date, 'DD-MON-YYYY HH24:MI:SS')
+                       || ' :movement_time: ' || TO_CHAR(lv_rec(lv_bulk_error_indx).movement_time, 'DD-MON-YYYY HH24:MI:SS'),
+                      SQLERRM(-sql%BULK_EXCEPTIONS(j).error_code));
+            END LOOP;
+        END;
+
+        COMMIT;
+        lv_rec.delete;
+        EXIT WHEN lv_rec_cur%NOTFOUND;
+      END LOOP;
+	  
+      COMMIT;
+      lv_rec.delete;
+      CLOSE lv_rec_cur;
+	  
+	    DBMS_STATS.GATHER_TABLE_STATS(ownname=>'OMS_OWNER',tabname=>'OFFENDER_EXTERNAL_MOVEMENTS',cascade=>TRUE);
+	  
+      conv_utilities.logging('offender_external_movements', NULL, NULL, 'END', 'Number of failures: ' || lv_error_count ||
+              '.  Procedure ends at: ' || systimestamp);
+      
+   EXCEPTION
+      WHEN OTHERS THEN
+        IF lv_rec_cur%ISOPEN THEN CLOSE lv_rec_cur; END IF;
+        conv_utilities.logging('offender_external_movements', NULL, NULL, 'EXCEPTION',SQLERRM || 'Procedure generates exception at time: ' || systimestamp);
+        RAISE; ----unexpected errors should abort the data migration	as this is core data           
+   END offender_external_movements;
+
+--------------------------------------------------------------------------------------------   
+
+  PROCEDURE bed_assignment_histories
+  IS
+
+  CURSOR lv_stat_cur IS 
+    SELECT conv_map_bookings.offender_book_id as offender_book_id
+           ,ROW_NUMBER() OVER (PARTITION BY stg_hs.offender_id_display, stg_hs.booking_begin_date ORDER BY assignment_datetime ASC) as bed_assign_seq 
+           ,agency_internal_locations.internal_location_id  as living_unit_id
+           ,TRUNC(assignment_datetime) as assignment_date
+           ,assignment_datetime as assignment_time
+           ,assignment_reason
+           ,LAG(TRUNC(assignment_datetime)) OVER (PARTITION BY stg_hs.offender_id_display, stg_hs.booking_begin_date ORDER BY assignment_datetime DESC) as assignment_end_date
+           ,LAG(assignment_datetime) OVER (PARTITION BY stg_hs.offender_id_display, stg_hs.booking_begin_date ORDER BY assignment_datetime DESC) as assignment_end_time
+           ,conv_utilities.g_conv_user as create_user_id 
+           ,SYSTIMESTAMP as create_datetime
+           ,NULL as modify_user_id 
+           ,SYSTIMESTAMP as modify_datetime
+           ,NULL as seal_flag 
+      FROM oms_stage.stage_housing stg_hs, conv_map_bookings, agency_internal_locations 
+      WHERE stg_hs.offender_id_display = conv_map_bookings.stage_offender_id_display(+)
+        AND stg_hs.booking_begin_date = conv_map_bookings.stage_booking_begin_date(+) 
+        AND stg_hs.bed_location = agency_internal_locations.description(+);     
+
+    TYPE typ_tab IS TABLE OF lv_stat_cur%ROWTYPE INDEX BY PLS_INTEGER;
+    lv_rec       typ_tab;
+    lv_idx  NUMBER;
+    lv_error_count   NUMBER;
+    dml_errors EXCEPTION;
+    PRAGMA EXCEPTION_INIT(dml_errors, -24381);
+  BEGIN 
+    conv_utilities.logging('BED_ASSIGNMENT_HISTORIES', NULL, NULL, 'START', 'Procedure  starts at: '|| systimestamp);
+    lv_error_count := 0;
+
+    OPEN lv_stat_cur;
+    LOOP
+      FETCH lv_stat_cur BULK COLLECT
+        INTO lv_rec LIMIT 50000;
+      BEGIN
+        FORALL i IN lv_rec.FIRST .. lv_rec.LAST SAVE EXCEPTIONS
+          INSERT /*+ APPEND */ INTO bed_assignment_histories
+           (offender_book_id
+           ,bed_assign_seq
+           ,living_unit_id
+           ,assignment_date
+           ,assignment_time
+           ,assignment_reason
+           ,assignment_end_date
+           ,assignment_end_time          
+           ,create_user_id
+           ,create_datetime
+           ,modify_user_id
+           ,modify_datetime
+           ,seal_flag)
+      VALUES (lv_rec(i).offender_book_id
+           ,lv_rec(i).bed_assign_seq
+           ,lv_rec(i).living_unit_id
+           ,lv_rec(i).assignment_date
+           ,lv_rec(i).assignment_time
+           ,lv_rec(i).assignment_reason
+           ,lv_rec(i).assignment_end_date
+           ,lv_rec(i).assignment_end_time
+           ,lv_rec(i).create_user_id
+           ,lv_rec(i).create_datetime
+           ,lv_rec(i).modify_user_id
+           ,lv_rec(i).modify_datetime
+           ,lv_rec(i).seal_flag);
+      EXCEPTION
+        WHEN dml_errors THEN
+           lv_error_count := lv_error_count + SQL%BULK_EXCEPTIONS.count;
+           FOR j IN 1 .. SQL%BULK_EXCEPTIONS.COUNT
+           LOOP
+             lv_idx   := SQL%BULK_EXCEPTIONS(j).error_index;
+             conv_utilities.logging('BED_ASSIGNMENT_HISTORIES', NULL, NULL, 'ERROR -- OFFENDER_BOOK_ID: '||lv_rec(lv_idx).offender_book_id|| ' and BED_ASSIGN_SEQ: '||lv_rec(lv_idx).bed_assign_seq,
+                    SQLERRM(-sql%BULK_EXCEPTIONS(j).error_code));
+           END LOOP;
+      END;
+      COMMIT;
+      lv_rec.DELETE;
+      EXIT WHEN lv_stat_cur%NOTFOUND;
+    END LOOP;
+	
+	COMMIT;
+  CLOSE lv_stat_cur;
+	
+    DBMS_STATS.GATHER_TABLE_STATS(ownname=>'OMS_OWNER',tabname=>'BED_ASSIGNMENT_HISTORIES',cascade=>TRUE);
+	
+    conv_utilities.logging('BED_ASSIGNMENT_HISTORIES', NULL, NULL, 'END','Number of failures: ' || lv_error_count ||'. Procedure ends at: ' || systimestamp);
+  EXCEPTION
+    WHEN OTHERS THEN
+      IF lv_stat_cur%ISOPEN THEN CLOSE lv_stat_cur; END IF;
+      conv_utilities.logging('BED_ASSIGNMENT_HISTORIES',NULL, NULL, 'EXCEPTION','Procedure generates exception. ' || SQLERRM || ' at time: ' ||systimestamp); 
+      RAISE; ----unexpected errors should abort the data migration	as this is core data   
+  END bed_assignment_histories;
+  
+------------------------------------------------
+
+   PROCEDURE main
+   IS
+   BEGIN
+
+      --
+      conv_utilities.logging('PACKAGE - CONV_OFF_CORE_1', NULL, NULL, 'START', 'Start CONV_OFF_CORE_1 Package at: ' || systimestamp);
+	
+      offenders;
+      --
+      
+      --call the ranking of movements before conversion of bookings and movements
+      rank_offender_movements; 
+      --call the mapping of bookings before conversion of bookings
+      map_offender_bookings;
+      --
+      offender_bookings; 
+      offender_booking_details;	
+	    --
+      offender_external_movements;
+	    --
+      bed_assignment_histories;   
+         
+      --
+      -- sequences
+    
+      BEGIN 
+         conv_utilities.alter_table_sequence(p_sequence => 'OFFENDER_ID', p_table => 'OFFENDERS', p_column => 'OFFENDER_ID');
+      EXCEPTION 
+         WHEN OTHERS THEN 
+            null; --nothing to do because the procedure already logs the exception and we don't want to abort the entire process in main
+      END; 
+
+      BEGIN 
+         conv_utilities.alter_table_sequence(p_sequence => 'OFFENDER_ALIAS_ID', p_table => 'OFFENDERS', p_column => 'ALIAS_OFFENDER_ID');
+      EXCEPTION 
+         WHEN OTHERS THEN 
+            null; --nothing to do because the procedure already logs the exception and we don't want to abort the entire process in main
+      END; 
+
+      BEGIN 
+         conv_utilities.reset_offender_id_display();
+      EXCEPTION 
+         WHEN OTHERS THEN 
+            null; --nothing to do because the procedure already logs the exception and we don't want to abort the entire process in main
+      END; 
+
+      BEGIN 
+         conv_utilities.alter_table_sequence(p_sequence => 'OFFENDER_BOOK_ID', p_table => 'OFFENDER_BOOKINGS', p_column => 'OFFENDER_BOOK_ID');
+      EXCEPTION 
+         WHEN OTHERS THEN 
+            null; --nothing to do because the procedure already logs the exception and we don't want to abort the entire process in main
+      END; 
+     
+      BEGIN 
+         conv_utilities.reset_booking_no();
+      EXCEPTION 
+         WHEN OTHERS THEN 
+            null; --nothing to do because the procedure already logs the exception and we don't want to abort the entire process in main
+      END; 
+	
+    /* --to do later, no event id was used so far
+     BEGIN 
+        conv_utilities.alter_event_id_sequence();
+     EXCEPTION 
+           WHEN OTHERS THEN 
+                    null; --nothing to do because the procedure already logs the exception and we don't want to abort the entire process in main
+     END; */
+    
+    
+      BEGIN 
+         conv_utilities.alter_sequences(p_conv_pkg_name => 'CONV_OFF_CORE_1'); --does the sequences that do not require custom logic
+      EXCEPTION 
+         WHEN OTHERS THEN 
+            null; --nothing to do because the procedure already logs the exception and we don't want to abort the entire process in main
+      END; 	   
+
+      conv_utilities.logging('PACKAGE - CONV_OFF_CORE_1', NULL, NULL, 'END', 'End CONV_OFF_CORE_1 Package at: ' || systimestamp); 
+
+   END main;
+
+END CONV_OFF_CORE_1;
+/

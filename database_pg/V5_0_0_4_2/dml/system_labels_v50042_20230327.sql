@@ -1,0 +1,686 @@
+insert
+	into
+	OMS_OWNER.SYSTEM_LABELS
+  (LABEL_ID,
+	MODULE_NAME,
+	MSG_KEY,
+	MSG_VALUE,
+	MSG_TYPE,
+	create_datetime,
+	create_user_id,
+	modify_datetime,
+	modify_user_id,
+	seal_flag)
+values
+  (nextval('LABLE_ID_SEQUENCE'),
+'OCDNCODE',
+'ocdlegln.nocustodialorders',
+'No Custodial Orders',
+'LABEL',
+current_timestamp,
+'OMS_OWNER',
+current_timestamp,
+'OMS_OWNER',
+null);
+
+insert
+	into
+	OMS_OWNER.SYSTEM_LABELS
+  (LABEL_ID,
+	MODULE_NAME,
+	MSG_KEY,
+	MSG_VALUE,
+	MSG_TYPE,
+	create_datetime,
+	create_user_id,
+	modify_datetime,
+	modify_user_id,
+	seal_flag)
+values
+  (nextval('LABLE_ID_SEQUENCE'),
+'OCDOTRLV',
+'ocdotrlv.tierlevel',
+'Tier Level',
+'LABEL',
+current_timestamp,
+'OMS_OWNER',
+current_timestamp,
+'OMS_OWNER',
+null);
+
+insert
+	into
+	OMS_OWNER.SYSTEM_LABELS
+  (LABEL_ID,
+	MODULE_NAME,
+	MSG_KEY,
+	MSG_VALUE,
+	MSG_TYPE,
+	create_datetime,
+	create_user_id,
+	modify_datetime,
+	modify_user_id,
+	seal_flag)
+values
+  (nextval('LABLE_ID_SEQUENCE'),
+'OCDOTRLV',
+'ocdotrlv.dateassigned',
+'Date Assigned',
+'LABEL',
+current_timestamp,
+'OMS_OWNER',
+current_timestamp,
+'OMS_OWNER',
+null);
+
+insert
+	into
+	OMS_OWNER.SYSTEM_LABELS
+  (LABEL_ID,
+	MODULE_NAME,
+	MSG_KEY,
+	MSG_VALUE,
+	MSG_TYPE,
+	create_datetime,
+	create_user_id,
+	modify_datetime,
+	modify_user_id,
+	seal_flag)
+values
+  (nextval('LABLE_ID_SEQUENCE'),
+'OCDOTRLV',
+'ocdotrlv.assignmentreason',
+'Assignment Reason',
+'LABEL',
+current_timestamp,
+'OMS_OWNER',
+current_timestamp,
+'OMS_OWNER',
+null);
+
+insert
+	into
+	OMS_OWNER.SYSTEM_LABELS
+  (LABEL_ID,
+	MODULE_NAME,
+	MSG_KEY,
+	MSG_VALUE,
+	MSG_TYPE,
+	create_datetime,
+	create_user_id,
+	modify_datetime,
+	modify_user_id,
+	seal_flag)
+values
+  (nextval('LABLE_ID_SEQUENCE'),
+'OCDOTRLV',
+'ocdotrlv.assignedby',
+'Assigned by',
+'LABEL',
+current_timestamp,
+'OMS_OWNER',
+current_timestamp,
+'OMS_OWNER',
+null);
+
+insert
+	into
+	OMS_OWNER.SYSTEM_LABELS
+  (LABEL_ID,
+	MODULE_NAME,
+	MSG_KEY,
+	MSG_VALUE,
+	MSG_TYPE,
+	create_datetime,
+	create_user_id,
+	modify_datetime,
+	modify_user_id,
+	seal_flag)
+values
+  (nextval('LABLE_ID_SEQUENCE'),
+'OCDOTRLV',
+'ocdotrlv.approve',
+'Approve',
+'LABEL',
+current_timestamp,
+'OMS_OWNER',
+current_timestamp,
+'OMS_OWNER',
+null);
+
+insert
+	into
+	OMS_OWNER.SYSTEM_LABELS
+  (LABEL_ID,
+	MODULE_NAME,
+	MSG_KEY,
+	MSG_VALUE,
+	MSG_TYPE,
+	create_datetime,
+	create_user_id,
+	modify_datetime,
+	modify_user_id,
+	seal_flag)
+values
+  (nextval('LABLE_ID_SEQUENCE'),
+'OCDOTRLV',
+'ocdotrlv.approveby',
+'Approved by',
+'LABEL',
+current_timestamp,
+'OMS_OWNER',
+current_timestamp,
+'OMS_OWNER',
+null);
+
+insert
+	into
+	OMS_OWNER.SYSTEM_LABELS
+  (LABEL_ID,
+	MODULE_NAME,
+	MSG_KEY,
+	MSG_VALUE,
+	MSG_TYPE,
+	create_datetime,
+	create_user_id,
+	modify_datetime,
+	modify_user_id,
+	seal_flag)
+values
+  (nextval('LABLE_ID_SEQUENCE'),
+'OCDOTRLV',
+'ocdotrlv.nextreviewdate',
+'Next Review Date',
+'LABEL',
+current_timestamp,
+'OMS_OWNER',
+current_timestamp,
+'OMS_OWNER',
+null);
+
+insert
+	into
+	OMS_OWNER.SYSTEM_LABELS
+  (LABEL_ID,
+	MODULE_NAME,
+	MSG_KEY,
+	MSG_VALUE,
+	MSG_TYPE,
+	create_datetime,
+	create_user_id,
+	modify_datetime,
+	modify_user_id,
+	seal_flag)
+values
+  (nextval('LABLE_ID_SEQUENCE'),
+'OCDOTRLV',
+'ocdotrlv.comment',
+'Comment',
+'LABEL',
+current_timestamp,
+'OMS_OWNER',
+current_timestamp,
+'OMS_OWNER',
+null);
+
+insert
+	into
+	OMS_OWNER.SYSTEM_LABELS
+  (LABEL_ID,
+	MODULE_NAME,
+	MSG_KEY,
+	MSG_VALUE,
+	MSG_TYPE,
+	create_datetime,
+	create_user_id,
+	modify_datetime,
+	modify_user_id,
+	seal_flag)
+values
+  (nextval('LABLE_ID_SEQUENCE'),
+'OCDOTRLV',
+'ocdotrlv.offendertierlevel',
+'Offender Tier Level',
+'LABEL',
+current_timestamp,
+'OMS_OWNER',
+current_timestamp,
+'OMS_OWNER',
+null);
+
+insert
+	into
+	OMS_OWNER.SYSTEM_LABELS
+  (LABEL_ID,
+	MODULE_NAME,
+	MSG_KEY,
+	MSG_VALUE,
+	MSG_TYPE,
+	create_datetime,
+	create_user_id,
+	modify_datetime,
+	modify_user_id,
+	seal_flag)
+values
+  (nextval('LABLE_ID_SEQUENCE'),
+'OCDOTRLV',
+'ocdotrlv.dateassignedcannotbefuturedate',
+'DateAssigned can not be future date',
+'LABEL',
+current_timestamp,
+'OMS_OWNER',
+current_timestamp,
+'OMS_OWNER',
+null);
+
+insert
+	into
+	OMS_OWNER.SYSTEM_LABELS
+  (LABEL_ID,
+	MODULE_NAME,
+	MSG_KEY,
+	MSG_VALUE,
+	MSG_TYPE,
+	create_datetime,
+	create_user_id,
+	modify_datetime,
+	modify_user_id,
+	seal_flag)
+values
+  (nextval('LABLE_ID_SEQUENCE'),
+'OCDOTRLV',
+'ocdotrlv.active',
+'Active',
+'LABEL',
+current_timestamp,
+'OMS_OWNER',
+current_timestamp,
+'OMS_OWNER',
+null);
+
+insert
+	into
+	OMS_OWNER.SYSTEM_LABELS
+  (LABEL_ID,
+	MODULE_NAME,
+	MSG_KEY,
+	MSG_VALUE,
+	MSG_TYPE,
+	create_datetime,
+	create_user_id,
+	modify_datetime,
+	modify_user_id,
+	seal_flag)
+values
+  (nextval('LABLE_ID_SEQUENCE'),
+'OCMTIRLV',
+'ocmtirlv.code',
+'Code',
+'LABEL',
+current_timestamp,
+'OMS_OWNER',
+current_timestamp,
+'OMS_OWNER',
+null);
+
+insert
+	into
+	OMS_OWNER.SYSTEM_LABELS
+  (LABEL_ID,
+	MODULE_NAME,
+	MSG_KEY,
+	MSG_VALUE,
+	MSG_TYPE,
+	create_datetime,
+	create_user_id,
+	modify_datetime,
+	modify_user_id,
+	seal_flag)
+values
+  (nextval('LABLE_ID_SEQUENCE'),
+'OCMTIRLV',
+'ocmtirlv.workloadvalue',
+'Workload Value',
+'LABEL',
+current_timestamp,
+'OMS_OWNER',
+current_timestamp,
+'OMS_OWNER',
+null);
+
+insert
+	into
+	OMS_OWNER.SYSTEM_LABELS
+  (LABEL_ID,
+	MODULE_NAME,
+	MSG_KEY,
+	MSG_VALUE,
+	MSG_TYPE,
+	create_datetime,
+	create_user_id,
+	modify_datetime,
+	modify_user_id,
+	seal_flag)
+values
+  (nextval('LABLE_ID_SEQUENCE'),
+'OCMTIRLV',
+'ocmtirlv.reviewdays',
+'Review Days',
+'LABEL',
+current_timestamp,
+'OMS_OWNER',
+current_timestamp,
+'OMS_OWNER',
+null);
+
+insert
+	into
+	OMS_OWNER.SYSTEM_LABELS
+  (LABEL_ID,
+	MODULE_NAME,
+	MSG_KEY,
+	MSG_VALUE,
+	MSG_TYPE,
+	create_datetime,
+	create_user_id,
+	modify_datetime,
+	modify_user_id,
+	seal_flag)
+values
+  (nextval('LABLE_ID_SEQUENCE'),
+'OCMTIRLV',
+'ocmtirlv.defaultevents',
+'Default Events',
+'LABEL',
+current_timestamp,
+'OMS_OWNER',
+current_timestamp,
+'OMS_OWNER',
+null);
+
+insert
+	into
+	OMS_OWNER.SYSTEM_LABELS
+  (LABEL_ID,
+	MODULE_NAME,
+	MSG_KEY,
+	MSG_VALUE,
+	MSG_TYPE,
+	create_datetime,
+	create_user_id,
+	modify_datetime,
+	modify_user_id,
+	seal_flag)
+values
+  (nextval('LABLE_ID_SEQUENCE'),
+'OCMTIRLV',
+'ocmtirlv.defaultintaketierflag',
+'Default Intake Tier Flag',
+'LABEL',
+current_timestamp,
+'OMS_OWNER',
+current_timestamp,
+'OMS_OWNER',
+null);
+
+insert
+	into
+	OMS_OWNER.SYSTEM_LABELS
+  (LABEL_ID,
+	MODULE_NAME,
+	MSG_KEY,
+	MSG_VALUE,
+	MSG_TYPE,
+	create_datetime,
+	create_user_id,
+	modify_datetime,
+	modify_user_id,
+	seal_flag)
+values
+  (nextval('LABLE_ID_SEQUENCE'),
+'OCMTIRLV',
+'ocmtirlv.sequence',
+'Sequence',
+'LABEL',
+current_timestamp,
+'OMS_OWNER',
+current_timestamp,
+'OMS_OWNER',
+null);
+
+insert
+	into
+	OMS_OWNER.SYSTEM_LABELS
+  (LABEL_ID,
+	MODULE_NAME,
+	MSG_KEY,
+	MSG_VALUE,
+	MSG_TYPE,
+	create_datetime,
+	create_user_id,
+	modify_datetime,
+	modify_user_id,
+	seal_flag)
+values
+  (nextval('LABLE_ID_SEQUENCE'),
+'OCMTIRLV',
+'ocmtirlv.active',
+'Active',
+'LABEL',
+current_timestamp,
+'OMS_OWNER',
+current_timestamp,
+'OMS_OWNER',
+null);
+
+insert
+	into
+	OMS_OWNER.SYSTEM_LABELS
+  (LABEL_ID,
+	MODULE_NAME,
+	MSG_KEY,
+	MSG_VALUE,
+	MSG_TYPE,
+	create_datetime,
+	create_user_id,
+	modify_datetime,
+	modify_user_id,
+	seal_flag)
+values
+  (nextval('LABLE_ID_SEQUENCE'),
+'OCMTIRLV',
+'ocmtirlv.expirydate',
+'Expiry Date',
+'LABEL',
+current_timestamp,
+'OMS_OWNER',
+current_timestamp,
+'OMS_OWNER',
+null);
+
+insert
+	into
+	OMS_OWNER.SYSTEM_LABELS
+  (LABEL_ID,
+	MODULE_NAME,
+	MSG_KEY,
+	MSG_VALUE,
+	MSG_TYPE,
+	create_datetime,
+	create_user_id,
+	modify_datetime,
+	modify_user_id,
+	seal_flag)
+values
+  (nextval('LABLE_ID_SEQUENCE'),
+'OCMTIRLV',
+'ocmtirlv.codealreadyexists',
+'Code already exists',
+'LABEL',
+current_timestamp,
+'OMS_OWNER',
+current_timestamp,
+'OMS_OWNER',
+null);
+
+insert
+	into
+	OMS_OWNER.SYSTEM_LABELS
+  (LABEL_ID,
+	MODULE_NAME,
+	MSG_KEY,
+	MSG_VALUE,
+	MSG_TYPE,
+	create_datetime,
+	create_user_id,
+	modify_datetime,
+	modify_user_id,
+	seal_flag)
+values
+  (nextval('LABLE_ID_SEQUENCE'),
+'OCMTIRLV',
+'ocmtirlv.defaultintaketierflagmustbeentered',
+'Default intake tier flag Must be entered',
+'LABEL',
+current_timestamp,
+'OMS_OWNER',
+current_timestamp,
+'OMS_OWNER',
+null);
+
+insert
+	into
+	OMS_OWNER.SYSTEM_LABELS
+  (LABEL_ID,
+	MODULE_NAME,
+	MSG_KEY,
+	MSG_VALUE,
+	MSG_TYPE,
+	create_datetime,
+	create_user_id,
+	modify_datetime,
+	modify_user_id,
+	seal_flag)
+values
+  (nextval('LABLE_ID_SEQUENCE'),
+'OCMTIRLV',
+'ocmtirlv.onlyonedefaultintaketierflagshouldbeactive',
+'Only one default intake tier flag should be active',
+'LABEL',
+current_timestamp,
+'OMS_OWNER',
+current_timestamp,
+'OMS_OWNER',
+null);
+
+insert
+	into
+	OMS_OWNER.SYSTEM_LABELS
+  (LABEL_ID,
+	MODULE_NAME,
+	MSG_KEY,
+	MSG_VALUE,
+	MSG_TYPE,
+	create_datetime,
+	create_user_id,
+	modify_datetime,
+	modify_user_id,
+	seal_flag)
+values
+  (nextval('LABLE_ID_SEQUENCE'),
+'OCMTIRLV',
+'ocmtirlv.maintaincommunitytierlevel',
+'Maintain Community Tier Level',
+'LABEL',
+current_timestamp,
+'OMS_OWNER',
+current_timestamp,
+'OMS_OWNER',
+null);
+
+insert
+	into
+	OMS_OWNER.SYSTEM_LABELS
+  (LABEL_ID,
+	MODULE_NAME,
+	MSG_KEY,
+	MSG_VALUE,
+	MSG_TYPE,
+	create_datetime,
+	create_user_id,
+	modify_datetime,
+	modify_user_id,
+	seal_flag)
+values
+  (nextval('LABLE_ID_SEQUENCE'),
+'OCMTIRLV',
+'ocmtirlv.tierdescription',
+'Tier Description',
+'LABEL',
+current_timestamp,
+'OMS_OWNER',
+current_timestamp,
+'OMS_OWNER',
+null);
+
+insert
+	into
+	OMS_OWNER.SYSTEM_LABELS
+  (LABEL_ID,
+	MODULE_NAME,
+	MSG_KEY,
+	MSG_VALUE,
+	MSG_TYPE,
+	create_datetime,
+	create_user_id,
+	modify_datetime,
+	modify_user_id,
+	seal_flag)
+values
+  (nextval('LABLE_ID_SEQUENCE'),
+'OCMSTATS',
+'ocmstats.orderstiltle',
+'Order & Condition Stauses',
+'LABEL',
+current_timestamp,
+'OMS_OWNER',
+current_timestamp,
+'OMS_OWNER',
+null);
+
+insert
+	into
+	OMS_OWNER.SYSTEM_LABELS
+  (LABEL_ID,
+	MODULE_NAME,
+	MSG_KEY,
+	MSG_VALUE,
+	MSG_TYPE,
+	create_datetime,
+	create_user_id,
+	modify_datetime,
+	modify_user_id,
+	seal_flag)
+values
+  (nextval('LABLE_ID_SEQUENCE'),
+'OCMSTATS',
+'ocmstats.statustiltle',
+'Status Usage',
+'LABEL',
+current_timestamp,
+'OMS_OWNER',
+current_timestamp,
+'OMS_OWNER',
+null);
+
+
+------------------------------------------------------------------
+update
+	SYSTEM_LABELS
+set
+	modify_datetime = current_timestamp
+   ,modify_user_id = 'OMS_OWNER' 
+   ,MSG_VALUE = 'Elite 5.0.0.4.2'
+where
+	MODULE_NAME = 'LOGIN'
+	and MSG_KEY in ('home.title.header', 'login.header');    	

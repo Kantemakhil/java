@@ -1,0 +1,8 @@
+update
+	dynamic_grid_config
+set
+	config_json = '[ { "field": "select", "fieldName": "ocdparor.select", "dataType": "checkbox", "editable": true }, { "field": "displayNo", "fieldName": "custorder.no", "dataType": "text", "editable": false }, { "field": "orderNo", "hide": true, "dataType": "text", "editable": false }, { "field": "type", "fieldName": "custorder.type", "dataType": "lov", "source": "link", "url": "ocmpconf/populateSentType?sentCategory=CUST", "sourceType": "OIMSREQS", "editable": false }, { "field": "termTypeAndLength", "fieldName": "custorder.termtypeandlength", "dataType": "text", "editable": false }, { "field": "relatedTo", "fieldName": "custorder.linkto", "dataType": "text", "editable": false }, { "field": "commenceDate", "fieldName": "custorder.commencedate", "dataType": "text", "editable": false }, { "field": "erd", "fieldName": "custorder.erd", "dataType": "text", "editable": false }, { "field": "ped", "fieldName": "custorder.ped", "dataType": "text", "editable": false }, { "field": "lrd", "fieldName": "custorder.lrd", "dataType": "text", "editable": false }, { "field": "status", "fieldName": "custorder.status", "dataType": "lov", "source": "link", "sourceType": "OCMSTATS", "url": "ocmpconf/rgOrderStatus?orderType=CUST", "editable": false } ]',
+	modify_datetime = current_timestamp ,
+	modify_user_id = 'OMS_OWNER' 
+where
+	module_name = 'OCDPAROR' and grid_name = 'affectedOrders' and db_table_name='OCDLEGLO_DATA';

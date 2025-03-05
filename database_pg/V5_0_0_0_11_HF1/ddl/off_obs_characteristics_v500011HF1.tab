@@ -1,0 +1,3 @@
+ALTER TABLE off_obs_characteristics ADD characteristics_type varchar(12);
+
+comment on column off_obs_characteristics.characteristics_type is 'This field is used to store the type of the characteristic code'; 

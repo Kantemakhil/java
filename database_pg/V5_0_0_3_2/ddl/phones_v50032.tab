@@ -1,0 +1,4 @@
+ALTER TABLE  PHONES  ADD FORMAT varchar(12);
+update  PHONES set FORMAT ='LOC';
+alter table PHONES alter column FORMAT set not null;
+comment on column PHONES.FORMAT is 'It Indicate the Phone Number Format ,it will configure in system setting screen(Maintain Phone Formats tab)';

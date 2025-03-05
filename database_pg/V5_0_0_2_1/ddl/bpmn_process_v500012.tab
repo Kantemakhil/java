@@ -1,0 +1,7 @@
+ALTER TABLE bpmn_process ADD category varchar(12);
+
+update  bpmn_process set category ='PRODUCT';
+
+alter table bpmn_process alter column category set not null;
+
+comment on column bpmn_process.category is 'Indicates the Process category';

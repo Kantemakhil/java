@@ -1,0 +1,61 @@
+CREATE TABLE oms_owner.off_billing_statements (
+	billing_statement_id int8 NOT NULL,
+	caseload_id varchar(6) NOT NULL,
+	root_offender_id int8 NOT NULL,
+	billing_cycle_start_date date NOT NULL,
+	billing_cycle_end_date date NOT NULL,
+	statement_generate_datetime date NOT NULL DEFAULT current_timestamp,
+	statement_generate_staff_id int8 NULL,
+	statement_generate_user varchar(32) NOT NULL,
+	begining_balance_amount int8 NOT NULL,
+	payments_credits_amount int8 NOT NULL,
+	billings_amount int8 NOT NULL,
+	ending_balance_amount int8 NOT NULL,
+	offender_book_id int8 NOT NULL,
+	case_plan_id int8 NOT NULL,
+	create_datetime timestamp(6) NOT NULL DEFAULT current_timestamp,
+	create_user_id varchar(32) NOT NULL,
+	modify_datetime timestamp(6) NULL,
+	modify_user_id varchar(32) NULL,
+	seal_flag varchar(1) NULL,
+	CONSTRAINT off_billing_statements_billing_cycle_end_date_check CHECK ((billing_cycle_end_date = billing_cycle_end_date)),
+	CONSTRAINT off_billing_statements_billing_cycle_start_date_check CHECK ((billing_cycle_start_date = billing_cycle_start_date)),
+	CONSTRAINT off_billing_statements_pk PRIMARY KEY (billing_statement_id),
+	CONSTRAINT off_billing_statements_fk1 FOREIGN KEY (offender_book_id,case_plan_id) REFERENCES oms_owner.case_plans(offender_book_id,case_plan_id),
+	CONSTRAINT off_billing_statements_fk2 FOREIGN KEY (caseload_id) REFERENCES oms_owner.caseloads(caseload_id),
+	CONSTRAINT off_billing_statements_fk3 FOREIGN KEY (root_offender_id) REFERENCES oms_owner.offenders(offender_id),
+	CONSTRAINT off_billing_statements_fk4 FOREIGN KEY (statement_generate_staff_id) REFERENCES oms_owner.staff_members(staff_id)
+)
+TABLESPACE tag_data
+;
+
+comment on table OFF_BILLING_STATEMENTS is 'A billing statement summarizes all fee accounts billed to an inmate during the billing cycle. A billing statement summarizes payments and credits (and their reversals) posted to the inmate fee accounts during the billing cycle. The biling cycle cannot overlap between two statements. A bill can appear on only one statement. A bill transaction can also appear on only one statement.';
+
+comment on column OFF_BILLING_STATEMENTS.billing_statement_id is 'Unique billing statement id [sequence=BILLING_STATEMENT_ID]';
+
+comment on column OFF_BILLING_STATEMENTS.caseload_id is 'The caseload that generates the statement (the statement contains only offender fee account transactions against this caseload)';
+
+comment on column OFF_BILLING_STATEMENTS.root_offender_id is 'Inmate root offender id';
+
+comment on column OFF_BILLING_STATEMENTS.billing_cycle_start_date is 'Billing cycle start date, based on system profile BILL_END_DAY+1 of previous month or intake date';
+
+comment on column OFF_BILLING_STATEMENTS.billing_cycle_end_date is 'Billing cycle end date, based on system profile BILL_END_DAY or transfer date or discharge date when discharge parent code = PC';
+
+comment on column OFF_BILLING_STATEMENTS.statement_generate_datetime is 'The datetime when the statement is generated';
+
+
+comment on column OFF_BILLING_STATEMENTS.statement_generate_staff_id is 'The staff who generated the billing statement, NULL when record was system generated';
+
+comment on column OFF_BILLING_STATEMENTS.statement_generate_user is 'The user who generated the billing statement, SYSTEM when system generated';
+
+comment on column OFF_BILLING_STATEMENTS.begining_balance_amount is 'Statement begining balance';
+
+comment on column OFF_BILLING_STATEMENTS.payments_credits_amount is 'Statement total payments and credits';
+
+comment on column OFF_BILLING_STATEMENTS.billings_amount is 'Statement total billings';
+
+comment on column OFF_BILLING_STATEMENTS.ending_balance_amount is 'Statement ending balance';
+
+comment on column OFF_BILLING_STATEMENTS.offender_book_id is 'Inmate current booking at the time the statement is generated';
+
+comment on column OFF_BILLING_STATEMENTS.case_plan_id is 'Inmate current case plan at the time the statement is generated';

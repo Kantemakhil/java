@@ -1,0 +1,26 @@
+-- Create table
+create table db_version_control  
+(
+  database_version varchar(100) not null,
+  db_version_notes varchar(1000) not null,
+  create_datetime  timestamp default CURRENT_TIMESTAMP not null,
+  create_user_id   varchar(32) default user not null
+)
+tablespace tag_setup_data;
+ 
+
+-- Add comments to the table 
+comment on table db_version_control    
+  is 'Logs Syscon database version, ex V5.3.';
+
+-- Add comments to the columns 
+comment on column db_version_control .database_version
+  is 'The Syscon database version, ex. V5.3.';
+comment on column db_version_control .db_version_notes
+  is 'The Syscon database version notes, ex. new milestone that will include Community';
+
+-- Create/Recreate primary, unique and foreign key constraints 
+alter table db_version_control    
+  add constraint db_version_control_pk primary key (database_version)
+  using index  tablespace tag_indx;
+

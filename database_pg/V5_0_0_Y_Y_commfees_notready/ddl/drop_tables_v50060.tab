@@ -1,0 +1,5 @@
+drop table off_fee_account_overrides;
+drop table off_fee_account_profile_hty;
+drop table off_fee_ded_beneficiaries;
+drop table off_fee_ded_receipts;
+drop table off_fee_account_profile;

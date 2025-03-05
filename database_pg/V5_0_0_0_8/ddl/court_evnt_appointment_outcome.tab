@@ -1,0 +1,41 @@
+CREATE TABLE oms_owner.court_evnt_appointment_outcome
+(court_event_appointment_id    BIGINT NOT NULL,
+court_event_id                 BIGINT NOT NULL,
+appointment_event_id           BIGINT NOT NULL,
+record_sanction_reward_count   BIGINT,
+count_type                     VARCHAR(6),
+adjourned_flag                 VARCHAR(1),
+link_flag                      VARCHAR(1),
+comment_text                   VARCHAR(4000),
+create_datetime                TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL ,
+create_user_id                 VARCHAR(32)NOT NULL ,
+modify_datetime                TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+modify_user_id                 VARCHAR(32),
+seal_flag                      VARCHAR(1) 
+) tablespace tag_data;
+
+alter table oms_owner.court_evnt_appointment_outcome  
+  add constraint court_evnt_appoint_outcome_pk primary key (court_event_appointment_id)
+  using index tablespace tag_indx;
+  
+alter table oms_owner.court_evnt_appointment_outcome 
+	add constraint court_evnt_appoint_outcome_fk1 foreign key (court_event_id) 
+	references oms_owner.court_events(event_id) on delete no action not deferrable initially immediate;
+
+alter table oms_owner.court_evnt_appointment_outcome 
+	add constraint court_evnt_appoint_outcome_fk2 foreign key (appointment_event_id) 
+	references oms_owner.offender_ind_schedules(event_id) on delete no action not deferrable initially immediate;	
+
+
+comment on column oms_owner.court_evnt_appointment_outcome.court_event_appointment_id is 'This field is used to store the unique court event  linked with appoinment outcome';
+comment on column oms_owner.court_evnt_appointment_outcome.court_event_id is 'This field is used to store the court event id which is linking to the appointment outcome';
+comment on column oms_owner.court_evnt_appointment_outcome.appointment_event_id is 'This field is used to identify the Event id of Schedule type and schedule sub type ';
+comment on column oms_owner.court_evnt_appointment_outcome.record_sanction_reward_count is 'This field is used to store the sanction count or reward count for offender outcome ';
+comment on column oms_owner.court_evnt_appointment_outcome.count_type is 'This field is used to identify if the count is sanction or reward';
+comment on column oms_owner.court_evnt_appointment_outcome.adjourned_flag is 'This is field is used to store the adjourned flag for out come';
+comment on column oms_owner.court_evnt_appointment_outcome.comment_text is 'This field is used to store the comment text for linking appointment outcome of an offender';
+comment on column oms_owner.court_evnt_appointment_outcome.link_flag is 'This flag indicates that weather the appointment is linked or unlinked to the court event';
+comment on column oms_owner.court_evnt_appointment_outcome.create_datetime is 'The timestamp when the record is created';
+comment on column oms_owner.court_evnt_appointment_outcome.create_user_id is 'The user who creates the record';
+comment on column oms_owner.court_evnt_appointment_outcome.modify_datetime is 'The timestamp when the record is modified ';
+comment on column oms_owner.court_evnt_appointment_outcome.modify_user_id is 'The user who modifies the record';

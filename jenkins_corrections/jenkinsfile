@@ -1,0 +1,89 @@
+pipeline {
+  agent any
+    parameters {
+  string defaultValue: 'develop', name: 'GIT_BRANCH_BACKEND'
+    }
+  environment { 
+         registry = "sysconjusticesystems/maple_tas_api"
+         BRANCH_NAME = "${GIT_BRANCH.split("/")[1]}"
+		 GIT_COMMIT_ID= "${GIT_COMMIT[0..6]}"
+         registryCredential = 'DockerID'
+         currentDate = sh(returnStdout: true, script: 'date +%d-%m-%Y').trim()
+         dockerImage = '' 
+    }
+  tools { 
+        maven 'Maven 3.3.9' 
+        jdk 'jdk8'
+        // nodejs 'nodejs'
+    }
+    stages {
+        stage ('Initialize') {
+            steps {
+                sh '''
+                    echo "PATH = ${PATH}"
+                    echo "M2_HOME = ${M2_HOME}"
+                ''' 
+            }
+        }
+	stage('BackendBuild') { 
+      steps {
+	      script {
+          
+           sh 'sed -i "s|app\\.elite\\.version=.*|app\\.elite\\.version=$BRANCH_NAME-$currentDate-$GIT_COMMIT_ID|g" Elite2Web/src/main/profiles/dev/appconfig.properties'
+	       sh 'chmod 775 /var/jenkins_home/workspace/${JOB_NAME}/build.sh'   
+           sh '/var/jenkins_home/workspace/${JOB_NAME}/build.sh war'
+           }
+	  }
+    }
+           stage ('Check for existence of dist folder') {
+      steps {
+          script{
+          sh ''' DIR="${WORKSPACE}/dist"
+                 if [ -d "$DIR" ]; then
+                 rm -rf dist
+                 fi
+                 '''
+}
+    }
+}
+            stage ('Copying Dist') {
+            steps {
+                sh '''
+                    echo "WORKSPACE = ${WORKSPACE}"         
+                ''' 
+                dir('/var/jenkins_home/workspace') {
+                sh 'cp -r dist ${WORKSPACE}'
+                sh 'rm -rf /var/jenkins_home/workspace/dist'
+}
+            }
+        }
+//     stage('FrontendBuild') { 
+//       steps {
+// 	      script {
+//     	   sh 'npm install -g typescript@4.6.3'
+//     	   sh 'npm install -g @angular/cli@11.2.14'
+//     	   sh 'npm install -g free'
+//           sh '/var/jenkins_home/workspace/${JOB_NAME}/build.sh ui'
+//       }
+// 	  }
+//     }
+    stage('Building our image') { 
+            steps { 
+                script { 
+                   docker.withRegistry( '', registryCredential ) { 
+                   dockerImage = docker.build(registry + ":" + BRANCH_NAME,"-f jenkins_corrections/Dockerfile .")
+                }
+                }
+            } 
+        }
+    stage('Deploy our image') { 
+            steps { 
+                script {  
+                    docker.withRegistry( '', registryCredential ) { 
+                        dockerImage.push()
+                    }
+                } 
+            }
+        }	
+	}
+	}

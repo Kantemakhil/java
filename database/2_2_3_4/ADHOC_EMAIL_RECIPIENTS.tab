@@ -1,0 +1,21 @@
+CREATE TABLE ADHOC_EMAIL_RECIPIENTS
+(EMAIL_ID    NUMBER(10),
+INTERNET_ADDRESS_CLASS    VARCHAR2(12),
+INTERNET_ADDRESS    VARCHAR2(240) 
+) 
+tablespace TAG_DATA
+  pctfree 10
+  initrans 1
+  maxtrans 255
+  storage
+  (
+    initial 2M
+    next 2M
+    minextents 1
+    maxextents unlimited
+  );
+
+
+ALTER TABLE ADHOC_EMAIL_RECIPIENTS 
+  add constraint ADHOC_EMAIL_RECIPIENTS_FK foreign key(EMAIL_ID) references CREATE_ADHOC_EMAIL(EMAIL_ID)  
+ deferrable;

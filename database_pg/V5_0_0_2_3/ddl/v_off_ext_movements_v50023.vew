@@ -1,0 +1,49 @@
+CREATE OR REPLACE VIEW oms_owner.v_off_ext_movements
+AS SELECT off_em.offender_book_id,
+    o.offender_id_display,
+    o.last_name,
+    o.first_name,
+    off_em.movement_seq,
+    off_em.movement_date,
+    off_em.movement_time,
+    off_em.internal_schedule_type,
+    off_em.internal_schedule_reason_code,
+    off_em.movement_type,
+    off_em.movement_reason_code,
+    off_em.direction_code,
+    off_em.arrest_agency_loc_id,
+    off_em.to_prov_stat_code,
+    off_em.escort_code,
+    off_em.from_agy_loc_id,
+    ( SELECT agency_locations.description
+           FROM agency_locations
+          WHERE agency_locations.agy_loc_id::text = off_em.from_agy_loc_id::text) AS from_agy_loc_desc,
+    off_em.to_agy_loc_id,
+    ( SELECT agency_locations.description
+           FROM agency_locations
+          WHERE agency_locations.agy_loc_id::text = off_em.to_agy_loc_id::text) AS to_agy_loc_desc,
+    off_em.active_flag,
+    off_em.escort_text,
+    off_em.comment_text,
+    off_em.reporting_date,
+    off_em.to_city,
+    ( SELECT reference_codes.description
+           FROM reference_codes
+          WHERE reference_codes.code::text = off_em.to_city::text AND reference_codes.domain::text = 'CITY'::text) AS to_city_desc,
+    off_em.from_city,
+    ( SELECT reference_codes.description
+           FROM reference_codes
+          WHERE reference_codes.code::text = off_em.from_city::text AND reference_codes.domain::text = 'CITY'::text) AS from_city_desc,
+    off_em.reporting_time,
+    off_em.to_address_id,
+    ( SELECT v_addresses.full_address
+           FROM v_addresses
+          WHERE v_addresses.address_id = off_em.to_address_id) AS to_address_desc,
+    off_em.from_address_id,
+    ( SELECT v_addresses.full_address
+           FROM v_addresses
+          WHERE v_addresses.address_id = off_em.from_address_id) AS from_address_desc
+   FROM offender_external_movements off_em,
+    offender_bookings ob,
+    offenders o
+  WHERE off_em.offender_book_id = ob.offender_book_id AND o.offender_id = ob.offender_id AND o.root_offender_id = ob.root_offender_id;

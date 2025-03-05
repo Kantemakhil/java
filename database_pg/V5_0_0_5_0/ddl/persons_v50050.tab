@@ -1,0 +1,1 @@
+comment on column persons.sex is 'The Socially defined gender of the person';

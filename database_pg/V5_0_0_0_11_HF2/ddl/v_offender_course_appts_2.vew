@@ -1,0 +1,1239 @@
+drop view v_offender_scheduled_trips;
+drop view v_route_occupancy;
+drop view v_transfer_waiting_lists;
+drop view v_assign_offender_trips;
+drop view v_local_trip_offenders;
+drop view v_local_trip_occupancy;
+
+drop view v_offender_all_schedules;
+drop view v_offender_all_schedules_new;
+drop view v_offender_all_schedules_2;
+drop view v_offender_course_events;
+drop view v_offender_course_appts_2;
+
+CREATE OR REPLACE VIEW oms_owner.v_offender_course_appts_2
+AS SELECT NULL::text AS event_id,
+    voad.offender_course_appt_grp_id,
+    voad.off_prgref_id,
+    voad.offender_course_appt_rule_id,
+    (voad.offender_course_appt_rule_id * 1000000000)::numeric + to_char(csd.schedule_date, 'YYYYMMDD'::text)::numeric AS crs_appt_id,
+    voad.start_date,
+    voad.end_date,
+    csd.schedule_date,
+    'SCH'::text AS event_status,
+    voad.week_day,
+    (csd.schedule_date::date + voad.start_time::time)::text::timestamp as start_time,
+    (csd.schedule_date::date + voad.end_time::time)::text::timestamp as end_time
+   FROM course_schedule_days csd,
+    v_off_appt_days voad,
+    offender_program_profiles opp
+  WHERE csd.week_day::text = voad.week_day AND csd.schedule_date >= voad.start_date AND csd.schedule_date <= COALESCE(voad.end_date, to_date('01/01/3000'::text, 'DD/MM/YYYY'::text)::timestamp without time zone) AND opp.off_prgref_id = voad.off_prgref_id AND NOT (EXISTS ( SELECT 'x'::text
+           FROM offender_course_attendances oca
+          WHERE oca.off_prgref_id = voad.off_prgref_id AND oca.reference_id = ((voad.offender_course_appt_rule_id * 1000000000)::numeric + to_char(csd.schedule_date, 'YYYYMMDD'::text)::numeric))) AND (opp.holiday_flag::text = 'N'::text OR NOT (EXISTS ( SELECT 'x'::text
+           FROM system_events se
+          WHERE se.event_type::text = 'HOL'::text AND csd.schedule_date >= se.event_date AND csd.schedule_date <= se.event_end_date)));
+
+ CREATE OR REPLACE VIEW oms_owner.v_offender_course_events
+AS SELECT NULL::bigint AS event_id,
+    opp.offender_book_id,
+    substr(
+        CASE
+            WHEN rc.parent_code::text = 'BOTH'::text THEN tag_prg_prg_event_class(opp.off_prgref_id)
+            ELSE rc.parent_code
+        END::text, 1, 12) AS event_class,
+    substr(COALESCE(ps.program_category, tag_prg_prg_event_type(ps.program_id))::text, 1, 12) AS event_type,
+    ca.course_activity_type AS event_sub_type,
+    opp.off_prgref_id,
+    cs.crs_sch_id AS reference_id,
+    cs.crs_sch_id,
+    NULL::numeric AS crs_appt_id,
+    opp.program_id,
+    ca.code AS course_code,
+    ca.description,
+    cs.crs_acty_id,
+    to_char(cs.schedule_date, 'DY'::text) AS weekday,
+    cs.schedule_date AS event_date,
+    cs.start_time,
+    cs.end_time,
+        CASE
+            WHEN rc.parent_code::text = 'COMM'::text THEN cs.start_time
+            ELSE NULL::timestamp without time zone
+        END AS in_time,
+        CASE
+            WHEN rc.parent_code::text = 'COMM'::text THEN cs.end_time
+            ELSE NULL::timestamp without time zone
+        END AS out_time,
+        CASE
+            WHEN opp.suspended_flag::text = 'N'::text THEN 'SCH'::text
+            ELSE 'CANC'::text
+        END AS event_status,
+    NULL::text AS event_outcome,
+    opp.agy_loc_id,
+    ca.internal_location_id AS to_internal_location_id,
+    NULL::text AS comment_text,
+    NULL::text AS outcome_reason_code,
+    NULL::bigint AS piece_work,
+    NULL::text AS engagement_code,
+    NULL::text AS understanding_code,
+    NULL::bigint AS credited_hours,
+    opp.agreed_travel_hour,
+    NULL::text AS behaviour_code,
+    NULL::text AS action_code,
+    NULL::date AS sick_note_received_date,
+    NULL::date AS sick_note_expiry_date,
+    NULL::character varying AS performance_code,
+    addr.owner_code AS to_agy_loc_id,
+    ca.services_address_id AS to_address_id,
+    NULL::text AS performance_desc,
+    NULL::text AS event_outcome_desc,
+    NULL::bigint AS supervisor_staff_id,
+    NULL::text AS unexcused_absence_flag,
+        CASE
+            WHEN
+            CASE
+                WHEN rc.parent_code::text = 'BOTH'::text THEN tag_prg_prg_event_class(opp.off_prgref_id)
+                ELSE rc.parent_code
+            END::text = 'EXT_MOV'::text THEN 'OUT'::text
+            ELSE NULL::text
+        END AS direction_code,
+    NULL::timestamp without time zone AS ext_move_out_time,
+    NULL::timestamp without time zone AS ext_move_in_time,
+        CASE
+            WHEN
+            CASE
+                WHEN rc.parent_code::text = 'BOTH'::text THEN tag_prg_prg_event_class(opp.off_prgref_id)
+                ELSE rc.parent_code
+            END::text = 'EXT_MOV'::text THEN cs.start_time
+            ELSE NULL::timestamp without time zone
+        END AS schedule_movement_time,
+    cs.session_no,
+    'V_CRS_GRP'::text AS record_source,
+    0 AS check_sum
+   FROM reference_codes rc,
+    program_services ps,
+    offender_program_profiles opp,
+    offender_bookings ob,
+    course_schedules cs,
+    course_activities ca
+     LEFT JOIN addresses addr ON ca.services_address_id = addr.address_id
+  WHERE opp.crs_acty_id = cs.crs_acty_id AND ca.crs_acty_id = opp.crs_acty_id AND ca.course_activity_type IS NOT NULL AND ca.course_activity_type::text <> ''::text AND opp.offender_program_status::text = 'ALLOC'::text AND ca.program_id = ps.program_id AND rc.domain::text = 'PS_CATEGORY'::text AND rc.code::text = COALESCE(ps.program_category, tag_prg_prg_event_type(ps.program_id))::text AND (rc.parent_code::text = ANY (ARRAY['COMM'::character varying::text, 'INT_MOV'::character varying::text, 'BOTH'::character varying::text, 'EXT_MOV'::character varying::text])) AND ca.active_flag::text = 'Y'::text AND ob.offender_book_id = opp.offender_book_id AND COALESCE(cs.catch_up_crs_sch_id::text, ''::text) = ''::text AND (COALESCE(cs.session_no::text, ''::text) = ''::text OR COALESCE(opp.start_session_no::text, ''::text) = ''::text OR cs.session_no >= opp.start_session_no) AND COALESCE(opp.offender_start_date, cs.schedule_date) <= cs.schedule_date AND COALESCE(COALESCE(opp.offender_end_date, ca.schedule_end_date), cs.schedule_date) >= cs.schedule_date AND NOT (EXISTS ( SELECT 'x'::text AS text
+           FROM offender_course_attendances oca
+          WHERE oca.offender_book_id = opp.offender_book_id AND oca.event_date = cs.schedule_date AND oca.crs_sch_id = cs.crs_sch_id)) AND cs.schedule_date > tag_schedule_schedule_date()
+UNION ALL
+ SELECT NULL::bigint AS event_id,
+    opp.offender_book_id,
+    substr(
+        CASE
+            WHEN rc.parent_code::text = 'BOTH'::text THEN tag_prg_prg_event_class(opp.off_prgref_id)
+            ELSE rc.parent_code
+        END::text, 1, 12) AS event_class,
+    substr(COALESCE(ps.program_category, tag_prg_prg_event_type(ps.program_id))::text, 1, 12) AS event_type,
+    ca.course_activity_type AS event_sub_type,
+    opp.off_prgref_id,
+    voca.crs_appt_id AS reference_id,
+    NULL::bigint AS crs_sch_id,
+    voca.crs_appt_id,
+    opp.program_id,
+    ca.code AS course_code,
+    ca.description,
+    opp.crs_acty_id,
+    to_char(voca.schedule_date, 'DY'::text) AS weekday,
+    voca.schedule_date AS event_date,
+    voca.start_time,
+    voca.end_time,
+        CASE
+            WHEN rc.parent_code::text = 'COMM'::text THEN voca.start_time
+            ELSE NULL::date
+        END AS in_time,
+        CASE
+            WHEN rc.parent_code::text = 'COMM'::text THEN voca.end_time
+            ELSE NULL::date
+        END AS out_time,
+        CASE
+            WHEN opp.suspended_flag::text = 'N'::text THEN 'SCH'::text
+            ELSE 'CANC'::text
+        END AS event_status,
+    NULL::text AS event_outcome,
+    opp.agy_loc_id,
+    ca.internal_location_id AS to_internal_location_id,
+    NULL::text AS comment_text,
+    NULL::text AS outcome_reason_code,
+    NULL::bigint AS piece_work,
+    NULL::text AS engagement_code,
+    NULL::text AS understanding_code,
+    NULL::bigint AS credited_hours,
+    NULL::numeric AS agreed_travel_hour,
+    NULL::text AS behaviour_code,
+    NULL::text AS action_code,
+    NULL::date AS sick_note_received_date,
+    NULL::date AS sick_note_expiry_date,
+    NULL::character varying AS performance_code,
+    addr.owner_code AS to_agy_loc_id,
+    ca.services_address_id AS to_address_id,
+    NULL::text AS performance_desc,
+    NULL::text AS event_outcome_desc,
+    NULL::bigint AS supervisor_staff_id,
+    NULL::text AS unexcused_absence_flag,
+        CASE
+            WHEN
+            CASE
+                WHEN rc.parent_code::text = 'BOTH'::text THEN tag_prg_prg_event_class(opp.off_prgref_id)
+                ELSE rc.parent_code
+            END::text = 'EXT_MOV'::text THEN 'OUT'::text
+            ELSE NULL::text
+        END AS direction_code,
+    NULL::timestamp without time zone AS ext_move_out_time,
+    NULL::timestamp without time zone AS ext_move_in_time,
+        CASE
+            WHEN
+            CASE
+                WHEN rc.parent_code::text = 'BOTH'::text THEN tag_prg_prg_event_class(opp.off_prgref_id)
+                ELSE rc.parent_code
+            END::text = 'EXT_MOV'::text THEN voca.start_time
+            ELSE NULL::date
+        END AS schedule_movement_time,
+    NULL::integer AS session_no,
+    'V_CRS_APPT'::text AS record_source,
+    0 AS check_sum
+   FROM v_offender_course_appts_2 voca,
+    reference_codes rc,
+    program_services ps,
+    offender_program_profiles opp,
+    offender_bookings bkg,
+    course_activities ca
+     LEFT JOIN addresses addr ON ca.services_address_id = addr.address_id
+  WHERE voca.off_prgref_id = opp.off_prgref_id AND voca.schedule_date > tag_schedule_schedule_date() AND opp.offender_program_status::text = 'ALLOC'::text AND voca.schedule_date >= opp.offender_start_date AND voca.schedule_date <= COALESCE(COALESCE(opp.offender_end_date, ca.schedule_end_date), to_date('30001231'::text, 'YYYYMMDD'::text)::timestamp without time zone) AND ca.crs_acty_id = opp.crs_acty_id AND ca.course_activity_type IS NOT NULL AND ca.course_activity_type::text <> ''::text AND ca.program_id = ps.program_id AND rc.domain::text = 'PS_CATEGORY'::text AND (rc.parent_code::text = ANY (ARRAY['COMM'::character varying::text, 'INT_MOV'::character varying::text, 'BOTH'::character varying::text, 'EXT_MOV'::character varying::text])) AND rc.code::text = COALESCE(ps.program_category, tag_prg_prg_event_type(ps.program_id))::text AND bkg.offender_book_id = opp.offender_book_id AND NOT (EXISTS ( SELECT 'x'::text AS text
+           FROM offender_course_attendances oca
+          WHERE oca.offender_book_id = opp.offender_book_id AND oca.event_date = voca.schedule_date AND oca.crs_appt_id = voca.crs_appt_id))
+UNION ALL
+ SELECT oca.event_id,
+    oca.offender_book_id,
+    oca.event_class,
+    oca.event_type,
+    oca.event_sub_type,
+    oca.off_prgref_id,
+    oca.reference_id,
+    oca.crs_sch_id,
+    oca.crs_appt_id,
+    opp.program_id,
+    ca.code AS course_code,
+    ca.description,
+    oca.crs_acty_id,
+    to_char(oca.event_date, 'DY'::text) AS weekday,
+    oca.event_date,
+    oca.start_time,
+    oca.end_time,
+    oca.in_time,
+    oca.out_time,
+    oca.event_status,
+    oca.event_outcome,
+    oca.agy_loc_id,
+    oca.to_internal_location_id,
+    oca.comment_text,
+    oca.outcome_reason_code,
+    oca.piece_work,
+    oca.engagement_code,
+    oca.understanding_code,
+    oca.credited_hours,
+    oca.agreed_travel_hour,
+    oca.behaviour_code,
+    oca.action_code,
+    oca.sick_note_received_date,
+    oca.sick_note_expiry_date,
+    oca.performance_code,
+    oca.to_agy_loc_id,
+    oca.to_address_id,
+    substr(oms_miscellaneous_getdesccode('PERFORMANCE'::character varying, oca.performance_code)::text, 1, 40) AS performance_desc,
+    substr(oms_miscellaneous_getdesccode('OUTCOMES'::character varying, oca.event_outcome)::text, 1, 40) AS event_outcome_desc,
+    oca.supervisor_staff_id,
+    oca.unexcused_absence_flag,
+    oca.direction_code,
+        CASE
+            WHEN oca.event_class::text = 'EXT_MOV'::text THEN tag_prg_external_movement_time(oca.event_id, 'OUT'::character varying)
+            ELSE NULL::timestamp without time zone
+        END AS ext_move_out_time,
+        CASE
+            WHEN oca.event_class::text = 'EXT_MOV'::text THEN tag_prg_external_movement_time(oca.event_id, 'IN'::character varying)
+            ELSE NULL::timestamp without time zone
+        END AS ext_move_in_time,
+        CASE
+            WHEN oca.direction_code::text = 'OUT'::text THEN oca.start_time
+            WHEN oca.direction_code::text = 'IN'::text THEN oca.end_time
+            ELSE NULL::timestamp without time zone
+        END AS schedule_movement_time,
+    oca.session_no,
+    'CRS_ATT'::text AS record_source,
+    tag_schedule_check_sum(COALESCE(oca.modify_datetime, oca.create_datetime)) AS check_sum
+   FROM offender_bookings bkg,
+    offender_course_attendances oca
+     LEFT JOIN offender_program_profiles opp ON oca.off_prgref_id = opp.off_prgref_id
+     LEFT JOIN course_activities ca ON opp.crs_acty_id = ca.crs_acty_id
+  WHERE oca.offender_book_id = bkg.offender_book_id AND oca.event_status::text <> 'DEL'::text;         
+         
+CREATE OR REPLACE VIEW oms_owner.v_offender_all_schedules_2
+AS SELECT sch.event_id,
+    sch.offender_book_id,
+        CASE
+            WHEN COALESCE(sch.agy_loc_id::text, ''::text) = ''::text THEN
+            CASE
+                WHEN COALESCE(sch.parent_event_id::text, ''::text) = ''::text THEN sch.agy_loc_id
+                ELSE
+                CASE
+                    WHEN sch.direction_code::text = 'IN'::text THEN ( SELECT schx.to_agy_loc_id
+                       FROM offender_ind_schedules schx
+                      WHERE schx.event_id = sch.parent_event_id AND schx.offender_book_id = sch.offender_book_id)
+                    ELSE sch.agy_loc_id
+                END
+            END
+            ELSE sch.agy_loc_id
+        END AS agy_loc_id,
+    sch.event_date,
+    sch.start_time,
+    sch.end_time,
+    sch.event_class,
+    sch.event_type,
+    sch.event_sub_type,
+    sch.event_status,
+    sch.event_outcome,
+    sch.confirm_flag,
+    sch.outcome_reason_code,
+    sch.comment_text,
+    sch.reference_id,
+    sch.application_date,
+    sch.application_time,
+    sch.return_date,
+    sch.return_time,
+    sch.to_agy_loc_id,
+    sch.escort_code,
+    sch.direction_code,
+        CASE
+            WHEN sch.direction_code::text = 'OUT'::text THEN sch.start_time
+            WHEN sch.direction_code::text = 'IN'::text THEN sch.end_time
+            ELSE NULL::timestamp without time zone
+        END AS schedule_movement_time,
+    sch.to_internal_location_id,
+    sch.from_city_code,
+    sch.to_city_code,
+    sch.credited_hours,
+    sch.piece_work,
+    sch.engagement_code,
+    sch.understanding_code,
+    sch.details,
+    sch.unpaid_work_behaviour,
+    sch.unpaid_work_action,
+    sch.sick_note_received_date,
+    sch.sick_note_expiry_date,
+    sch.unexcused_absence_flag,
+    sch.in_time,
+    sch.out_time,
+    sch.transport_code,
+    sch.performance_code,
+    sch.agreed_travel_hour,
+    sch.check_box_1,
+    sch.check_box_2,
+    sch.hidden_comment_text,
+    sch.in_charge_staff_id,
+    sch.off_prgref_id,
+    sch.contact_person_name,
+    sch.to_address_owner_class,
+    sch.to_address_id,
+    sch.to_corporate_id,
+    sch.unpaid_work_supervisor,
+    sch.ta_id,
+    'SCH'::text AS record_source,
+    tag_schedule_check_sum(COALESCE(sch.modify_datetime, sch.create_datetime)) AS check_sum,
+    sch.prov_state_code,
+    sch.scheduled_trip_id,
+    sch.sms_schedule_hours_before,
+    sch.email_schedule_hours_before,
+    sch.email_flag,
+    sch.sms_flag,
+    sch.email_sent_flag,
+    sch.sms_sent_flag,
+    sch.series_id
+   FROM offender_ind_schedules sch
+  WHERE sch.event_status::text <> 'DEL'::text
+UNION ALL
+ SELECT v_offender_course_events.event_id,
+    v_offender_course_events.offender_book_id,
+    v_offender_course_events.agy_loc_id,
+    v_offender_course_events.event_date,
+    v_offender_course_events.start_time,
+    v_offender_course_events.end_time,
+    v_offender_course_events.event_class,
+    v_offender_course_events.event_type,
+    v_offender_course_events.event_sub_type,
+    v_offender_course_events.event_status,
+    v_offender_course_events.event_outcome,
+    NULL::character varying AS confirm_flag,
+    v_offender_course_events.outcome_reason_code,
+    v_offender_course_events.comment_text,
+    v_offender_course_events.reference_id,
+    NULL::timestamp without time zone AS application_date,
+    NULL::timestamp without time zone AS application_time,
+    NULL::timestamp without time zone AS return_date,
+    NULL::timestamp without time zone AS return_time,
+    v_offender_course_events.to_agy_loc_id,
+    NULL::character varying AS escort_code,
+    v_offender_course_events.direction_code,
+    v_offender_course_events.schedule_movement_time,
+    v_offender_course_events.to_internal_location_id,
+    NULL::character varying AS from_city_code,
+    NULL::character varying AS to_city_code,
+    v_offender_course_events.credited_hours,
+    v_offender_course_events.piece_work,
+    v_offender_course_events.engagement_code,
+    v_offender_course_events.understanding_code,
+    NULL::character varying AS details,
+    v_offender_course_events.behaviour_code AS unpaid_work_behaviour,
+    v_offender_course_events.action_code AS unpaid_work_action,
+    v_offender_course_events.sick_note_received_date,
+    v_offender_course_events.sick_note_expiry_date,
+    v_offender_course_events.unexcused_absence_flag,
+    v_offender_course_events.in_time,
+    v_offender_course_events.out_time,
+    NULL::character varying AS transport_code,
+    v_offender_course_events.performance_code,
+    v_offender_course_events.agreed_travel_hour,
+    NULL::character varying AS check_box_1,
+    NULL::character varying AS check_box_2,
+    NULL::character varying AS hidden_comment_text,
+    v_offender_course_events.supervisor_staff_id AS in_charge_staff_id,
+    v_offender_course_events.off_prgref_id,
+    NULL::character varying AS contact_person_name,
+    NULL::character varying AS to_address_owner_class,
+    v_offender_course_events.to_address_id,
+    NULL::bigint AS to_corporate_id,
+    NULL::character varying AS unpaid_work_supervisor,
+    NULL::bigint AS ta_id,
+    'V_OFF_CRS'::text AS record_source,
+    v_offender_course_events.check_sum,
+    NULL::character varying AS prov_state_code,
+    NULL::bigint AS scheduled_trip_id,
+    NULL::bigint AS sms_schedule_hours_before,
+    NULL::bigint AS email_schedule_hours_before,
+    NULL::character varying AS email_flag,
+    NULL::character varying AS sms_flag,
+    NULL::character varying AS email_sent_flag,
+    NULL::character varying AS sms_sent_flag,
+    NULL::bigint AS series_id
+   FROM v_offender_course_events
+UNION ALL
+ SELECT ce.event_id,
+    ce.offender_book_id,
+        CASE
+            WHEN ce.direction_code::text = 'OUT'::text THEN bkg.agy_loc_id
+            ELSE ( SELECT cex.agy_loc_id
+               FROM court_events cex
+              WHERE cex.event_id = ce.parent_event_id)
+        END AS agy_loc_id,
+    ce.event_date,
+    ce.start_time,
+    ce.end_time,
+        CASE
+            WHEN bkg.in_out_status::text = 'IN'::text THEN
+            CASE
+                WHEN bkg.active_flag::text = 'Y'::text THEN 'EXT_MOV'::text
+                ELSE 'COMM'::text
+            END
+            WHEN bkg.in_out_status::text = 'OUT'::text THEN
+            CASE
+                WHEN bkg.active_flag::text = 'Y'::text THEN 'EXT_MOV'::text
+                ELSE 'COMM'::text
+            END
+            ELSE 'COMM'::text
+        END AS event_class,
+    'CRT'::character varying AS event_type,
+    ce.court_event_type AS event_sub_type,
+        CASE
+            WHEN COALESCE(ce.event_status::text, ''::text) = ''::text THEN 'SCH'::character varying
+            ELSE ce.event_status
+        END AS event_status,
+    ce.event_outcome,
+        CASE
+            WHEN ce.event_status::text = 'CONF'::text THEN 'Y'::text
+            ELSE 'N'::text
+        END AS confirm_flag,
+    ce.outcome_reason_code,
+    ce.comment_text,
+    ce.case_id AS reference_id,
+    NULL::timestamp without time zone AS application_date,
+    NULL::timestamp without time zone AS application_time,
+    NULL::timestamp without time zone AS return_date,
+    NULL::timestamp without time zone AS return_time,
+    ce.agy_loc_id AS to_agy_loc_id,
+    NULL::character varying AS escort_code,
+    ce.direction_code,
+    ce.start_time AS schedule_movement_time,
+    NULL::bigint AS to_internal_location_id,
+    NULL::character varying AS from_city_code,
+    NULL::character varying AS to_city_code,
+    NULL::numeric AS credited_hours,
+    NULL::numeric AS piece_work,
+    NULL::character varying AS engagement_code,
+    NULL::character varying AS understanding_code,
+    NULL::character varying AS details,
+    NULL::character varying AS unpaid_work_behaviour,
+    NULL::character varying AS unpaid_work_action,
+    NULL::timestamp without time zone AS sick_note_received_date,
+    NULL::timestamp without time zone AS sick_note_expiry_date,
+    NULL::character varying AS unexcused_absence_flag,
+    NULL::timestamp without time zone AS in_time,
+    NULL::timestamp without time zone AS out_time,
+    NULL::character varying AS transport_code,
+    NULL::character varying AS performance_code,
+    NULL::numeric AS agreed_travel_hour,
+    NULL::character varying AS check_box_1,
+    NULL::character varying AS check_box_2,
+    NULL::character varying AS hidden_comment_text,
+    NULL::bigint AS in_charge_staff_id,
+    NULL::bigint AS off_prgref_id,
+    NULL::character varying AS contact_person_name,
+    NULL::character varying AS to_address_owner_class,
+    NULL::bigint AS to_address_id,
+    NULL::bigint AS to_corporate_id,
+    NULL::character varying AS unpaid_work_supervisor,
+    NULL::bigint AS ta_id,
+    'COURT'::text AS record_source,
+    tag_schedule_check_sum(COALESCE(ce.modify_datetime, ce.create_datetime)) AS check_sum,
+    NULL::character varying AS prov_state_code,
+    ce.scheduled_trip_id,
+    NULL::bigint AS sms_schedule_hours_before,
+    NULL::bigint AS email_schedule_hours_before,
+    NULL::character varying AS email_flag,
+    NULL::character varying AS sms_flag,
+    NULL::character varying AS email_sent_flag,
+    NULL::character varying AS sms_sent_flag,
+    NULL::bigint AS series_id
+   FROM court_events ce,
+    offender_bookings bkg
+  WHERE ce.offender_book_id = bkg.offender_book_id
+UNION ALL
+ SELECT NULL::bigint AS event_id,
+    v_offender_ta_schedules.offender_book_id,
+    v_offender_ta_schedules.agy_loc_id,
+    v_offender_ta_schedules.out_date AS event_date,
+    v_offender_ta_schedules.out_time AS start_time,
+    NULL::timestamp without time zone AS end_time,
+    'EXT_MOV'::character varying AS event_class,
+    v_offender_ta_schedules.event_type,
+    v_offender_ta_schedules.event_sub_type,
+    'SCH'::character varying AS event_status,
+    NULL::character varying AS event_outcome,
+    NULL::character varying AS confirm_flag,
+    NULL::character varying AS outcome_reason_code,
+    NULL::character varying AS comment_text,
+    v_offender_ta_schedules.reference_id,
+    NULL::timestamp without time zone AS application_date,
+    NULL::timestamp without time zone AS application_time,
+    v_offender_ta_schedules.in_date AS return_date,
+    v_offender_ta_schedules.in_time AS return_time,
+    v_offender_ta_schedules.to_agy_loc_id,
+    v_offender_ta_schedules.escort_code,
+    'OUT'::character varying AS direction_code,
+    NULL::timestamp without time zone AS schedule_movement_time,
+    NULL::bigint AS to_internal_location_id,
+    NULL::character varying AS from_city_code,
+    v_offender_ta_schedules.city_code AS to_city_code,
+    NULL::numeric AS credited_hours,
+    NULL::numeric AS piece_work,
+    NULL::character varying AS engagement_code,
+    NULL::character varying AS understanding_code,
+    NULL::character varying AS details,
+    NULL::character varying AS unpaid_work_behaviour,
+    NULL::character varying AS unpaid_work_action,
+    NULL::timestamp without time zone AS sick_note_received_date,
+    NULL::timestamp without time zone AS sick_note_expiry_date,
+    NULL::character varying AS unexcused_absence_flag,
+    NULL::timestamp without time zone AS in_time,
+    NULL::timestamp without time zone AS out_time,
+    NULL::character varying AS transport_code,
+    NULL::character varying AS performance_code,
+    NULL::numeric AS agreed_travel_hour,
+    NULL::character varying AS check_box_1,
+    NULL::character varying AS check_box_2,
+    NULL::character varying AS hidden_comment_text,
+    NULL::bigint AS in_charge_staff_id,
+    NULL::bigint AS off_prgref_id,
+    NULL::character varying AS contact_person_name,
+    NULL::character varying AS to_address_owner_class,
+    NULL::bigint AS to_address_id,
+    NULL::bigint AS to_corporate_id,
+    NULL::character varying AS unpaid_work_supervisor,
+    v_offender_ta_schedules.ta_id,
+    'V_TEMP_ABS'::text AS record_source,
+    0 AS check_sum,
+    NULL::character varying AS prov_state_code,
+    NULL::bigint AS scheduled_trip_id,
+    NULL::bigint AS sms_schedule_hours_before,
+    NULL::bigint AS email_schedule_hours_before,
+    NULL::character varying AS email_flag,
+    NULL::character varying AS sms_flag,
+    NULL::character varying AS email_sent_flag,
+    NULL::character varying AS sms_sent_flag,
+    NULL::bigint AS series_id
+   FROM v_offender_ta_schedules
+UNION ALL
+ SELECT ov.event_id,
+    ov.offender_book_id,
+    ov.agy_loc_id,
+    ov.visit_date AS event_date,
+    ov.start_time,
+    ov.end_time,
+    'INT_MOV'::character varying AS event_class,
+    'VISIT'::character varying AS event_type,
+    'VISIT'::character varying AS event_sub_type,
+    ov.event_status,
+    ov.event_outcome,
+    NULL::character varying AS confirm_flag,
+    ov.outcome_reason_code,
+    ov.comment_text,
+    NULL::numeric AS reference_id,
+    NULL::timestamp without time zone AS application_date,
+    NULL::timestamp without time zone AS application_time,
+    NULL::timestamp without time zone AS return_date,
+    NULL::timestamp without time zone AS return_time,
+    ov.agy_loc_id AS to_agy_loc_id,
+    NULL::character varying AS escort_code,
+    NULL::character varying AS direction_code,
+    NULL::timestamp without time zone AS schedule_movement_time,
+    ov.visit_internal_location_id AS to_internal_location_id,
+    NULL::character varying AS from_city_code,
+    NULL::character varying AS to_city_code,
+    NULL::numeric AS credited_hours,
+    NULL::numeric AS piece_work,
+    NULL::character varying AS engagement_code,
+    NULL::character varying AS understanding_code,
+    NULL::character varying AS details,
+    NULL::character varying AS unpaid_work_behaviour,
+    NULL::character varying AS unpaid_work_action,
+    NULL::timestamp without time zone AS sick_note_received_date,
+    NULL::timestamp without time zone AS sick_note_expiry_date,
+    NULL::character varying AS unexcused_absence_flag,
+    ov.start_time AS in_time,
+    ov.end_time AS out_time,
+    NULL::character varying AS transport_code,
+    NULL::character varying AS performance_code,
+    NULL::numeric AS agreed_travel_hour,
+    NULL::character varying AS check_box_1,
+    NULL::character varying AS check_box_2,
+    NULL::character varying AS hidden_comment_text,
+    NULL::bigint AS in_charge_staff_id,
+    NULL::bigint AS off_prgref_id,
+    NULL::character varying AS contact_person_name,
+    NULL::character varying AS to_address_owner_class,
+    NULL::bigint AS to_address_id,
+    NULL::bigint AS to_corporate_id,
+    NULL::character varying AS unpaid_work_supervisor,
+    NULL::bigint AS ta_id,
+    'OFF_VIS'::text AS record_source,
+    ov.check_sum,
+    NULL::character varying AS prov_state_code,
+    NULL::bigint AS scheduled_trip_id,
+    NULL::bigint AS sms_schedule_hours_before,
+    NULL::bigint AS email_schedule_hours_before,
+    NULL::character varying AS email_flag,
+    NULL::character varying AS sms_flag,
+    NULL::character varying AS email_sent_flag,
+    NULL::character varying AS sms_sent_flag,
+    NULL::bigint AS series_id
+   FROM v_offender_visit_schedules ov
+  WHERE ov.event_id IS NOT NULL AND ov.event_id::text <> ''::text AND ov.offender_book_id IS NOT NULL AND ov.offender_book_id::text <> ''::text
+UNION ALL
+ SELECT oh.event_id,
+    aip.offender_book_id,
+    ail.agy_loc_id,
+    oh.hearing_date AS event_date,
+    oh.hearing_time AS start_time,
+    NULL::timestamp without time zone AS end_time,
+    'INT_MOV'::character varying AS event_class,
+    'OIC'::character varying AS event_type,
+    'OIC'::character varying AS event_sub_type,
+    oh.event_status,
+    NULL::character varying AS event_outcome,
+    NULL::character varying AS confirm_flag,
+    NULL::character varying AS outcome_reason_code,
+    oh.comment_text,
+    oh.oic_hearing_id AS reference_id,
+    NULL::timestamp without time zone AS application_date,
+    NULL::timestamp without time zone AS application_time,
+    NULL::timestamp without time zone AS return_date,
+    NULL::timestamp without time zone AS return_time,
+    ail.agy_loc_id AS to_agy_loc_id,
+    NULL::character varying AS escort_code,
+    NULL::character varying AS direction_code,
+    NULL::timestamp without time zone AS schedule_movement_time,
+    oh.internal_location_id AS to_internal_location_id,
+    NULL::character varying AS from_city_code,
+    NULL::character varying AS to_city_code,
+    NULL::numeric AS credited_hours,
+    NULL::numeric AS piece_work,
+    NULL::character varying AS engagement_code,
+    NULL::character varying AS understanding_code,
+    NULL::character varying AS details,
+    NULL::character varying AS unpaid_work_behaviour,
+    NULL::character varying AS unpaid_work_action,
+    NULL::timestamp without time zone AS sick_note_received_date,
+    NULL::timestamp without time zone AS sick_note_expiry_date,
+    NULL::character varying AS unexcused_absence_flag,
+    oh.hearing_time AS in_time,
+    NULL::timestamp without time zone AS out_time,
+    NULL::character varying AS transport_code,
+    NULL::character varying AS performance_code,
+    NULL::numeric AS agreed_travel_hour,
+    NULL::character varying AS check_box_1,
+    NULL::character varying AS check_box_2,
+    NULL::character varying AS hidden_comment_text,
+    oh.hearing_staff_id AS in_charge_staff_id,
+    NULL::bigint AS off_prgref_id,
+    NULL::character varying AS contact_person_name,
+    NULL::character varying AS to_address_owner_class,
+    NULL::bigint AS to_address_id,
+    NULL::bigint AS to_corporate_id,
+    NULL::character varying AS unpaid_work_supervisor,
+    NULL::bigint AS ta_id,
+    'OIC_HEARING'::text AS record_source,
+    tag_schedule_check_sum(COALESCE(oh.modify_datetime, oh.create_datetime)) AS check_sum,
+    NULL::character varying AS prov_state_code,
+    NULL::bigint AS scheduled_trip_id,
+    NULL::bigint AS sms_schedule_hours_before,
+    NULL::bigint AS email_schedule_hours_before,
+    NULL::character varying AS email_flag,
+    NULL::character varying AS sms_flag,
+    NULL::character varying AS email_sent_flag,
+    NULL::character varying AS sms_sent_flag,
+    NULL::bigint AS series_id
+   FROM agency_incident_parties aip,
+    oic_hearings oh
+     LEFT JOIN agency_internal_locations ail ON oh.internal_location_id = ail.internal_location_id
+  WHERE oh.oic_incident_id = aip.oic_incident_id AND oh.hearing_date IS NOT NULL AND oh.hearing_date::text <> ''::text AND aip.offender_book_id IS NOT NULL AND aip.offender_book_id::text <> ''::text
+UNION ALL
+ SELECT ord.event_id,
+    ord.offender_book_id,
+    bkg.agy_loc_id,
+    ord.release_date AS event_date,
+    NULL::timestamp without time zone AS start_time,
+    NULL::timestamp without time zone AS end_time,
+    'EXT_MOV'::character varying AS event_class,
+    ord.movement_type AS event_type,
+    ord.movement_reason_code AS event_sub_type,
+    ord.event_status,
+    NULL::character varying AS event_outcome,
+    NULL::character varying AS confirm_flag,
+    NULL::character varying AS outcome_reason_code,
+    ord.comment_text,
+    NULL::numeric AS reference_id,
+    NULL::timestamp without time zone AS application_date,
+    NULL::timestamp without time zone AS application_time,
+    NULL::timestamp without time zone AS return_date,
+    NULL::timestamp without time zone AS return_time,
+    NULL::character varying AS to_agy_loc_id,
+    NULL::character varying AS escort_code,
+    NULL::character varying AS direction_code,
+    NULL::timestamp without time zone AS schedule_movement_time,
+    NULL::bigint AS to_internal_location_id,
+    NULL::character varying AS from_city_code,
+    NULL::character varying AS to_city_code,
+    NULL::numeric AS credited_hours,
+    NULL::numeric AS piece_work,
+    NULL::character varying AS engagement_code,
+    NULL::character varying AS understanding_code,
+    NULL::character varying AS details,
+    NULL::character varying AS unpaid_work_behaviour,
+    NULL::character varying AS unpaid_work_action,
+    NULL::timestamp without time zone AS sick_note_received_date,
+    NULL::timestamp without time zone AS sick_note_expiry_date,
+    NULL::character varying AS unexcused_absence_flag,
+    NULL::timestamp without time zone AS in_time,
+    NULL::timestamp without time zone AS out_time,
+    NULL::character varying AS transport_code,
+    NULL::character varying AS performance_code,
+    NULL::numeric AS agreed_travel_hour,
+    NULL::character varying AS check_box_1,
+    NULL::character varying AS check_box_2,
+    NULL::character varying AS hidden_comment_text,
+    NULL::bigint AS in_charge_staff_id,
+    NULL::bigint AS off_prgref_id,
+    NULL::character varying AS contact_person_name,
+    NULL::character varying AS to_address_owner_class,
+    NULL::bigint AS to_address_id,
+    NULL::bigint AS to_corporate_id,
+    NULL::character varying AS unpaid_work_supervisor,
+    NULL::bigint AS ta_id,
+    'OFF_REL'::text AS record_source,
+    tag_schedule_check_sum(COALESCE(ord.modify_datetime, ord.create_datetime)) AS check_sum,
+    NULL::character varying AS prov_state_code,
+    NULL::bigint AS scheduled_trip_id,
+    NULL::bigint AS sms_schedule_hours_before,
+    NULL::bigint AS email_schedule_hours_before,
+    NULL::character varying AS email_flag,
+    NULL::character varying AS sms_flag,
+    NULL::character varying AS email_sent_flag,
+    NULL::character varying AS sms_sent_flag,
+    NULL::bigint AS series_id
+   FROM offender_release_details ord,
+    offender_bookings bkg
+  WHERE ord.offender_book_id = bkg.offender_book_id;
+ 
+ CREATE OR REPLACE VIEW oms_owner.v_offender_all_schedules
+AS SELECT sch.event_id,
+    sch.offender_book_id,
+    bkg.in_out_status,
+    bkg.booking_no,
+    bkg.active_flag AS booking_active_flag,
+    bkg.offender_id,
+    off.offender_id_display,
+    off.last_name AS offender_last_name,
+    off.first_name AS offender_first_name,
+    sch.event_date,
+    sch.start_time,
+    sch.end_time,
+    sch.event_class,
+    sch.event_type,
+    substr(tag_schedule_event_type_desc(sch.event_class, sch.event_type)::text, 1, 40) AS event_type_desc,
+    sch.event_sub_type,
+    substr(tag_schedule_event_sub_type_desc(sch.event_class, sch.event_type, sch.event_sub_type)::text, 1, 40) AS event_sub_type_desc,
+        CASE
+            WHEN sch.event_status::text = 'SCH'::text THEN 'Y'::text
+            ELSE 'N'::text
+        END AS active_flag,
+    sch.event_status,
+    substr(oms_miscellaneous_getdesccode('EVENT_STS'::character varying, sch.event_status)::text, 1, 40) AS event_status_desc,
+    sch.event_outcome,
+    substr(oms_miscellaneous_getdesccode('OUTCOMES'::character varying, sch.event_outcome)::text, 1, 40) AS event_outcome_desc,
+    substr(tag_schedule_busy_date_flag(sch.offender_book_id, sch.event_date)::text, 1, 1) AS busy_date_flag,
+    sch.outcome_reason_code,
+    sch.reference_id,
+    sch.application_date,
+    sch.application_time,
+    sch.return_date,
+    sch.return_time,
+    sch.comment_text,
+    sch.details,
+    sch.agy_loc_id,
+    agy.description AS agy_loc_desc,
+    bkg.living_unit_id,
+    lu.description AS living_unit_desc,
+    lu.level_1_code AS lu_level_1_code,
+    lu.level_2_code AS lu_level_2_code,
+    lu.level_3_code AS lu_level_3_code,
+    lu.level_4_code AS lu_level_4_code,
+    bkg.agency_iml_id,
+    ail2.description AS agency_iml_desc,
+    substr(tag_int_loc_level_code(ail2.description, 1)::text, 1, 40) AS agency_iml_level_1_code,
+    substr(tag_int_loc_level_code(ail2.description, 2)::text, 1, 40) AS agency_iml_level_2_code,
+    substr(tag_int_loc_level_code(ail2.description, 3)::text, 1, 40) AS agency_iml_level_3_code,
+    sch.to_agy_loc_id,
+    agy2.description AS to_agy_loc_desc,
+    sch.to_agy_loc_id AS to_loc,
+    agy2.description AS to_loc_desc,
+    sch.escort_code,
+    substr(oms_miscellaneous_getdesccode('ESCORT'::character varying, sch.escort_code)::text, 1, 40) AS escort_desc,
+    sch.direction_code,
+    sch.schedule_movement_time,
+    sch.from_city_code,
+    substr(oms_miscellaneous_getdesccode('CITY'::character varying, sch.from_city_code)::text, 1, 40) AS from_city_name,
+    sch.to_city_code,
+    substr(oms_miscellaneous_getdesccode('CITY'::character varying, sch.to_city_code)::text, 1, 40) AS to_city_name,
+    sch.to_internal_location_id,
+    ail.description AS to_internal_location_desc,
+    substr(tag_int_loc_level_code(ail.description, 1)::text, 1, 40) AS to_int_loc_level_1_code,
+    substr(tag_int_loc_level_code(ail.description, 2)::text, 1, 40) AS to_int_loc_level_2_code,
+    substr(tag_int_loc_level_code(ail.description, 3)::text, 1, 40) AS to_int_loc_level_3_code,
+    ail.user_desc AS to_int_loc_user_desc,
+    sch.credited_hours,
+    sch.engagement_code,
+    sch.understanding_code,
+    sch.piece_work,
+    sch.in_time,
+    sch.out_time,
+    sch.performance_code,
+    sch.transport_code,
+    sch.sick_note_expiry_date,
+    sch.sick_note_received_date,
+    sch.unexcused_absence_flag,
+    sch.unpaid_work_action,
+    sch.unpaid_work_behaviour,
+    sch.agreed_travel_hour,
+    sch.check_box_1,
+    sch.check_box_2,
+    sch.hidden_comment_text,
+    sch.in_charge_staff_id,
+    substr(
+        CASE
+            WHEN COALESCE(sch.in_charge_staff_id::text, ''::text) = ''::text THEN ' '::text
+            ELSE (stf.last_name::text || ', '::text) || stf.first_name::text
+        END, 1, 40) AS in_charge_staff_name,
+    sch.off_prgref_id,
+    sch.contact_person_name,
+    sch.to_address_owner_class,
+    sch.to_address_id,
+    sch.unpaid_work_supervisor,
+    sch.ta_id,
+    sch.record_source,
+    sch.check_sum,
+    sch.prov_state_code,
+    substr(oms_miscellaneous_getdesccode('PROV_STATE'::character varying, sch.prov_state_code)::text, 1, 40) AS prov_state_desc,
+    sch.scheduled_trip_id,
+    sch.sms_schedule_hours_before,
+    sch.email_schedule_hours_before,
+    sch.email_flag,
+    sch.sms_flag,
+    sch.email_sent_flag,
+    sch.sms_sent_flag,
+    sch.series_id
+   FROM offenders off,
+    v_offender_all_schedules_2 sch
+     LEFT JOIN agency_locations agy ON sch.agy_loc_id::text = agy.agy_loc_id::text
+     LEFT JOIN agency_locations agy2 ON sch.to_agy_loc_id::text = agy2.agy_loc_id::text
+     LEFT JOIN agency_internal_locations ail ON sch.to_internal_location_id = ail.internal_location_id
+     LEFT JOIN staff_members stf ON sch.in_charge_staff_id = stf.staff_id,
+    offender_bookings bkg
+     LEFT JOIN agency_internal_locations ail2 ON bkg.agency_iml_id = ail2.internal_location_id
+     LEFT JOIN living_units lu ON bkg.living_unit_id = lu.living_unit_id
+  WHERE sch.offender_book_id = bkg.offender_book_id AND bkg.offender_id = off.offender_id;
+ 
+ CREATE OR REPLACE VIEW oms_owner.v_offender_all_schedules_new
+AS SELECT sch.event_id,
+    sch.offender_book_id,
+    bkg.in_out_status,
+    bkg.booking_no,
+    bkg.active_flag AS booking_active_flag,
+    bkg.offender_id,
+    off.offender_id_display,
+    off.last_name AS offender_last_name,
+    off.first_name AS offender_first_name,
+    sch.event_date,
+    sch.start_time,
+    sch.end_time,
+    sch.event_class,
+    sch.event_type,
+    sch.event_sub_type,
+    sch.event_status,
+    sch.event_outcome,
+    sch.outcome_reason_code,
+    sch.reference_id,
+    sch.application_date,
+    sch.application_time,
+    sch.return_date,
+    sch.return_time,
+    sch.comment_text,
+    sch.details,
+    sch.agy_loc_id,
+    agy.description AS agy_loc_desc,
+    bkg.living_unit_id,
+    lu.description AS living_unit_desc,
+    bkg.agency_iml_id,
+    ail2.description AS agency_iml_desc,
+    sch.to_agy_loc_id,
+    agy2.description AS to_agy_loc_desc,
+    sch.to_agy_loc_id AS to_loc,
+    agy2.description AS to_loc_desc,
+    sch.escort_code,
+    sch.direction_code,
+    sch.schedule_movement_time,
+    sch.from_city_code,
+    sch.to_city_code,
+    sch.to_internal_location_id,
+    ail.description AS to_internal_location_desc,
+    ail.user_desc AS to_int_loc_user_desc,
+    sch.credited_hours,
+    sch.engagement_code,
+    sch.understanding_code,
+    sch.piece_work,
+    sch.in_time,
+    sch.out_time,
+    sch.performance_code,
+    sch.transport_code,
+    sch.sick_note_expiry_date,
+    sch.sick_note_received_date,
+    sch.unexcused_absence_flag,
+    sch.unpaid_work_action,
+    sch.unpaid_work_behaviour,
+    sch.agreed_travel_hour,
+    sch.check_box_1,
+    sch.check_box_2,
+    sch.hidden_comment_text,
+    sch.in_charge_staff_id,
+    sch.off_prgref_id,
+    sch.contact_person_name,
+    sch.to_address_owner_class,
+    sch.to_address_id,
+    sch.unpaid_work_supervisor,
+    sch.ta_id,
+    sch.record_source,
+    sch.check_sum,
+    sch.prov_state_code,
+    sch.scheduled_trip_id,
+    sch.sms_schedule_hours_before,
+    sch.email_schedule_hours_before,
+    sch.email_flag,
+    sch.sms_flag,
+    sch.email_sent_flag,
+    sch.sms_sent_flag,
+    sch.series_id
+   FROM offenders off,
+    v_offender_all_schedules_2 sch
+     LEFT JOIN agency_locations agy ON sch.agy_loc_id::text = agy.agy_loc_id::text
+     LEFT JOIN agency_locations agy2 ON sch.to_agy_loc_id::text = agy2.agy_loc_id::text
+     LEFT JOIN agency_internal_locations ail ON sch.to_internal_location_id = ail.internal_location_id
+     LEFT JOIN staff_members stf ON sch.in_charge_staff_id = stf.staff_id,
+    offender_bookings bkg
+     LEFT JOIN agency_internal_locations ail2 ON bkg.agency_iml_id = ail2.internal_location_id
+     LEFT JOIN living_units_new lu ON bkg.living_unit_id = lu.living_unit_id
+  WHERE sch.offender_book_id = bkg.offender_book_id AND bkg.offender_id = off.offender_id;
+ 
+ CREATE OR REPLACE VIEW oms_owner.v_offender_scheduled_trips
+AS SELECT oas.scheduled_trip_id,
+    oas.offender_id_display,
+    oas.offender_book_id,
+    oas.offender_last_name,
+    oas.offender_first_name,
+    oas.living_unit_desc AS from_location_desc,
+    oas.agy_loc_id,
+    oas.to_agy_loc_id,
+    oas.event_date,
+    oas.start_time,
+    oas.event_status,
+    oas.event_type,
+    oas.event_sub_type,
+    oas.offender_id,
+    oas.event_id,
+    oas.record_source
+   FROM v_offender_all_schedules oas
+  WHERE (oas.record_source = ANY (ARRAY['SCH'::text, 'COURT'::text])) AND oas.scheduled_trip_id IS NOT NULL AND oas.scheduled_trip_id::text <> ''::text;
+
+
+
+
+CREATE OR REPLACE VIEW oms_owner.v_local_trip_occupancy
+AS SELECT st.scheduled_trip_id,
+    v.route_name,
+    v.from_seq,
+    v.to_seq,
+    v.from_agy_loc_id,
+    v.to_agy_loc_id,
+    v.segment_length,
+    count(*) AS occupancy
+   FROM v_route_locations v,
+    ( SELECT v_offender_all_schedules.scheduled_trip_id,
+            v_offender_all_schedules.agy_loc_id,
+            v_offender_all_schedules.to_agy_loc_id
+           FROM v_offender_all_schedules
+          WHERE (v_offender_all_schedules.record_source = ANY (ARRAY['SCH'::text, 'COURT'::text])) AND (v_offender_all_schedules.event_status::text = ANY (ARRAY['SCH'::character varying::text, 'PEN'::character varying::text])) AND v_offender_all_schedules.scheduled_trip_id IS NOT NULL AND v_offender_all_schedules.scheduled_trip_id::text <> ''::text
+        UNION ALL
+         SELECT non_admitted_inmate_mvmts.scheduled_trip_id,
+            non_admitted_inmate_mvmts.from_agy_loc_id,
+            non_admitted_inmate_mvmts.to_agy_loc_id
+           FROM non_admitted_inmate_mvmts
+          WHERE non_admitted_inmate_mvmts.scheduled_trip_id IS NOT NULL AND non_admitted_inmate_mvmts.scheduled_trip_id::text <> ''::text) sch,
+    scheduled_trips st
+  WHERE st.scheduled_trip_id = sch.scheduled_trip_id AND st.route_name::text = v.route_name::text AND v.from_seq >= (( SELECT max(lpad(rsd.leg_id::character varying::text, 4, '0'::text) || lpad(rsd.leg_seq::character varying::text, 4, '0'::text)) AS max
+           FROM route_stop_details rsd
+          WHERE rsd.agy_loc_id::text = sch.agy_loc_id::text AND rsd.route_name::text = v.route_name::text AND rsd.active_flag::text = 'Y'::text AND (lpad(rsd.leg_id::character varying::text, 4, '0'::text) || lpad(rsd.leg_seq::character varying::text, 4, '0'::text)) < (( SELECT max(lpad(rsdx.leg_id::character varying::text, 4, '0'::text) || lpad(rsdx.leg_seq::character varying::text, 4, '0'::text)) AS max
+                   FROM route_stop_details rsdx
+                  WHERE rsdx.route_name::text = v.route_name::text AND rsdx.agy_loc_id::text = sch.to_agy_loc_id::text AND rsdx.active_flag::text = 'Y'::text)))) AND v.from_seq < (( SELECT min(lpad(rsd.leg_id::character varying::text, 4, '0'::text) || lpad(rsd.leg_seq::character varying::text, 4, '0'::text)) AS min
+           FROM route_stop_details rsd
+          WHERE rsd.agy_loc_id::text = sch.to_agy_loc_id::text AND rsd.route_name::text = v.route_name::text AND rsd.active_flag::text = 'Y'::text AND (lpad(rsd.leg_id::character varying::text, 4, '0'::text) || lpad(rsd.leg_seq::character varying::text, 4, '0'::text)) > (( SELECT max(lpad(rsd2.leg_id::character varying::text, 4, '0'::text) || lpad(rsd2.leg_seq::character varying::text, 4, '0'::text)) AS max
+                   FROM route_stop_details rsd2
+                  WHERE rsd2.agy_loc_id::text = sch.agy_loc_id::text AND rsd2.route_name::text = v.route_name::text AND rsd2.active_flag::text = 'Y'::text AND (lpad(rsd2.leg_id::character varying::text, 4, '0'::text) || lpad(rsd2.leg_seq::character varying::text, 4, '0'::text)) < (( SELECT max(lpad(rsdx.leg_id::character varying::text, 4, '0'::text) || lpad(rsdx.leg_seq::character varying::text, 4, '0'::text)) AS max
+                           FROM route_stop_details rsdx
+                          WHERE rsdx.route_name::text = v.route_name::text AND rsdx.agy_loc_id::text = sch.to_agy_loc_id::text AND rsdx.active_flag::text = 'Y'::text))))))
+  GROUP BY st.scheduled_trip_id, v.route_name, v.from_seq, v.to_seq, v.from_agy_loc_id, v.to_agy_loc_id, v.segment_length;
+
+
+
+
+CREATE OR REPLACE VIEW oms_owner.v_route_occupancy
+AS SELECT occ.scheduled_trip_id,
+    rsd.route_name,
+    rsd.from_seq,
+    rsd.from_agy_loc_id,
+    rsd.to_agy_loc_id,
+    COALESCE(occ.occupancy, 0::bigint) AS occupancy
+   FROM v_route_locations rsd,
+    v_local_trip_occupancy occ
+  WHERE rsd.route_name::text = occ.route_name::text AND rsd.from_seq = occ.from_seq
+UNION ALL
+ SELECT st.scheduled_trip_id,
+    st.route_name,
+    rsd.from_seq,
+    rsd.from_agy_loc_id,
+    rsd.to_agy_loc_id,
+    0 AS occupancy
+   FROM v_route_locations rsd,
+    scheduled_trips st
+  WHERE st.route_name::text = rsd.route_name::text AND NOT (EXISTS ( SELECT 1
+           FROM v_local_trip_occupancy occ
+          WHERE occ.scheduled_trip_id = st.scheduled_trip_id AND occ.from_seq = rsd.from_seq));
+
+
+
+CREATE OR REPLACE VIEW oms_owner.v_transfer_waiting_lists
+AS SELECT sch.offender_book_id,
+    off.offender_id_display,
+    off.last_name,
+    wl.event_id,
+    sch.to_agy_loc_id AS agency_location_to,
+    sch.active_flag,
+    wl.request_date AS requested_date,
+    wl.wait_list_status,
+    wl.transfer_priority,
+    wl.outcome_reason_code,
+    wl.approved_flag,
+    tag_schedule_check_sum(COALESCE(wl.modify_datetime, wl.create_datetime)) AS check_sum
+   FROM v_offender_all_schedules sch,
+    offender_ind_sch_wait_lists wl,
+    offenders off,
+    offender_bookings bkg
+  WHERE sch.event_id = wl.event_id AND sch.offender_book_id = bkg.offender_book_id AND bkg.offender_id = off.offender_id;
+
+
+
+CREATE OR REPLACE VIEW oms_owner.v_local_trip_offenders
+AS SELECT st.scheduled_trip_id,
+    v.route_name,
+    sch.inmate_id,
+    sch.event_id,
+    sch.offender_book_id,
+    sch.offender_id_display,
+    sch.offender_last_name,
+    sch.offender_first_name,
+    sch.sex_code,
+    sch.race_code,
+    sch.event_type,
+    sch.event_sub_type,
+    sch.agy_loc_id AS offender_from_loc,
+    sch.housing_location,
+    sch.to_agy_loc_id AS offender_to_loc,
+    sch.comment_text,
+    sch.record_source,
+    min(v.from_seq) AS from_seq,
+    max(v.to_seq) AS to_seq
+   FROM v_route_locations v,
+    ( SELECT v_sch.offender_id AS inmate_id,
+            v_sch.offender_id_display,
+            v_sch.offender_book_id,
+            v_sch.event_id,
+            v_sch.offender_last_name,
+            v_sch.offender_first_name,
+            o.sex_code,
+            o.race_code,
+            v_sch.event_type,
+            v_sch.event_sub_type,
+            v_sch.scheduled_trip_id,
+            v_sch.agy_loc_id,
+                CASE
+                    WHEN ob.agy_loc_id::text = v_sch.agy_loc_id::text THEN ((((((((v_sch.agy_loc_id::text || '-'::text) || v_sch.lu_level_1_code) ||
+                    CASE
+                        WHEN COALESCE(v_sch.lu_level_2_code, ''::text) = ''::text THEN NULL::text
+                        ELSE '-'::text
+                    END) || v_sch.lu_level_2_code) ||
+                    CASE
+                        WHEN COALESCE(v_sch.lu_level_3_code, ''::text) = ''::text THEN NULL::text
+                        ELSE '-'::text
+                    END) || v_sch.lu_level_3_code) ||
+                    CASE
+                        WHEN COALESCE(v_sch.lu_level_4_code, ''::text) = ''::text THEN NULL::text
+                        ELSE '-'::text
+                    END) || v_sch.lu_level_4_code)::character varying
+                    ELSE v_sch.agy_loc_id
+                END AS housing_location,
+            v_sch.to_agy_loc_id,
+            v_sch.comment_text,
+            v_sch.record_source
+           FROM v_offender_all_schedules v_sch,
+            offenders o,
+            offender_bookings ob
+          WHERE (v_sch.record_source = ANY (ARRAY['SCH'::text, 'COURT'::text])) AND COALESCE(v_sch.event_status, ' '::character varying)::text <> 'EXP'::text AND v_sch.offender_id = o.offender_id AND v_sch.offender_book_id = ob.offender_book_id AND v_sch.scheduled_trip_id IS NOT NULL AND v_sch.scheduled_trip_id::text <> ''::text
+        UNION ALL
+         SELECT non_admitted_inmate_mvmts.non_adm_inmate_id AS inmate_id,
+            non_admitted_inmate_mvmts.inmate_id,
+            NULL::bigint AS int8,
+            NULL::bigint AS int8,
+            non_admitted_inmate_mvmts.last_name,
+            non_admitted_inmate_mvmts.first_name,
+            NULL::character varying AS "varchar",
+            NULL::character varying AS "varchar",
+            non_admitted_inmate_mvmts.mvmt_type,
+            non_admitted_inmate_mvmts.mvmt_reason_code,
+            non_admitted_inmate_mvmts.scheduled_trip_id,
+            non_admitted_inmate_mvmts.from_agy_loc_id,
+            non_admitted_inmate_mvmts.from_agy_loc_id,
+            non_admitted_inmate_mvmts.to_agy_loc_id,
+            (('Responsible Agency: '::text || upper(non_admitted_inmate_mvmts.responsible_agency::text)) || '  Emergency Contact: '::text) || upper(non_admitted_inmate_mvmts.emergency_contact::text),
+            NULL::text AS text
+           FROM non_admitted_inmate_mvmts
+          WHERE non_admitted_inmate_mvmts.scheduled_trip_id IS NOT NULL AND non_admitted_inmate_mvmts.scheduled_trip_id::text <> ''::text) sch,
+    scheduled_trips st
+  WHERE st.scheduled_trip_id = sch.scheduled_trip_id AND st.route_name::text = v.route_name::text AND v.from_seq >= (( SELECT max(lpad(rsd.leg_id::character varying::text, 4, '0'::text) || lpad(rsd.leg_seq::character varying::text, 4, '0'::text)) AS max
+           FROM route_stop_details rsd
+          WHERE rsd.agy_loc_id::text = sch.agy_loc_id::text AND rsd.route_name::text = v.route_name::text AND rsd.active_flag::text = 'Y'::text AND (lpad(rsd.leg_id::character varying::text, 4, '0'::text) || lpad(rsd.leg_seq::character varying::text, 4, '0'::text)) < (( SELECT max(lpad(rsdx.leg_id::character varying::text, 4, '0'::text) || lpad(rsdx.leg_seq::character varying::text, 4, '0'::text)) AS max
+                   FROM route_stop_details rsdx
+                  WHERE rsdx.route_name::text = v.route_name::text AND rsdx.agy_loc_id::text = sch.to_agy_loc_id::text AND rsdx.active_flag::text = 'Y'::text)))) AND v.from_seq < (( SELECT min(lpad(rsd.leg_id::character varying::text, 4, '0'::text) || lpad(rsd.leg_seq::character varying::text, 4, '0'::text)) AS min
+           FROM route_stop_details rsd
+          WHERE rsd.agy_loc_id::text = sch.to_agy_loc_id::text AND rsd.route_name::text = v.route_name::text AND rsd.active_flag::text = 'Y'::text AND (lpad(rsd.leg_id::character varying::text, 4, '0'::text) || lpad(rsd.leg_seq::character varying::text, 4, '0'::text)) > (( SELECT max(lpad(rsd2.leg_id::character varying::text, 4, '0'::text) || lpad(rsd2.leg_seq::character varying::text, 4, '0'::text)) AS max
+                   FROM route_stop_details rsd2
+                  WHERE rsd2.agy_loc_id::text = sch.agy_loc_id::text AND rsd2.route_name::text = v.route_name::text AND rsd2.active_flag::text = 'Y'::text AND (lpad(rsd2.leg_id::character varying::text, 4, '0'::text) || lpad(rsd2.leg_seq::character varying::text, 4, '0'::text)) < (( SELECT max(lpad(rsdx.leg_id::character varying::text, 4, '0'::text) || lpad(rsdx.leg_seq::character varying::text, 4, '0'::text)) AS max
+                           FROM route_stop_details rsdx
+                          WHERE rsdx.route_name::text = v.route_name::text AND rsdx.agy_loc_id::text = sch.to_agy_loc_id::text AND rsdx.active_flag::text = 'Y'::text))))))
+  GROUP BY st.scheduled_trip_id, v.route_name, sch.inmate_id, sch.event_id, sch.offender_book_id, sch.offender_id_display, sch.offender_last_name, sch.offender_first_name, sch.sex_code, sch.race_code, sch.event_type, sch.event_sub_type, sch.agy_loc_id, sch.housing_location, sch.to_agy_loc_id, sch.comment_text, sch.record_source;
+
+
+
+
+CREATE OR REPLACE VIEW oms_owner.v_assign_offender_trips
+AS SELECT st.scheduled_trip_id,
+    sch.event_id,
+    sch.event_status,
+    sch.offender_book_id,
+    o.root_offender_id,
+    o.offender_id,
+    o.sex_code,
+    sch.offender_id_display,
+    sch.offender_last_name,
+    sch.offender_first_name,
+    sch.event_type,
+    sch.event_sub_type,
+    sch.lu_level_1_code,
+        CASE
+            WHEN ob.agy_loc_id::text = sch.agy_loc_id::text THEN ((((((((sch.agy_loc_id::text || '-'::text) || sch.lu_level_1_code) ||
+            CASE
+                WHEN COALESCE(sch.lu_level_2_code, ''::text) = ''::text THEN NULL::text
+                ELSE '-'::text
+            END) || sch.lu_level_2_code) ||
+            CASE
+                WHEN COALESCE(sch.lu_level_3_code, ''::text) = ''::text THEN NULL::text
+                ELSE '-'::text
+            END) || sch.lu_level_3_code) ||
+            CASE
+                WHEN COALESCE(sch.lu_level_4_code, ''::text) = ''::text THEN NULL::text
+                ELSE '-'::text
+            END) || sch.lu_level_4_code)::character varying
+            ELSE sch.agy_loc_id
+        END AS from_location,
+    sch.agy_loc_id,
+    sch.to_agy_loc_id,
+    sch.event_date,
+    sch.start_time,
+    sch.event_class,
+    sch.record_source,
+    lpad(rsd_from.leg_id::character varying::text, 4, '0'::text) || lpad(rsd_from.leg_seq::character varying::text, 4, '0'::text) AS from_seq
+   FROM v_offender_all_schedules sch,
+    offenders o,
+    offender_bookings ob,
+    scheduled_trips st,
+    movement_reasons mr,
+    route_stop_details rsd_from,
+    route_stop_details rsd_to
+  WHERE (sch.record_source = ANY (ARRAY['SCH'::text, 'COURT'::text])) AND sch.event_class::text = 'EXT_MOV'::text AND sch.offender_id = o.offender_id AND sch.offender_book_id = ob.offender_book_id AND sch.event_type::text = mr.movement_type::text AND sch.event_sub_type::text = mr.movement_reason_code::text AND mr.transportation_flag::text = 'Y'::text AND COALESCE(sch.scheduled_trip_id::text, ''::text) = ''::text AND COALESCE(sch.event_status, ' '::character varying)::text = 'SCH'::text AND st.route_name::text = rsd_from.route_name::text AND st.route_name::text = rsd_to.route_name::text AND rsd_from.active_flag::text = 'Y'::text AND rsd_to.active_flag::text = 'Y'::text AND sch.agy_loc_id::text = rsd_from.agy_loc_id::text AND sch.to_agy_loc_id::text = rsd_to.agy_loc_id::text AND (lpad(rsd_from.leg_id::character varying::text, 4, '0'::text) || lpad(rsd_from.leg_seq::character varying::text, 4, '0'::text)) < (lpad(rsd_to.leg_id::character varying::text, 4, '0'::text) || lpad(rsd_to.leg_seq::character varying::text, 4, '0'::text)) AND (lpad(rsd_from.leg_id::character varying::text, 4, '0'::text) || lpad(rsd_from.leg_seq::character varying::text, 4, '0'::text)) = (( SELECT max(lpad(rsdx_from.leg_id::character varying::text, 4, '0'::text) || lpad(rsdx_from.leg_seq::character varying::text, 4, '0'::text)) AS max
+           FROM route_stop_details rsdx_from,
+            route_stop_details rsdx_to
+          WHERE rsdx_from.route_name::text = st.route_name::text AND rsdx_to.route_name::text = st.route_name::text AND rsdx_from.active_flag::text = 'Y'::text AND rsdx_to.active_flag::text = 'Y'::text AND rsdx_to.leg_id = rsd_to.leg_id AND rsdx_to.leg_seq = rsd_to.leg_seq AND rsdx_from.agy_loc_id::text = sch.agy_loc_id::text AND rsdx_to.agy_loc_id::text = sch.to_agy_loc_id::text AND (lpad(rsdx_from.leg_id::character varying::text, 4, '0'::text) || lpad(rsdx_from.leg_seq::character varying::text, 4, '0'::text)) < (lpad(rsdx_to.leg_id::character varying::text, 4, '0'::text) || lpad(rsdx_to.leg_seq::character varying::text, 4, '0'::text)) AND (lpad(rsdx_to.leg_id::character varying::text, 4, '0'::text) || lpad(rsdx_to.leg_seq::character varying::text, 4, '0'::text)) = (( SELECT max(lpad(rsdy_to.leg_id::character varying::text, 4, '0'::text) || lpad(rsdy_to.leg_seq::character varying::text, 4, '0'::text)) AS max
+                   FROM route_stop_details rsdy_to
+                  WHERE rsdy_to.route_name::text = st.route_name::text AND rsdy_to.active_flag::text = 'Y'::text AND rsdy_to.agy_loc_id::text = sch.to_agy_loc_id::text))));
+
+ 
+
+          
+         

@@ -1,0 +1,3 @@
+ALTER TABLE oms_owner.agency_incident_parties DROP COLUMN rep_complet_flag;
+ALTER TABLE oms_owner.agency_incident_parties DROP COLUMN staff_report_type;
+ALTER TABLE oms_owner.agency_incident_parties DROP COLUMN lock_reference_time;

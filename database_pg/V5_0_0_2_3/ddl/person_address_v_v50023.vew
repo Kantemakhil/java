@@ -1,0 +1,63 @@
+CREATE OR REPLACE VIEW oms_owner.person_address_v
+AS SELECT p.person_id,
+    a.address_id,
+    a.owner_class,
+    a.owner_id,
+    a.owner_code,
+    a.owner_seq,
+    a.suite_number,
+    a.street_number,
+    a.street,
+    a.street_direction,
+    a.zip_postal_code,
+    a.city_code,
+    a.country_code,
+    a.prov_state_code,
+    ( SELECT reference_codes.description
+           FROM reference_codes
+          WHERE reference_codes.domain::text = 'CITY'::text AND reference_codes.code::text = a.city_code::text) AS city_desc,
+    ( SELECT reference_codes.description
+           FROM reference_codes
+          WHERE reference_codes.domain::text = 'PROV_STATE'::text AND reference_codes.code::text = a.prov_state_code::text) AS state_desc,
+    ( SELECT reference_codes.description
+           FROM reference_codes
+          WHERE reference_codes.domain::text = 'COUNTRY'::text AND reference_codes.code::text = a.country_code::text) AS country_desc,
+    a.mail_care_of,
+    a.primary_flag,
+    a.mail_flag
+   FROM persons p
+     LEFT JOIN ( SELECT a_1.address_id,
+            a_1.owner_class,
+            a_1.owner_id,
+            a_1.owner_seq,
+            a_1.owner_code,
+            a_1.address_type,
+            a_1.city_code,
+            a_1.country_code,
+            a_1.validated_paf_flag,
+            a_1.primary_flag,
+            a_1.mail_flag,
+            a_1.capacity,
+            a_1.comment_text,
+            a_1.create_datetime,
+            a_1.create_user_id,
+            a_1.modify_datetime,
+            a_1.modify_user_id,
+            a_1.no_fixed_address_flag,
+            a_1.services_flag,
+            a_1.special_needs_code,
+            a_1.contact_person_name,
+            a_1.business_hour,
+            a_1.start_date,
+            a_1.end_date,
+            a_1.city_name,
+            a_1.prov_state_code,
+            a_1.street,
+            a_1.zip_postal_code,
+            a_1.suite_number,
+            a_1.street_number,
+            a_1.street_direction,
+            a_1.mail_care_of,
+            a_1.seal_flag
+           FROM addresses a_1
+          WHERE a_1.owner_class::text = 'PER'::text AND (a_1.primary_flag::text = 'Y'::text AND COALESCE(a_1.end_date::text, ''::text) = ''::text OR a_1.mail_flag::text = 'Y'::text AND COALESCE(a_1.end_date::text, ''::text) = ''::text AND a_1.primary_flag::text <> 'Y'::text)) a ON p.person_id = a.owner_id;

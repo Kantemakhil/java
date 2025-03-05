@@ -1,0 +1,7 @@
+COMMENT ON TABLE oms_owner.schedule_series_rule is 'Configuration for recurring schedules rules';
+
+COMMENT ON COLUMN oms_owner.schedule_series_rule.series_id is 'Unique identifier for the recurring schedules rules';
+
+COMMENT ON COLUMN oms_owner.schedule_series_rule.exclude_holiday is 'Indicates if holidays are excluded from the recurring schedule rule(Y means excluded)';
+
+COMMENT ON COLUMN oms_owner.schedule_series_rule.active is 'To know whether the recurring series is active or Inactive';

@@ -1,0 +1,4 @@
+insert into oms_owner.STAFF_MEMBER_ROLES(STAFF_ID ,ROLE_ID ,CREATE_DATETIME ,CREATE_USER_ID ,MODIFY_DATETIME ,ROLE_CODE ) 
+ values ((select STAFF_ID from STAFF_MEMBERS where USER_ID = 'SYSTEM'),
+         (select ROLE_ID from OMS_ROLES where ROLE_NAME = 'All Forms'), CURRENT_TIMESTAMP , 'OMS_OWNER' , null , 'ALL_FORMS');
+		 

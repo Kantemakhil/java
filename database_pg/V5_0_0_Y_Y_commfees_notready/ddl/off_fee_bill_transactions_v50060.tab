@@ -1,0 +1,122 @@
+CREATE TABLE oms_owner.off_fee_bill_transactions (
+	bill_id varchar(16) NOT NULL,
+	bill_txn_no int8 NOT NULL,
+	bill_txn_datetime date NOT NULL DEFAULT current_timestamp,
+	bill_txn_staff_id int8 NULL,
+	bill_txn_user varchar(32) NOT NULL,
+	bill_txn_type varchar(6) NULL,
+	bill_txn_amount numeric(11,2) NULL,
+	trust_txn_id int8 NULL,
+	trust_txn_entry_seq int8 NULL,
+	off_adj_canc_rsn varchar(12) NULL,
+	off_adj_sub_rsn varchar(12) NULL,
+	off_adj_txn_id int8 NULL,
+	off_adj_rev_rsn varchar(12) NULL,
+	bill_status varchar(12) NOT NULL,
+	bill_aging_start_date date NULL,
+	bill_aging_end_date date NULL,
+	bill_txn_comment varchar(240) NULL,
+	original_bill_id varchar(30) NULL,
+	original_bill_txn_no int8 NULL,
+	original_off_adj_txn_id int8 NULL,
+	txn_statement_generated_flag varchar(1) NOT NULL DEFAULT 'N'::character varying,
+	billing_statement_id int8 NULL,
+	create_datetime timestamp(6) NOT null default current_timestamp,
+	create_user_id varchar(32) NOT NULL,
+	modify_datetime timestamp(6) NULL,
+	modify_user_id varchar(32) NULL,
+	seal_flag varchar(1) NULL,
+	CONSTRAINT off_fee_bill_transactions_bill_aging_end_date_check CHECK ((bill_aging_end_date = bill_aging_end_date)),
+	CONSTRAINT off_fee_bill_transactions_bill_aging_start_date_check CHECK ((bill_aging_start_date = bill_aging_start_date)),
+	CONSTRAINT off_fee_bill_transactions_bill_txn_amount_check CHECK (((bill_txn_amount IS NULL) OR (bill_txn_amount >= 0))),
+	CONSTRAINT off_fee_bill_transactions_txn_statement_generated_flag_check CHECK (((txn_statement_generated_flag)::text = ANY (ARRAY[('N'::character varying)::text, ('Y'::character varying)::text]))),
+	CONSTRAINT off_fee_bill_txns_chck_stmnt CHECK (((((txn_statement_generated_flag)::text = 'Y'::text) AND (billing_statement_id IS NOT NULL)) OR (((txn_statement_generated_flag)::text = 'N'::text) AND (billing_statement_id IS NULL)))),
+	CONSTRAINT off_fee_bill_txns_pk PRIMARY KEY (bill_id, bill_txn_no),
+	CONSTRAINT off_fee_bill_txns_fk1 FOREIGN KEY (bill_id) REFERENCES oms_owner.off_fee_bills(bill_id),
+	CONSTRAINT off_fee_bill_txns_fk2 FOREIGN KEY (trust_txn_id,trust_txn_entry_seq) REFERENCES oms_owner.offender_transactions(txn_id,txn_entry_seq),
+	CONSTRAINT off_fee_bill_txns_fk3 FOREIGN KEY (original_bill_id,original_bill_txn_no) REFERENCES oms_owner.off_fee_bill_transactions(bill_id,bill_txn_no),
+	CONSTRAINT off_fee_bill_txns_fk5 FOREIGN KEY (bill_txn_staff_id) REFERENCES oms_owner.staff_members(staff_id),
+	CONSTRAINT off_fee_bill_txns_fk6 FOREIGN KEY (billing_statement_id) REFERENCES oms_owner.off_billing_statements(billing_statement_id)
+)
+TABLESPACE tag_data
+;
+
+comment on table OFF_FEE_BILL_TRANSACTIONS is 'Logs everything that happens against the bill such as: payments and reversals against the bill, bill adjustments, credits/offender adjustments, bill status changes, aging events.
+Bill Transaction Types (column BILL_TXN_TYPE) are transaction types configured under OCMTRANS:
+- initiall bill creation transaction- transaction types with TXN_USAGE = B [only one transaction type expected to be configured], (ex. CBILL) 
+- bill payment transactions - transaction types with TXN_USAGE = R, (ex. BANK,CCASH,CCHK,CEFT,CMO,CWT)  
+- bill payment reversal transactions - transaction types with TXN_USAGE = R, (ex. BANK,CCASH,CCHK,CEFT,CMO,CWT) 
+- bill credit/offender adjustment transactions - transaction types with TXN_USAGE = A, (ex. CABE,CCANCL,CCLCS,CCMPRS,CWRTO)  
+- bill credit/offender adjustment reversal transactions - transaction types with TXN_USAGE = A, (ex. CABE,CCANCL,CCLCS,CCMPRS,CWRTO)   
+- bill adjustment/override decrease transactions - transaction types with TXN_USAGE = BD, (ex. BILLOD ) 
+- bill adjustment/override increase transactions - transaction types with TXN_USAGE = BI, (ex. BILLOI ) 
+- bill status escalation/de-escalation transactions (automatic or manual) do NOT have a transaction type 
+
+To indicate which bill transactions increase vs decrease the bill balance owing:
+-initiall bill creation transaction(there should be only one per bill) represents the bill ammount when the bill is created
+-bill payment transactions decreases the bill balance owing
+-bill payment reversal transactions (see original_bill_id and original_bill_txn_no) increases the bill balance owing
+-bill credit/offender adjustment transactions decreases the bill balance owing 
+-bill credit/offender adjustment reversal transactions (see original_bill_id and original_bill_txn_no) increases the bill balance owing
+-bill adjustment/override decrease transactions decreases the bill balance owing 
+-bill adjustment/override increase transactions increases the bill balance owing  
+-bill transactions with no value for bill_txn_type do not affect the bill balance owing          
+
+BILL_TXN_AMOUNT:
+-BILL_TXN_AMOUNT represents the bill amount when the bill was generated for the initiall bill creation transaction
+-BILL_TXN_AMOUNT represents the payment amount for bill payment transactions 
+-BILL_TXN_AMOUNT represents the payment reversal amount for bill payment reversal transactions
+-BILL_TXN_AMOUNT represents the credit/offender adjustment amount for bill credit/offender adjustment transactions
+-BILL_TXN_AMOUNT represents the credit/offender adjustment reversal amount for bill credit/offender adjustment reversal transactions
+-BILL_TXN_AMOUNT represents the bill amount adjustment for bill adjustment/override decrease or increase transactions
+-BILL_TXN_AMOUNT is NULL for bill status escalation/de-escalation transactions and mandatory for all other transactions
+
+Bill aging:
+When the bill is included on a billing statement aka a biling statement is generated for the bill, the bill transactions have to record the bill aging start and end date for certain bill statuses:
+--BILL_AGING_START_DATE is required for bill transactions with bill status AR, LD_PP, LD_EXI when the billing statement was generated for the bill or the bill is back dated and therefore the bill aging has started 
+--BILL_AGING_END_DATE is required for bill transactions with bill status AR, LD_PP when the billing statement was generated for the bill or the bill is back dated and therefore the bill aging has started ';
+
+
+comment on column OFF_FEE_BILL_TRANSACTIONS.BILL_STATUS is 'Bill status[domain=BILL_STATUS], always AR initially, it can be updated for backdated bills prior to billing statement generation';
+
+comment on column OFF_FEE_BILL_TRANSACTIONS.BILL_AGING_START_DATE is 'Bill aging start date, required for bill transactions with bill status AR, LD_PP, LD_EXI when the bill aging has started (the billing statement was generated for the bill or the bill is backdated)';
+
+comment on column OFF_FEE_BILL_TRANSACTIONS.BILL_AGING_END_DATE is 'Bill aging end date, required for bill transactions with bill status AR, LD_PP when the bill the bill aging has started (the billing statement was generated for the bill or the bill is backdated)';
+
+comment on column OFF_FEE_BILL_TRANSACTIONS.BILL_ID is 'Unique bill id (part caseload, part number)';
+
+comment on column OFF_FEE_BILL_TRANSACTIONS.BILL_TXN_NO is ' Transactions counter for a given bill as the order of bill transactions matters for bill status';
+
+comment on column OFF_FEE_BILL_TRANSACTIONS.BILL_TXN_DATETIME is 'The datetime the bill transaction was created';
+
+comment on column OFF_FEE_BILL_TRANSACTIONS.BILL_TXN_STAFF_ID is ' The staff who created the bill transaction, NULL when record was system generated';
+
+comment on column OFF_FEE_BILL_TRANSACTIONS.BILL_TXN_USER is 'The user who created the bill transaction, SYSTEM if system generated';
+
+comment on column OFF_FEE_BILL_TRANSACTIONS.BILL_TXN_TYPE is 'Bill transaction type as detailed in the table comment';
+
+comment on column OFF_FEE_BILL_TRANSACTIONS.BILL_TXN_AMOUNT is 'Bill transaction amount (positive value only or null), see details under the table comment';
+
+comment on column OFF_FEE_BILL_TRANSACTIONS.TRUST_TXN_ID is 'Inmate financial transaction that posted to the fee payable account for a payment against the  bill or the reversal transaction (applies to bill payment or payment reversal transactions)';
+
+comment on column OFF_FEE_BILL_TRANSACTIONS.TRUST_TXN_ENTRY_SEQ is 'Inmate financial transaction that posted to the fee payable account for a payment against the bill or the payment reversal transaction (applies to bill payment or payment reversaltransactions)';
+
+comment on column OFF_FEE_BILL_TRANSACTIONS.OFF_ADJ_CANC_RSN is 'The offender adjustment/credit reason [domain=CANCEL_REASN] (applies to credit/offender adjustment transactions)';
+
+comment on column OFF_FEE_BILL_TRANSACTIONS.OFF_ADJ_SUB_RSN is 'The offender adjustment/credit sub reason [domain=DELAY_CNC_RSN or domain=INCT_CNC_RSN] (applies to bill credit/offender adjustment transactions)';
+
+comment on column OFF_FEE_BILL_TRANSACTIONS.OFF_ADJ_TXN_ID is 'Numeric unique value for offender adjustment/credit transactions [sequence=OFF_ADJ_TXN_ID] (applies to bill credit/offender adjustment transactions)';
+
+comment on column OFF_FEE_BILL_TRANSACTIONS.OFF_ADJ_REV_RSN is 'The offender adjustment/credit reversal reason [domain=ADJ_RVRS_RSN] (applies to bill credit/offender adjustment reversal transactions)';
+
+comment on column OFF_FEE_BILL_TRANSACTIONS.BILL_TXN_COMMENT is 'Transaction comment';
+
+comment on column OFF_FEE_BILL_TRANSACTIONS.ORIGINAL_BILL_ID is 'The original bill id being reversed for a payment reversals or credit/offender adjustment reversals (applies to bill payment transactions or bill credit/offender adjustment transactions)';
+
+comment on column OFF_FEE_BILL_TRANSACTIONS.ORIGINAL_BILL_TXN_NO is 'The original bill txn no being reversed for a payment reversals or credit/offender adjustment reversals (applies to bill payment reversal transactions or bill credit/offender adjustment reversal transactions)';
+
+comment on column OFF_FEE_BILL_TRANSACTIONS.ORIGINAL_OFF_ADJ_TXN_ID is 'The original OFF_ADJ_TXN_ID being reversed for offender adjustment reversal (applies to bill bill credit/offender adjustment reversal transactions)';
+
+comment on column OFF_FEE_BILL_TRANSACTIONS.TXN_STATEMENT_GENERATED_FLAG is 'Indicates if the bill transaction is included on a generated billing statement';
+
+comment on column OFF_FEE_BILL_TRANSACTIONS.BILLING_STATEMENT_ID is 'Unique identifier of the statement id when the bill transaction is included in a generated billing statement. A bill transaction can appear on only one billing statement';

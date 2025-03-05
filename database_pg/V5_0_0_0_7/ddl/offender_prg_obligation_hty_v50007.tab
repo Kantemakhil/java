@@ -1,0 +1,2 @@
+alter table oms_owner.offender_prg_obligation_hty add comment_text varchar(240);
+comment on column oms_owner.offender_prg_obligation_hty.comment_text is 'Free text comment related to the program obligation.';

@@ -1,0 +1,227 @@
+
+OIISCHED_FIND_RGTYPE {
+select
+	DESCRIPTION ,
+	CODE ,
+	LIST_SEQ
+from
+	(
+	select
+		RC.DESCRIPTION ,
+		RC.CODE ,
+		RC.LIST_SEQ
+	from
+		REFERENCE_CODES RC
+	where
+		domain = 'INT_SCH_TYPE'
+		and ACTIVE_FLAG = 'Y'
+		and EXPIRED_DATE is null
+		and :NBTSCHEDULE = 'INTERNAL'
+		and RC.CODE not in ('ADM' , 'REL' )
+	order by
+		RC.LIST_SEQ ,
+		RC.DESCRIPTION ) a
+union all
+select
+	DESCRIPTION ,
+	CODE ,
+	LIST_SEQ
+from
+	(
+	select
+		RC.DESCRIPTION ,
+		RC.CODE,
+		RC.LIST_SEQ
+	from
+		REFERENCE_CODES RC
+	where
+		domain = 'MOVE_TYPE'
+		and ACTIVE_FLAG = 'Y'
+		and EXPIRED_DATE is null
+		and :NBTSCHEDULE = 'EXTERNAL'
+		and RC.CODE not in ('ADM' , 'REL' )
+	order by
+		RC.LIST_SEQ ,
+		RC.DESCRIPTION ) a
+
+}
+
+OIISCHED_FIND_RGSUBTYPE {
+select
+	DESCRIPTION ,
+	CODE ,
+	LIST_SEQ
+from
+	(
+	select
+		INT_SR.DESCRIPTION ,
+		INT_SR.INTERNAL_SCHEDULE_RSN_CODE CODE ,
+		INT_SR.LIST_SEQ
+	from
+		INTERNAL_SCHEDULE_REASONS INT_SR
+	where
+		INTERNAL_SCHEDULE_TYPE = :EVENTTYPE
+		and ACTIVE_FLAG = 'Y'
+		and EXPIRY_DATE is null
+		and :NBTSCHEDULE = 'INTERNAL'
+	order by
+		INT_SR.LIST_SEQ ,
+		INT_SR.DESCRIPTION ) a
+union all
+select
+	DESCRIPTION ,
+	CODE ,
+	LIST_SEQ
+from
+	(
+	select
+		RC.CODE ,
+		RC.DESCRIPTION ,
+		RC.LIST_SEQ
+	from
+		REFERENCE_CODES RC
+	where
+		domain = 'MOVE_RSN'
+		and RC.CODE in (
+		select
+			MOVE_RSN.MOVEMENT_REASON_CODE
+		from
+			MOVEMENT_REASONS MOVE_RSN
+		where
+			MOVE_RSN.MOVEMENT_TYPE = :EVENTTYPE
+			and MOVE_RSN.ACTIVE_FLAG = 'Y'
+			and MOVE_RSN.EXPIRY_DATE is null )) a
+
+}
+
+OIISCHED_OFFSCH_FIND_V_OFFENDER_ALL_SCHEDULES {
+select
+	OFFENDER_LAST_NAME,
+	OFFENDER_FIRST_NAME,
+	OFFENDER_ID_DISPLAY,
+	OFFENDER_BOOK_ID,
+	EVENT_DATE,
+	START_TIME,
+	EVENT_TYPE_DESC,
+	EVENT_SUB_TYPE_DESC,
+	AGENCY_IML_DESC,
+	TO_INTERNAL_LOCATION_DESC,
+	TO_AGY_LOC_DESC,
+	EVENT_CLASS,
+	TO_LOC_DESC,
+	APPEARANCE_TYPE,
+	 APPEARANCE_LOCATION,
+	 AGY_LOC_ID,
+	 EVENT_STATUS,
+	 EVENT_OUTCOME,
+(case when (event_type ='CRT') then   (select description  from reference_codes where domain ='CRT_CAN_RSN' and code=outcome_reason_code ) 
+ when (event_type='VISIT' and event_status='CANC') then 
+			(
+			select
+			description
+		from
+			reference_codes
+		where
+			domain = 'MOVE_CANC_RS'
+			and code = outcome_reason_code
+			)
+	else  (select description  from reference_codes where domain ='APT_CAN_REA' and code=event_outcome )   end ) cancelReasonDesc
+	from
+	V_OFFENDER_ALL_SCHEDULES
+}
+OIISCHED_OFFSCH_FIND_V_OFFENDER_ALL_SCHEDULES_BETWEEN_TIMES{
+select
+	OFFENDER_LAST_NAME,
+	OFFENDER_FIRST_NAME,
+	OFFENDER_ID_DISPLAY,
+	OFFENDER_BOOK_ID,
+	EVENT_DATE,
+	START_TIME,
+	EVENT_TYPE_DESC,
+	EVENT_SUB_TYPE_DESC,
+	AGENCY_IML_DESC,
+	TO_INTERNAL_LOCATION_DESC,
+	BOOKING_ACTIVE_FLAG,
+	ACTIVE_FLAG,
+	TO_AGY_LOC_DESC,
+	EVENT_CLASS,
+	TO_LOC_DESC
+from
+	(
+	select
+		OFFENDER_LAST_NAME,
+		OFFENDER_FIRST_NAME,
+		OFFENDER_ID_DISPLAY,
+		OFFENDER_BOOK_ID,
+		EVENT_DATE,
+		START_TIME,
+		EVENT_TYPE_DESC,
+		EVENT_SUB_TYPE_DESC,
+		AGENCY_IML_DESC,
+		TO_INTERNAL_LOCATION_DESC,
+		BOOKING_ACTIVE_FLAG,
+		ACTIVE_FLAG,
+		TO_AGY_LOC_DESC,
+		EVENT_CLASS,
+		TO_LOC_DESC,
+		EVENT_ID,
+		EVENT_TYPE,
+		APPEARANCE_TYPE,
+		EVENT_SUB_TYPE
+	from
+		V_OFFENDER_ALL_SCHEDULES
+	where
+		EVENT_DATE between to_date(:fromDate::text, 'DD/MM/YYYY') and to_date(:toDate::text, 'DD/MM/YYYY')) a
+where
+		(substr(start_time::text,
+	12,
+	17),
+	'HH24:MI')::text between :startTime::text
+	 and :endTime::text
+}
+OIISCHED_OFFSCH_FIND_V_OFFENDER_ALL_SCHEDULES_ONLY_START_TIMES{
+select
+	OFFENDER_LAST_NAME,
+	OFFENDER_FIRST_NAME,
+	OFFENDER_ID_DISPLAY,
+	OFFENDER_BOOK_ID,
+	EVENT_DATE,
+	START_TIME,
+	EVENT_TYPE_DESC,
+	EVENT_SUB_TYPE_DESC,
+	AGENCY_IML_DESC,
+	TO_INTERNAL_LOCATION_DESC,
+	BOOKING_ACTIVE_FLAG,
+	ACTIVE_FLAG,
+	TO_AGY_LOC_DESC,
+	EVENT_CLASS,
+	TO_LOC_DESC
+from
+	(
+	select
+		OFFENDER_LAST_NAME,
+		OFFENDER_FIRST_NAME,
+		OFFENDER_ID_DISPLAY,
+		OFFENDER_BOOK_ID,
+		EVENT_DATE,
+		START_TIME,
+		EVENT_TYPE_DESC,
+		EVENT_SUB_TYPE_DESC,
+		AGENCY_IML_DESC,
+		TO_INTERNAL_LOCATION_DESC,
+		BOOKING_ACTIVE_FLAG,
+		ACTIVE_FLAG,
+		TO_AGY_LOC_DESC,
+		EVENT_CLASS,
+		TO_LOC_DESC,
+		EVENT_ID,
+		EVENT_TYPE,
+		APPEARANCE_TYPE,
+		EVENT_SUB_TYPE
+	from
+		V_OFFENDER_ALL_SCHEDULES
+	where
+		EVENT_DATE between to_date(:fromDate::text, 'DD/MM/YYYY') and to_date(:toDate::text, 'DD/MM/YYYY')) a
+where
+	substr(start_time::text,12,17)>= :startTime::text
+}

@@ -1,0 +1,19 @@
+CREATE TABLE oms_owner.schedule_series_rule (
+	series_id               BIGINT NOT NULL,
+	repeat_type             VARCHAR(12) NOT NULL,
+	repeat_frequency        INT NOT NULL,
+	end_date                TIMESTAMP(6) NULL,
+	count                   INT NULL,
+	exclude_holiday         VARCHAR(1) NOT NULL,
+	active                  VARCHAR(1) NOT NULL,
+	repeat_on               VARCHAR(1000) NULL,
+    create_datetime         TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL ,
+    create_user_id          VARCHAR(32)NOT NULL ,
+    modify_datetime         TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    modify_user_id          VARCHAR(32),
+    seal_flag               VARCHAR(1) 
+) tablespace tag_data;
+	
+alter table oms_owner.schedule_series_rule  
+  add constraint series_id_pk primary key (series_id)
+  using index tablespace tag_indx;	

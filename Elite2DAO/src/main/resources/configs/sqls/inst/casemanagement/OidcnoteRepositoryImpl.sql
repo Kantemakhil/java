@@ -1,0 +1,157 @@
+OIDCNOTE_FIND_RGNOTESOURCE {
+ 	SELECT   DESCRIPTION , CODE   FROM   REFERENCE_CODES   WHERE   DOMAIN = 'NOTE_SOURCE'     AND  (ACTIVE_FLAG = 'Y'     OR  :MODE = 'ENTER-QUERY' ) ORDER BY LIST_SEQ  , DESCRIPTION
+}
+
+OIDCNOTE_FIND_RGCASENOTETYPE {
+
+select
+	distinct RC.DESCRIPTION,
+	W.active_flag,
+	W.WORK_TYPE CODE,
+	case
+		when (W.CASELOAD_TYPE in (:CASELOADTYPE, 'BOTH' )
+		and W.MANUAL_SELECT_FLAG = 'Y'
+		and W.ACTIVE_FLAG = 'Y') then 1
+		else 0
+	end SEQVALUE,cnp.work_id,
+	false DISPLAY,
+	W.CASELOAD_TYPE as state
+from
+	WORKS W,
+	REFERENCE_CODES RC,
+	case_note_permissions cnp 
+where
+      cnp.work_id =W.work_id and
+	WORKFLOW_TYPE = 'CNOTE'
+	and RC.DOMAIN = 'TASK_TYPE'
+	and RC.CODE = W.WORK_TYPE
+order by
+	DESCRIPTION ,
+	CODE
+}
+
+OIDCNOTE_FIND_RGCASENOTESUBTYPE {
+
+select
+	distinct RC.DESCRIPTION,
+	W.ACTIVE_FLAG,
+	W.WORK_SUB_TYPE CODE,
+	case
+		when ( (W.WORK_TYPE = :CASENOTETYPE
+		and W.MANUAL_SELECT_FLAG = 'Y'
+		and W.ACTIVE_FLAG = 'Y')) then 1
+		else 0
+	end SEQVALUE,
+	cnp.work_id, false DISPLAY,
+	W.caseload_type as state
+from
+	WORKS W,
+	REFERENCE_CODES RC,
+	case_note_permissions cnp 
+where
+    cnp.work_id =W.work_id and
+	WORKFLOW_TYPE = 'CNOTE'
+	and RC.DOMAIN = 'TASK_SUBTYPE'
+	and RC.CODE = W.WORK_SUB_TYPE
+	and W.WORK_TYPE = :CASENOTETYPE
+order by
+	DESCRIPTION ,
+	CODE
+}
+
+OIDCNOTE_FIND_RGSTAFFNAME {
+select STAFF.LAST_NAME || ', ' || STAFF.FIRST_NAME STAFF_NAME , STAFF.STAFF_ID , USER_ID from STAFF_MEMBERS STAFF where User_Id= :USER_NAME order by STAFF_NAME asc
+}
+
+OIDCNOTE_OFFNOTES_FIND_OFFENDER_CASE_NOTES {
+ select OFC.OFFENDER_BOOK_ID , OFC.CONTACT_DATE , OFC.CONTACT_TIME , OFC.CASE_NOTE_TYPE , OFC.CASE_NOTE_SUB_TYPE , OFC.STAFF_ID , OFC.CASE_NOTE_TEXT , OFC.AMENDMENT_FLAG , OFC.IWP_FLAG , OFC.CHECK_BOX1 , OFC.CHECK_BOX2 , OFC.CHECK_BOX3 , OFC.CHECK_BOX4 , OFC.CHECK_BOX5 , OFC.EVENT_ID , OFC.CASE_NOTE_ID , OFC.NOTE_SOURCE_CODE , OFC.DATE_CREATION , OFC.TIME_CREATION , OFC.SEAL_FLAG , OFC.OBJECT_TYPE , OFC.OBJECT_ID , OFC.CREATE_DATETIME , OFC.CREATE_USER_ID , OFC.MODIFY_DATETIME , OFC.MODIFY_USER_ID, (STAFF.LAST_NAME || ', ' || STAFF.FIRST_NAME) as Staff_Name, case when ( select COUNT(*) from CASE_NOTE_PERMISSIONS where CREATE_FLAG = 'Y' and WORK_ID =( select WORK_ID from WORKS W where WORKFLOW_TYPE = 'CNOTE' and WORK_TYPE = OFC.CASE_NOTE_TYPE and WORK_SUB_TYPE = OFC.CASE_NOTE_SUB_TYPE) and ROLE_ID in ( select ROLE_ID from STAFF_MEMBER_ROLES where STAFF_ID = ( select STAFF_ID from STAFF_MEMBERS where LOWER(USER_ID) = LOWER(:user)) )) > 0 then 'Y' else 'N' end as CREATE_FLAG, case when ( select COUNT(*) from CASE_NOTE_PERMISSIONS where VIEW_FLAG = 'Y' and WORK_ID =( select WORK_ID from WORKS W where WORKFLOW_TYPE = 'CNOTE' and WORK_TYPE = OFC.CASE_NOTE_TYPE and WORK_SUB_TYPE = OFC.CASE_NOTE_SUB_TYPE) and ROLE_ID in ( select ROLE_ID from STAFF_MEMBER_ROLES where STAFF_ID = ( select STAFF_ID from STAFF_MEMBERS where LOWER(USER_ID) = LOWER(:user)) )) > 0 then 'Y' else 'N' end as VIEW_FLAG from OFFENDER_CASE_NOTES OFC left join STAFF_MEMBERS STAFF on OFC.STAFF_ID = STAFF.STAFF_ID 
+}
+OIDCNOTE_OFFNOTES_INSERT_OFFENDER_CASE_NOTES {
+insert into OFFENDER_CASE_NOTES(OFFENDER_BOOK_ID , CONTACT_DATE , CONTACT_TIME , CASE_NOTE_TYPE , CASE_NOTE_SUB_TYPE , STAFF_ID , CASE_NOTE_TEXT , AMENDMENT_FLAG , IWP_FLAG , CHECK_BOX1 , CHECK_BOX2 , CHECK_BOX3 , CHECK_BOX4 , CHECK_BOX5 , EVENT_ID , CASE_NOTE_ID , NOTE_SOURCE_CODE , DATE_CREATION , TIME_CREATION , SEAL_FLAG , OBJECT_TYPE , OBJECT_ID , CREATE_DATETIME , CREATE_USER_ID  ) values(:offenderBookId , :contactDate , :contactTime , :caseNoteType , :caseNoteSubType , :staffId , :caseNoteText , :amendmentFlag , :iwpFlag , :checkBox1 , :checkBox2 , :checkBox3 , :checkBox4 , :checkBox5 , :eventId , :caseNoteId , :noteSourceCode , :dateCreation , :timeCreation , :sealFlag , :objectType , :objectId , current_timestamp , :createUserId  )
+}
+
+OIDCNOTE_OFFNOTES_UPDATE_OFFENDER_CASE_NOTES {
+update OFFENDER_CASE_NOTES set OFFENDER_BOOK_ID = :offenderBookId , CONTACT_DATE = :contactDate , CONTACT_TIME = :contactTime , CASE_NOTE_TYPE = :caseNoteType , CASE_NOTE_SUB_TYPE = :caseNoteSubType , STAFF_ID = :staffId , CASE_NOTE_TEXT = :caseNoteText , AMENDMENT_FLAG = :amendmentFlag , IWP_FLAG = :iwpFlag , CHECK_BOX1 = :checkBox1 , CHECK_BOX2 = :checkBox2 , CHECK_BOX3 = :checkBox3 , CHECK_BOX4 = :checkBox4 , CHECK_BOX5 = :checkBox5 , EVENT_ID = :eventId , NOTE_SOURCE_CODE = :noteSourceCode , DATE_CREATION = :dateCreation , TIME_CREATION = :timeCreation , SEAL_FLAG = :sealFlag , OBJECT_TYPE = :objectType , OBJECT_ID = :objectId , MODIFY_DATETIME = current_timestamp , MODIFY_USER_ID = :modifyUserId where CASE_NOTE_ID = :caseNoteId
+}
+
+OIDCNOTE_OFFNOTES_DELETE_OFFENDER_CASE_NOTES { 
+	DELETE FROM OFFENDER_CASE_NOTES where OFFENDER_BOOK_ID=:offenderBookId
+}
+
+
+OIDCNOTE_OFF_BKG_ONCHECKDELETEMASTER_ {
+	SELECT 1 FROM OFFENDER_CASE_NOTES O WHERE O.OFFENDER_BOOK_ID = :OFFENDERBOOKID
+}
+
+OIDCNOTE_OFF_NOTES_WHENNEWRECORDINSTANCEWHEN-NEW-RECORD-INSTANCE {
+	SELECT CODE, DESCRIPTION INTO :OFF_NOTES.NOTE_SOURCE_CODE, :OFF_NOTES.NBT_NOTE_SOURCE FROM REFERENCE_CODES WHERE DOMAIN = 'NOTE_SOURCE' AND CODE = 'COMM'
+}
+
+OIDCNOTE_OFF_NOTES_WHENNEWRECORDINSTANCEWHEN-NEW-RECORD-INSTANCE {
+	SELECT CODE, DESCRIPTION INTO :OFF_NOTES.NOTE_SOURCE_CODE, :OFF_NOTES.NBT_NOTE_SOURCE FROM REFERENCE_CODES WHERE DOMAIN = 'NOTE_SOURCE' AND CODE = 'INST'
+}
+OIDCNOTE_FIND_STAFFNAME{
+select STAFF.LAST_NAME || ', ' || STAFF.FIRST_NAME STAFF_NAME , STAFF.STAFF_ID , USER_ID from STAFF_MEMBERS STAFF where USER_ID =:USER_NAME order by STAFF_NAME asc
+}
+OIDCNOTE_GETCASE_NOTE_ID{
+SELECT NEXTVAL('CASE_NOTE_ID') from DUAL
+}
+OIDVTOUR_FIND_STAFFNAME{
+SELECT STAFF.LAST_NAME||', '||STAFF.FIRST_NAME STAFF_NAME  FROM   STAFF_MEMBERS  STAFF WHERE  STAFF_ID =:STAFF_ID   ORDER BY STAFF_NAME ASC
+}
+OIDCNOTE_GET_MODULENAME {
+SELECT module_name FROM works ws WHERE ws.workflow_type = 'CNOTE' AND ws.work_type = :CASENOTE_TYPE AND ws.work_sub_type = :CASENOTE_SUB_TYPE
+}
+OIDCNOTE_CHECK_CASENOTE_SUBTYPE{
+select (case when count(*) > 0 then 'Y' else 'N' end) as create_flag from (select
+	RC.DESCRIPTION,
+	W.WORK_SUB_TYPE CODE,
+	case
+		when ( (W.WORK_TYPE = :CASENOTETYPE
+		and W.MANUAL_SELECT_FLAG = 'Y'
+		and W.ACTIVE_FLAG = 'Y')) then 1
+		else 0
+	end SEQVALUE,
+	cnp.create_flag,
+	cnp.view_flag
+from
+	WORKS W,
+	REFERENCE_CODES RC,
+	(
+	select * from STAFF_MEMBER_ROLES
+	where staff_id = (
+		select staff_id from STAFF_MEMBERS
+		where LOWER(user_ID) = LOWER(:user)) ) as roles,
+	case_note_permissions cnp
+where
+	WORKFLOW_TYPE = 'CNOTE'
+	and RC.DOMAIN = 'TASK_SUBTYPE'
+	and RC.CODE = W.WORK_SUB_TYPE
+	and W.WORK_TYPE = :CASENOTETYPE
+	and w.work_id = cnp.work_id
+	and cnp.role_id = roles.ROLE_ID
+order by
+	DESCRIPTION ,
+	CODE ) a where a.CODE = :workSubType and a.create_flag = 'Y'
+}
+OIDCNOTE_GET_CASE_NOTES{
+select
+		*
+	from
+		case_note_permissions cnp
+	where
+		ROLE_ID in (
+		select
+			ROLE_ID
+		from
+			STAFF_MEMBER_ROLES
+		where
+			staff_id = (
+			select
+				staff_id
+			from
+				STAFF_MEMBERS sm
+			where
+				LOWER(user_ID) = LOWER(:user)) )
+}
+	

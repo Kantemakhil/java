@@ -1,0 +1,31 @@
+create table stage_bookings
+(    booking_begin_date   date            not null
+   , booking_end_date     date
+   , booking_no           varchar2(14) 
+   , offender_id_display  varchar2(10)    not null
+   , agy_loc_id           varchar2(6)    
+   , bed_location         varchar2(40) 
+   , active_flag          varchar2(1)
+   , assigned_user_id     varchar2(32) 
+   , create_agy_loc_id    varchar2(6)
+   , invalid_reason       varchar2(256)
+   , invalid_flag         varchar2(1) 
+)
+tablespace tag_data;
+
+CREATE INDEX stage_bookings_ni1 
+    ON stage_bookings(booking_begin_date)
+       TABLESPACE TAG_INDX;
+
+comment on column stage_bookings.offender_id_display is 'The user facing unique identifier of an offender. If padding is turned on, the value should be ten characters long, padded left with zeroes.';
+comment on column stage_bookings.booking_begin_date is 'The start date of the incarceration period. This should also correspond to an initial IN movement in stage_bookings.';
+comment on column stage_bookings.booking_end_date is 'The end date of the incarceration period. When populated, this should also correspond to a final OUT movement in stage_bookings. Note: when a booking is fully discharged, sentences should also expire.';
+comment on column stage_bookings.booking_no is 'The client defined identifier for the incarceration period that is visible to the user.';
+comment on column stage_bookings.agy_loc_id is 'A code identifying the location the offender is currently held (as defined in AGENCY_LOCATIONS).';
+comment on column stage_bookings.bed_location is 'A hyphenated concatenation of the code values for the agency and the bed locations for a bed assignment. The value must correspond to a leaf node. (E.g, if the location is AGY-SECTION2-WING1-CELL1, then there cannot be a more refined location such as AGY-SECTION2-WING1-CELL1-BED1 defined for this location)';
+comment on column stage_bookings.active_flag is 'Defines the offender’s institutional status (active institutional ownership of the booking Y/N). If an offender is currently active at an institution, this flag should be set to Y. If the offender is inactive, this flag should be set to N. This value is NULL for a community only booking.';
+comment on column stage_bookings.assigned_user_id is 'Populated with the staff member performing the intake (community) or admission (institution). Syscon to retrieve the STAFF_MEMBERS.STAFF_ID based on the user_id passed. If NULL or invalid, Syscon will populate with the staff_id of the CONV user.';
+comment on column stage_bookings.create_agy_loc_id is 'A code identifying the location the offender was initially admitted for this incarceration period (as defined in AGENCY_LOCATIONS).';
+comment on column stage_bookings.invalid_reason is 'The reason the record will be skipped during conversion.';
+comment on column stage_bookings.invalid_flag is 'A flag to indicate whether the record should be processed. Records marked with ''N'' will be skipped during conversion.';
+comment on table stage_bookings is 'Stores one or more bookings (periods of supervision or episodes) within an offender record. Child to OFFENDERS and parent to many offender data tables, making it the key intersection point tying individual data items to the correct offender record, and to the correct incarceration period or episode. This table regulates whether an offender record is active or inactive (an active offender record has a single active open booking; inactive offender records have only closed bookings).  This table is a direct link to system security, controlling which offender records can be retrieved by a user account (an open booking must have at least one attached agency location; a user account can retrieve bookings where the attached agency location is contained within that user account''s caseload (see CASELOAD_AGENCY_LOCATIONS). This table is also used as a summary table, and so must be consistent with details stored in child records such as movements.';

@@ -1,0 +1,5 @@
+alter table agency_incident_parties add staff_report_type varchar(12);
+comment on column agency_incident_parties.staff_report_type is 'Staff report type to lock the report as configured in maintenance table(ref domain=STAFF_REPORT)';
+
+alter table agency_incident_parties add lock_reference_time timestamp(6) not null default current_timestamp;
+comment on column agency_incident_parties.lock_reference_time is 'Reference for automatic locking of the report(the create time or the re-open time of staff report)';

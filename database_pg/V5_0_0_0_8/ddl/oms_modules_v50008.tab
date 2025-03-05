@@ -1,0 +1,1 @@
+ALTER TABLE oms_owner.oms_modules ADD ins_dashboard VARCHAR(1);

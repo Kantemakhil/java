@@ -1,0 +1,32 @@
+CREATE TABLE oms_owner.servicebus_failed_msg_queue
+(queue_id               BIGINT NOT NULL,
+queue_name              VARCHAR(32) NOT NULL,
+connection_key          VARCHAR(200) NOT NULL,
+message                 BYTEA NOT NULL,
+error_message           BYTEA NOT NULL,
+create_datetime         TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL ,
+create_user_id          VARCHAR(32)NOT NULL ,
+modify_datetime         TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+modify_user_id          VARCHAR(32),
+seal_flag               VARCHAR(1) 
+) tablespace tag_data;
+
+alter table oms_owner.servicebus_failed_msg_queue  
+  add constraint servicebus_failed_msg_queue_pk primary key (queue_id)
+  using index tablespace tag_indx;	
+
+alter table oms_owner.servicebus_failed_msg_queue  
+  add constraint servicebus_failed_msg_queue_uk1 unique (queue_id,queue_name)
+  using index tablespace tag_indx;
+
+comment on table oms_owner.servicebus_failed_msg_queue is 'To Maintain Failed Service Bus Messages';
+comment on column oms_owner.servicebus_failed_msg_queue.queue_id is 'sequence fo queue message';
+comment on column oms_owner.servicebus_failed_msg_queue.queue_name is 'Name of the Azure Service Bus queue';
+comment on column oms_owner.servicebus_failed_msg_queue.connection_key is 'Connection string for Azure Service Bus Namespace.';
+comment on column oms_owner.servicebus_failed_msg_queue.message is 'The message which we tried to send to the Azure Service Bus';
+comment on column oms_owner.servicebus_failed_msg_queue.error_message is 'Reason for the Failure of Connection to Azure Service Bus';
+comment on column oms_owner.servicebus_failed_msg_queue.create_datetime is 'The timestamp when the record was created';
+comment on column oms_owner.servicebus_failed_msg_queue.create_user_id is 'The user account that created the record';
+comment on column oms_owner.servicebus_failed_msg_queue.modify_datetime is 'The timestamp when the record was last modified ';
+comment on column oms_owner.servicebus_failed_msg_queue.modify_user_id is 'The user account that modified the record';
+comment on column oms_owner.servicebus_failed_msg_queue.seal_flag is 'Flag to indicate whether the record has been sealed or not (Y/N).';

@@ -1,0 +1,9 @@
+update offender_assessments
+set creation_date = create_datetime 
+where creation_date is null;
+
+alter table offender_assessments alter column creation_date set not null;
+comment on column offender_assessments.creation_date is 'The date the assessment is created.';
+
+alter table offender_assessments alter column assessment_date drop not null;
+comment on column offender_assessments.assessment_date is 'The date the assessment is submitted.';

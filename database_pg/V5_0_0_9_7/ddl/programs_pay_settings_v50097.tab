@@ -1,0 +1,3 @@
+alter table oms_owner.programs_pay_settings add column inst_act_del_flag VARCHAR(1) default 'N' not null check (inst_act_del_flag in ('Y', 'N')) ;
+
+comment on column oms_owner.programs_pay_settings.inst_act_del_flag is 'indicates visibility of delete function for Institutional Activities [domain=PS_PAY]';

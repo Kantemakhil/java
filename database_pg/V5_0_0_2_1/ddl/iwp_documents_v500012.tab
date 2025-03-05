@@ -1,0 +1,3 @@
+alter table oms_owner.iwp_documents drop constraint iwp_documents_chk1;
+
+ALTER TABLE oms_owner.iwp_documents ADD CONSTRAINT iwp_documents_chk1 CHECK (((document_status)::text = ANY (ARRAY[('FROZEN'::character varying)::text, ('PRIVATE'::character varying)::text, ('PUBLIC'::character varying)::text, ('READY FOR SIGN'::character varying)::text, ('SIGNED'::character varying)::text, ('COMPLETED'::character varying)::text])));

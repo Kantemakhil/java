@@ -1,0 +1,96 @@
+OMSS40_GET_OFFENDER_SUMMARY {
+SELECT
+OFF_BKG.OFFENDER_ID,
+OFF_NAME.LAST_NAME,
+OFF_NAME.FIRST_NAME,
+OFF_BKG.CREATE_DATETIME AS ADMITTED_TIMESTAMP,
+AGY_INT_LOC.INTERNAL_LOCATION_CODE,
+(SELECT
+'Y'
+FROM
+IMAGES OFF_IMG
+WHERE
+OFF_BKG.OFFENDER_BOOK_ID = OFF_IMG.IMAGE_OBJECT_ID AND
+IMAGE_OBJECT_TYPE='OFF_BKG' AND
+IMAGE_VIEW_TYPE='FACE' AND
+ORIENTATION_TYPE='FRONT' AND
+ACTIVE_FLAG='Y') AS IMAGE_PRESENT,
+/*migrated FINGERPRINT_PRESENT sub-query from v_offender_fingerprints*/
+	(
+	select
+		'Y'
+	from
+		(
+		select
+			*
+		from
+			bio_subjects bs,
+			bio_fp_samples bfs
+		where
+			bs.SUBJECT_ID = bfs.SUBJECT_ID
+			and bs.root_offender_id is not null
+			and bs.root_offender_id::text <> ''::text
+			and bfs.mrs_flag::text = 'Y'::text
+			and bs.root_offender_id = off_bkg.root_offender_id
+			and bfs.SAMPLE_SCORE is not null
+			and bfs.SAMPLE_SCORE
+			::text <> ''::text
+		limit 1) as biometric
+	left join (
+		select
+			code as position
+		from
+			reference_codes rc
+		where
+			rc.domain::text = 'FINGER_ENR'::text
+			and rc.active_flag::text = 'Y'::text)rc on
+		biometric.position = rc.position::bigint
+) as FINGERPRINT_PRESENT,
+(SELECT
+'Y'
+FROM
+OFFENDER_PPTY_ITEMS OFF_PROP
+WHERE
+OFF_PROP.OFFENDER_BOOK_ID = OFF_BKG.OFFENDER_BOOK_ID 
+limit 1) AS PROPERTY_PRESENT,
+(SELECT
+'Y'
+FROM
+OFFENDER_TRANSACTIONS OFF_TXN
+WHERE
+OFF_TXN.OFFENDER_BOOK_ID = OFF_BKG.OFFENDER_BOOK_ID AND
+OFF_TXN.TXN_TYPE = 'AD' limit 1) AS TRUST_ACCOUNT_PRESENT,
+(SELECT
+'Y'
+FROM
+OFFENDER_ASSESSMENTS OFF_ASS
+WHERE
+OFF_ASS.OFFENDER_BOOK_ID = OFF_BKG.OFFENDER_BOOK_ID limit 1) AS ASSESSMENT_PRESENT,
+(select
+		'Y'
+	from
+		OCDLEGLO_DATA LEGAL
+	where
+		LEGAL.FORM_IDENTIFIER like '%"'|| OFF_BKG.OFFENDER_BOOK_ID::text ||'","orderType":"CUST"' || '%') as LEGAL_CASE_PRESENT
+-- Uncomment when medical tables present (not in AWS DB)
+-- ,
+-- (SELECT
+-- 'Y'
+-- FROM OFFENDER_MEDICAL_SCREENINGS M
+-- WHERE M.OFFENDER_BOOK_ID = B.OFFENDER_BOOK_ID AND
+-- ROWNUM <= 1) AS MEDICAL_SCREENING_PRESENT
+FROM
+OFFENDERS OFF_NAME,
+OFFENDER_BOOKINGS OFF_BKG
+INNER JOIN AGENCY_INTERNAL_LOCATIONS AGY_INT_LOC ON OFF_BKG.LIVING_UNIT_ID = AGY_INT_LOC.INTERNAL_LOCATION_ID
+WHERE
+OFF_NAME.OFFENDER_ID = OFF_BKG.OFFENDER_ID AND
+OFF_BKG.ACTIVE_FLAG='Y' AND AGY_INT_LOC.AGY_LOC_ID IN (
+SELECT
+AGY_LOC_ID
+FROM
+CASELOAD_AGENCY_LOCATIONS
+WHERE
+CASELOAD_ID = :CASELOAD_ID
+)
+}

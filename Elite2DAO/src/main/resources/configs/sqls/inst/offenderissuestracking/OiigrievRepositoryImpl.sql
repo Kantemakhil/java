@@ -1,0 +1,93 @@
+
+OIIGRIEV_FIND_RGAGY {
+ 	SELECT AGY_LOC_ID , DESCRIPTION  FROM AGENCY_LOCATIONS  WHERE AGENCY_LOCATION_TYPE = 'INST' ORDER BY 1
+}
+
+OIIGRIEV_FIND_RGGRIETYPE {
+select
+	DESCRIPTION ,
+	GRIEV_TYPE CODE,
+	ACTIVE_FLAG,
+	case
+		when (
+		select
+			count(*)
+		from
+			grievance_types_permissions gtp
+		where
+			griev_type = gt.griev_type
+			and create_amend_flag = 'Y'
+			and role_id in(
+			select
+				ROLE_ID
+			from
+				STAFF_MEMBER_ROLES
+			where
+				staff_id = (
+				select
+					staff_id
+				from
+					STAFF_MEMBERS
+				where
+					LOWER(user_ID) = LOWER(:user))) ) > 0 then 'Y'
+		else 'N'
+	end as create_flag
+from
+	GRIEVANCE_TYPES gt
+order by
+	LIST_SEQ;
+}
+
+OIIGRIEV_FIND_RGSTAFFASG {
+ 	SELECT LAST_NAME||', '||FIRST_NAME DESCRIPTION , STAFF_ID CODE, USER_ID, 	case when assigned_caseload_id = (
+        SELECT
+            caseload_id
+        FROM
+            caseloads
+        WHERE
+                caseload_type = 'INST'
+            AND caseload_id = stf.assigned_caseload_id
+    ) then 'Y' else 'N' end seal_flag  FROM STAFF_MEMBERS STF  ORDER BY 1
+}
+
+OIIGRIEV_FIND_RGLEVEL {
+ 	SELECT CODE , DESCRIPTION FROM REFERENCE_CODES  WHERE   DOMAIN = 'GRIEV_LEVEL'  AND (ACTIVE_FLAG = 'Y' OR '' = 'ENTER-QUERY' ) ORDER BY LIST_SEQ
+}
+
+OIIGRIEV_FIND_RGSTAFFINV {
+ 	SELECT DISTINCT LAST_NAME||', '||FIRST_NAME DESCRIPTION , USER_ID , STF.STAFF_ID CODE FROM STAFF_MEMBERS STF , OFFENDER_GRIEV_STAFFS OGS WHERE STF.STAFF_ID = OGS.STAFF_ID ORDER BY 1
+}
+
+OIIGRIEV_GRIEDET_FIND_V_GRIEVANCE_INQUIRY {
+ 	SELECT OFF_NAME ,OFFENDER_ID_DISPLAY ,OFFENDER_ID ,OFFENDER_BOOK_ID ,GRIEVANCE_ID ,REPORT_DATE ,GRIEV_TYPE ,AGY_LOC_ID ,ASSIGNED_STAFF_ID ,GRIEV_LEVEL ,DAYS_REM,GRIEV_REASON_CODE_DESC,GRIEV_REASON_CODE,TXN_TYPE,TXN_TYPE_DESC   FROM V_GRIEVANCE_INQUIRY
+}
+
+OIIGRIEV_CREATE_FORM_GLOBALS {
+	SELECT DESCRIPTION INTO V_FORM_DESC FROM OMS_MODULES WHERE MODULE_NAME = V_FORM_NAME
+}
+
+WHEN_NEW_RECORD_INSTANCE {
+select
+	TAG_UTILS_GET_DEFAULT_AGENCY ((
+	select
+		WORKING_CASELOAD_ID
+	from
+		STAFF_MEMBERS
+	where
+		USER_ID = 'OMS_OWNER')) AGY_LOC_ID
+from
+	DUAL
+}
+OIIGRIEV_DAYS_RESPONDS
+{
+SELECT b.days_respond 
+        FROM GRIEVANCE_TXNS b,
+      (select griev_type ,txn_type from offender_grievance_txns where grievance_id =:id) a 
+     where b.griev_type =a.griev_type and b.txn_type =a.txn_type 
+}
+OIIGRIEV_FIND_RGGRIEVREASON {
+SELECT DESCRIPTION , GRIEV_REASON_CODE CODE, ACTIVE_FLAG FROM GRIEVANCE_REASONS WHERE GRIEV_TYPE = :grievType ORDER BY LIST_SEQ
+}
+OIIGRIEV_FIND_RGGRIEVTRANSACTION {
+SELECT DESCRIPTION ,TXN_TYPE CODE, ACTIVE_FLAG FROM grievance_txns WHERE GRIEV_TYPE = :grievType ORDER BY LIST_SEQ
+}

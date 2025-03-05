@@ -1,0 +1,46 @@
+CREATE TABLE oms_owner.ocdleglo_sanction_hty
+(off_sanction_sent_hty_id     BIGINT NOT NULL,
+offender_book_id              BIGINT NOT NULL,
+sentence_seq                  BIGINT NOT NULL,
+order_type                    VARCHAR(100) NOT NULL,
+adjust_reason                 VARCHAR(12) NOT NULL,
+staff_id                      BIGINT NOT NULL,
+adjust_date                   TIMESTAMP(6),
+adjust_time                   TIMESTAMP(6),
+new_counter                   BIGINT NOT NULL,
+comment_text                  VARCHAR(240),
+create_datetime               TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL ,
+create_user_id                VARCHAR(32)NOT NULL ,
+modify_datetime               TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+modify_user_id                VARCHAR(32),
+seal_flag                     VARCHAR(1) 
+) tablespace tag_data;
+
+alter table oms_owner.ocdleglo_sanction_hty   
+  add constraint ocdleglo_sanction_hty_pk primary key (off_sanction_sent_hty_id)
+  using index tablespace tag_indx;
+  
+alter table oms_owner.ocdleglo_sanction_hty  
+	add constraint ocdleglo_sanction_hty_fk1 foreign key (offender_book_id) 
+	references oms_owner.offender_bookings(offender_book_id) on delete no action not deferrable initially immediate;
+	
+alter table oms_owner.ocdleglo_sanction_hty  
+	add constraint ocdleglo_sanction_hty_fk2 foreign key (staff_id) 
+	references oms_owner.staff_members(staff_id) on delete no action not deferrable initially immediate;	
+	
+
+comment on table  oms_owner.ocdleglo_sanction_hty is 'This table is used to save the sanction count history';
+comment on column oms_owner.ocdleglo_sanction_hty.off_sanction_sent_hty_id is 'This column is used to store the sequence number for history record';
+comment on column oms_owner.ocdleglo_sanction_hty.offender_book_id is 'This column is used to store the offender book id';
+comment on column oms_owner.ocdleglo_sanction_hty.sentence_seq is 'This column is used to store the Sentence Seq';
+comment on column oms_owner.ocdleglo_sanction_hty.order_type is 'This Column is used to store the order type';
+comment on column oms_owner.ocdleglo_sanction_hty.adjust_reason is 'Reason for the change.  Reference Code(SENT_CHG_RSN)';
+comment on column oms_owner.ocdleglo_sanction_hty.staff_id is 'This field is used to store the staff who is adding the sanction count';
+comment on column oms_owner.ocdleglo_sanction_hty.adjust_date is 'This column is used to store the adjust date';
+comment on column oms_owner.ocdleglo_sanction_hty.adjust_time is 'This column is used to store the adjust  time';
+comment on column oms_owner.ocdleglo_sanction_hty.new_counter is 'This column is used to store the counter values';
+comment on column oms_owner.ocdleglo_sanction_hty.create_datetime is 'The timestamp when the record is created';
+comment on column oms_owner.ocdleglo_sanction_hty.create_user_id is 'The user who creates the record';
+comment on column oms_owner.ocdleglo_sanction_hty.modify_datetime is 'The timestamp when the record is modified ';
+comment on column oms_owner.ocdleglo_sanction_hty.modify_user_id is 'The user who modifies the record';
+comment on column oms_owner.ocdleglo_sanction_hty.COMMENT_TEXT is 'This field is used to store the comment text for counter comment';

@@ -1,0 +1,16 @@
+create table wl_default_staff_units (
+staff_position varchar(12) not null,
+default_starting_units int4 not null,
+create_datetime timestamp(6) not null default current_timestamp,
+create_user_id varchar(32) not null,
+modify_datetime timestamp(6) null,
+modify_user_id varchar(32) null,
+seal_flag varchar(1) null
+) tablespace tag_data;
+
+alter table wl_default_staff_units add constraint wl_default_staff_units_pk primary key(staff_position) using index tablespace tag_indx; 
+
+comment on table wl_default_staff_units is 'Maintains Community Officer Workload Allocation';
+
+comment on column wl_default_staff_units.staff_position is 'Community officer position [reference_domain= STAFF_POS]';
+comment on column wl_default_staff_units.default_starting_units is 'Starting Workload Units';

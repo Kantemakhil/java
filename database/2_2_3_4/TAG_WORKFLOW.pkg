@@ -1,0 +1,362 @@
+CREATE OR REPLACE PACKAGE OMS_OWNER.TAG_WORKFLOW
+IS
+/*
+||    Purpose: This package provides the basic functions of the work flow module.
+||             It creates work and completes work automatically, etc...
+||
+||    MODIFICATION HISTORY (Please put version history IN a REVERSE-chronological ORDER below)
+||    ------------------------
+||    Person                     DATE     Version  Comments
+||    ---------              -----------  -------  -----------------------------------
+||   Syscon                 30-NOV-2020  10.2.31.1.8  V4 change from Om
+||   Syscon                 22-SEP-2020  10.2.31.1.7  V4 change
+||   Nasir                  13-AUG-2015  10.2.31.1.6  HPQC#25893 : Modify exception in FORWARD_CASE_NOTE procedure to skip the error if the staff id is null
+||   NDB                    25-Nov-2011  10.2.31.1.5  QC 11384 Changes for PTI. New routine create_agency_workflow. Changes to assignment processing.
+||   Ruxandra               21-Feb-2011  10.2.31.1.4  Added commnets related to reserved trigger name ADHOC_EMAIL
+||   Ruxandra               30-AUG-2010  10.2.31.1.3  Modifications to accommodate executable for email, dynamic recipients, body, subject
+||   Ruxandra               30-AUG-2010  10.2.31.1.2  Modifications to accommodate executable for email, dynamic recipients, body, subject
+||   ignore line, incorrect version Ruxandra               30-AUG-2010  10.2.31.1.1.1.0 SDSTDOC  Modifications to accommodate executable for email, dynamic recipients, body, subject
+||    Steven	26-JAN-2010	10.2.31.1.1 Bug fixes
+||    Ruxandra               20-FEB-2009  10.2.31.1.0 Enhancement for Staff memos and Emails messages
+||    NIKO                   25-NOV-2008  10.2.31  Added a new field function_type to queue_rec
+||                                                 Modified the PROCEDURE browse_queue and PROCEDURE browse_work_message
+||    GJC                    11-Jun-2007  10.2.30  Remove ORIGINAL_TAG_WF_MESSAGE from WORKFLOW_HISTORY and replace with individual elements
+||    NDB                    13-MAR-2007  10.2.29  #6247 Corrected.
+||    NDB                    12-MAR-2007  10.2.28  #6247 Corrected.
+||    NDB                    09-MAR-2007  10.2.27  #6247 Changes to support new event date
+||    GJC                    14-Oct-2005  2.26     SHOW_VERSION changed from procedure to function
+||    Patrick                07-SEP-2006  2.25     Defect 4458. Added ORIGINAL_MSGID in scan_queue and browse queue for iwp linkage
+||    Erin                   27-JUN-2006  10.2.24  Remove FUNCTION chk_team_id
+||    Erin                   26-Jun-2006  10.2.23  Fix version to re-compile
+||    Erin                   22-JUN-2006  10.2.22  Added FUNCTION chk_team_id for from OCMDEFTM
+||    GJC                    31-MAY-2006  10.2.21  Defect 1.1 Release 1.1 Workflows
+||    GJC                    31-MAY-2006  10.2.20  Defect 1.1 Release 1.1 Workflows
+||    GJC                    31-MAY-2006  10.2.19  Defect 1.1 Release 1.1 Workflows
+||    Neil                   25-May-2006  10.2.21  Fixed version numbers
+||    Neil                   25-May-2006  10.2.20  Changed insert_work_message.
+||    Neil                   25-May-2006  10.2.19  Changed workflow history control of open and closing workflows.
+||    GJC                    09-MAY-2006  10.2.18  Add work_trigger_executables processing
+||    Neil                   05-May-2006  10.2.17  Assignment date is now set to sysdate for every re-assignment
+||    Neil                   24-Apr-2006  10.2.16  Fixed add of complete reason code for auto completion.
+||    Neil                   21-Apr-2006  10.2.15  Added complete reason code to complete workflow.
+||    Neil                   20-Apr-2006  10.2.14  Fixed search_queue
+||    Neil                   19-Apr-2006  10.2.13  insert_case_note: added date_creation
+||    GJC                    05-Apr-2006  10.2.12  Add check_outstanding_task.
+||    Neil                   05-Apr-2006  10.2.11  Changed order by on browse_queue.
+||    Neil                   04-Apr-2006  10.2.10  Fixed updates of work count.
+||    GJC                    13-Mar-2006  10.2.9   New version for AQ workflow rewrite
+*/
+    vcp_version          CONSTANT VARCHAR2 (60) := '10.2.31.1.8 30-NOV-2020';
+    e_no_messages                 EXCEPTION;
+    e_empty_queue                 EXCEPTION;
+    PRAGMA EXCEPTION_INIT (e_no_messages, -25263);
+    PRAGMA EXCEPTION_INIT (e_empty_queue, -25228);
+    c_message_life       CONSTANT PLS_INTEGER := 7862400;
+
+    -- 3 months of seconds
+    TYPE queue_rec IS RECORD (
+        queue_name                    VARCHAR2 (50)
+       ,team_id                       NUMBER (10)
+       ,staff_id                      NUMBER (6)
+       ,team_member_id                NUMBER (10)
+       ,work_id                       NUMBER (10)
+       ,offender_book_id              NUMBER (10)
+       ,assignment_date               DATE
+       ,due_date                      DATE
+       ,msgid                         VARCHAR2 (64)
+       ,MESSAGE_TEXT                  VARCHAR2 (4000)
+       ,workflow_type                 VARCHAR2 (12)
+       ,ORIGINAL_MSGID                VARCHAR2(64)
+	     ,event_date                    DATE            --#6247 Added event date
+       ,function_type                 TEAM_FUNCTIONS.FUNCTION_TYPE%TYPE
+       ,severity_code                 VARCHAR2(12)  -- 20-Feb-2009 Staff Memos enhancement
+       ,acknowledgement_required      NUMBER(1)     -- 20-Feb-2009 Staff Memos enhancement
+       ,acknowledgement_subject       VARCHAR2(240) -- 20-Feb-2009 Staff Memos enhancement
+       ,sender_id                     VARCHAR2(30)  -- 20-Feb-2009 Staff Memos enhancement
+    );
+
+    TYPE queue_set IS TABLE OF queue_rec;
+
+    TYPE refcur_qs IS REF CURSOR
+        RETURN queue_rec;
+
+    /*used by the listeners on queues; not recommended to be called directly*/
+    PROCEDURE get_trigger_registration (
+      p_work_trigger              IN       WORK_TRIGGER_EXECUTABLES.work_trigger%TYPE,
+      p_trigger_usage             IN       WORK_TRIGGER_EXECUTABLES.trigger_usage%TYPE,
+      p_work_context              IN       WORK_TRIGGER_EXECUTABLES.work_context%TYPE,
+      p_trigger_executable        OUT      WORK_TRIGGER_EXECUTABLES.trigger_executable%TYPE,
+      p_trigger_executable_type   OUT      WORK_TRIGGER_EXECUTABLES.trigger_executable_type%TYPE,
+      p_message_template          OUT      WORK_TRIGGER_EXECUTABLES.message_template%TYPE );
+
+    FUNCTION check_outstanding_task ( p_offender_book_id IN OFFENDER_BOOKINGS.offender_book_id%TYPE)
+    RETURN BOOLEAN;
+
+    PROCEDURE assign_to_staff_id (p_message IN tag_wf_message);
+
+    PROCEDURE assign_to_team_id (p_message IN tag_wf_message);
+
+    PROCEDURE assign_to_team_member (
+        p_queue_name       IN   VARCHAR2
+       ,p_msgid            IN   VARCHAR2
+       ,p_team_member_id   IN   TEAM_MEMBERS.team_member_id%TYPE
+       ,p_remove_message   IN   BOOLEAN DEFAULT TRUE
+    );
+
+    PROCEDURE reassign_to_team_member (
+        p_queue_name           IN   VARCHAR2
+       ,p_msgid                IN   VARCHAR2
+       ,p_new_team_member_id   IN   TEAM_MEMBERS.team_member_id%TYPE
+       ,p_remove_message       IN   BOOLEAN DEFAULT TRUE
+    );
+
+    PROCEDURE reassign_to_team (
+        p_queue_name       IN   VARCHAR2
+       ,p_msgid            IN   VARCHAR2
+       ,p_new_team_id      IN   TEAM_MEMBERS.team_id%TYPE
+       ,p_remove_message   IN   BOOLEAN DEFAULT TRUE
+    );
+
+    PROCEDURE create_team_messages (p_message IN tag_wf_message);
+
+    PROCEDURE completion_message_handler (
+        p_message          IN   tag_wf_message,
+        p_message_handle   IN   RAW
+    );
+
+    PROCEDURE workflow_message_handler (
+        p_message        IN tag_wf_message,
+	    p_message_handle IN RAW
+    );
+
+
+
+    PROCEDURE send_message (
+        p_queue_name       IN       VARCHAR2 DEFAULT 'TAGWF1.TAG_WF_ROUTER'
+       ,p_message          IN OUT   tag_wf_message
+       ,p_original_msgid   IN       VARCHAR2 DEFAULT NULL
+       ,p_priority         IN       PLS_INTEGER DEFAULT 10
+       ,p_message_handle   OUT      RAW
+    );
+
+
+    PROCEDURE browse_queue (
+        p_staff_id           IN       NUMBER DEFAULT NULL
+       ,p_team_id            IN       NUMBER DEFAULT NULL
+       ,p_type               IN       VARCHAR2 DEFAULT 'ROUTER'
+       ,p_search             IN       VARCHAR2 DEFAULT NULL
+       ,p_event_date    IN       DATE DEFAULT NULL
+       ,p_offender_book_id   IN       NUMBER DEFAULT NULL
+       ,p_due_date           IN       DATE DEFAULT NULL
+       ,p_queue              IN OUT   refcur_qs
+    );
+
+    FUNCTION scan_queue (
+        p_queue               IN   VARCHAR2 DEFAULT 'TAGWF1.TAG_WF_ROUTER'
+       ,p_search_conditions   IN   VARCHAR2 DEFAULT NULL
+       ,p_correlation         IN   VARCHAR2 DEFAULT NULL
+    )
+        RETURN queue_set PIPELINED;
+
+   FUNCTION scan_all_queue (
+      p_queue               IN   VARCHAR2 DEFAULT 'TAGWF1.TAG_WF_ROUTER',
+      p_search_conditions   IN   VARCHAR2 DEFAULT NULL
+    )
+        RETURN queue_set PIPELINED;
+
+    PROCEDURE remove_from_queue (p_queue_name IN VARCHAR2, p_msgid IN VARCHAR2);
+
+    PROCEDURE insert_work_message (
+        p_message       IN       queue_rec
+       ,p_workflow_id   OUT      PLS_INTEGER
+    );
+
+    PROCEDURE forward_work_message (
+        p_message          IN  OUT tag_wf_message
+    );
+
+    PROCEDURE browse_work_message (
+        p_original_msgid   IN       VARCHAR2
+       ,p_queue            IN OUT   refcur_qs
+    );
+
+    PROCEDURE create_task_assignment_hty (
+	    p_msgid             IN   VARCHAR2
+       ,p_message           IN   tag_wf_message
+       ,p_original_msgid    IN   VARCHAR2 DEFAULT NULL
+       ,p_completion_date   IN   DATE DEFAULT NULL
+    );
+
+    PROCEDURE complete_task (
+        p_queue_name              IN   VARCHAR2
+       ,p_msgid                   IN   VARCHAR2
+       ,p_complete_reason_code    IN   VARCHAR2
+       ,p_complete_comment_text   IN   VARCHAR2
+       ,p_complete_user_id        IN   VARCHAR2
+    );
+
+  --  PROCEDURE complete_workflow (p_original_msgid IN VARCHAR2);
+
+   PROCEDURE complete_workflow (
+      p_trigger_name        IN   WORK_TRIGGERS.trigger_name%TYPE,
+      p_key                 IN   VARCHAR2 DEFAULT NULL,
+	p_context             IN   VARCHAR2 DEFAULT 'DEFAULT',
+      p_params              IN   XMLTYPE  DEFAULT NULL);
+
+
+    PROCEDURE complete_original_task (p_message IN OUT tag_wf_message);
+
+    PROCEDURE adjust_tm_no_of_tasks (
+        p_team_member_id   IN   TEAM_MEMBERS.team_member_id%TYPE
+       ,p_adjustment       IN   PLS_INTEGER
+    );
+
+    PROCEDURE create_workflow (
+      p_trigger_name        IN   WORK_TRIGGERS.trigger_name%TYPE,
+      p_key                 IN   VARCHAR2 DEFAULT NULL,
+	  p_context             IN   VARCHAR2 DEFAULT 'DEFAULT',
+      p_params              IN   XMLTYPE DEFAULT NULL,
+      p_offender_book_id    IN   OFFENDER_BOOKINGS.offender_book_id%TYPE DEFAULT NULL,
+      p_event_date          IN   DATE DEFAULT NULL,
+      p_override_due_date   IN   DATE DEFAULT NULL,
+      p_due_date_period     IN   NUMBER DEFAULT NULL );
+
+
+    PROCEDURE forward_case_note (p_message IN tag_wf_message);
+
+    PROCEDURE insert_case_note (
+        p_offender_book_id     IN   OFFENDER_CASE_NOTES.offender_book_id%TYPE
+       ,p_staff_id             IN   OFFENDER_CASE_NOTES.staff_id%TYPE
+       ,p_contact_time         IN   OFFENDER_CASE_NOTES.contact_time%TYPE
+       ,p_case_note_type       IN   OFFENDER_CASE_NOTES.case_note_type%TYPE
+       ,p_case_note_sub_type   IN   OFFENDER_CASE_NOTES.case_note_sub_type%TYPE
+       ,p_case_note_text       IN   OFFENDER_CASE_NOTES.CASE_NOTE_TEXT%TYPE
+       ,p_note_source_code     IN   OFFENDER_CASE_NOTES.note_source_code%TYPE
+       ,p_event_id             IN   OFFENDER_CASE_NOTES.event_id%TYPE
+	   ,p_sender_id            IN   OFFENDER_CASE_NOTES.create_user_id%TYPE --6247
+    );
+
+   PROCEDURE create_case_note (
+      p_offender_book_id   IN   OFFENDER_BOOKINGS.offender_book_id%TYPE,
+      p_trigger_name       IN   WORK_TRIGGERS.trigger_name%TYPE,
+      p_message            IN   VARCHAR2,
+      p_event_id           IN   OFFENDER_CASE_NOTES.event_id%TYPE DEFAULT NULL,
+	  p_event_date         IN   DATE DEFAULT NULL, --6247
+      p_note_source_code   IN   OFFENDER_CASE_NOTES.note_source_code%TYPE
+            DEFAULT 'AUTO' );
+
+   PROCEDURE lock_queue ( p_queue_name IN VARCHAR2,
+                          p_msgid      IN VARCHAR2);
+
+   PROCEDURE open_workflow (
+      p_message                IN OUT  tag_wf_message,
+	  p_workflow_history_id    IN      WORKFLOW_HISTORY.workflow_history_id%TYPE,
+	  p_key                    IN      VARCHAR2);
+
+   PROCEDURE close_workflow (
+      p_message                IN  OUT tag_wf_message,
+	  p_workflow_history_id    IN      WORKFLOW_HISTORY.workflow_history_id%TYPE,
+	  p_key                    IN      VARCHAR2);
+
+   FUNCTION Show_Version RETURN VARCHAR2;
+
+   --20-Feb-2009 Automatically generated emails
+   --30-Aug-2010 deprecated
+   PROCEDURE create_email_workflow (
+      p_trigger_name        IN   WORK_TRIGGERS.trigger_name%TYPE,
+      p_params              IN   XMLTYPE,
+      p_offender_book_id    IN   OFFENDER_BOOKINGS.offender_book_id%TYPE DEFAULT NULL,
+	    p_event_date          IN   DATE DEFAULT NULL);
+
+   --30-Aug-2010
+   /*
+    --public method to be used when creating workflow emails defined as email work items defined via work items maintenance
+    --an email work item has to be defined
+    --an executable can be used additionally in combination with the email work item
+   */
+   PROCEDURE create_email_workflow (
+      p_trigger_name        IN   WORK_TRIGGERS.trigger_name%TYPE,
+      p_params              IN   XMLTYPE,
+      p_offender_book_id    IN   OFFENDER_BOOKINGS.offender_book_id%TYPE DEFAULT NULL,
+	    p_event_date          IN   DATE DEFAULT NULL,
+      p_key                 IN   VARCHAR2,
+      p_open_workflow_flag  IN   VARCHAR2 DEFAULT 'Y',
+      p_persist_flag        IN   VARCHAR2 DEFAULT 'N'); --persist flag is placeholder for now, it is not implemented yet
+
+    /*used by the listener on email queue; not recommended to be called directly*/
+    PROCEDURE exe_email_trigger_executable(p_message                   IN OUT   tag_wf_message
+                                      ,p_params                    IN       XMLTYPE
+                                      ,p_work_trigger              IN       WORK_TRIGGER_EXECUTABLES.work_trigger%TYPE
+                                      ,p_work_context              IN       WORK_TRIGGER_EXECUTABLES.work_context%TYPE DEFAULT 'DEFAULT'
+                                      ,p_trigger_executable        IN       WORK_TRIGGER_EXECUTABLES.trigger_executable%TYPE
+                                      ,p_trigger_executable_type   IN       WORK_TRIGGER_EXECUTABLES.trigger_executable_type%TYPE
+                                      ,p_message_template          IN       WORK_TRIGGER_EXECUTABLES.message_template%TYPE
+                                      ,p_email                     IN OUT NOCOPY  RT_EMAIL
+                                      ,p_continue                  OUT      VARCHAR2);
+
+   --20-Feb-2009 Automatically generated emails
+   --30 -AUG -2010
+   /*used by the listener on email queue; not recommended to be called directly*/
+   PROCEDURE generate_work_item_email ( p_message IN tag_wf_message);
+
+   --30-Aug-2010
+   /*--public method to be used when creating emails that are NOT associated with an email work item defined via work items maintenance but use workflow infrastructure
+     --to be able to use the workflow queues, an executable has to be used and the executable is defined in work_trigger_executables although no work item exists(ex. used for LA Title 15)
+     --this is also used for ADHOC emails
+     --trigger name 'ADHOC_EMAIL' is a reserved trigger name and CANNOT be used as a trigger name in the maintenance screen Maintain Work Items (OCMWORKS)
+     --trigger name 'ADHOC_EMAIL' is also defined in table work_trigger_executables against the plssql code that takes the email information from the staging area for ADHOC_EMAIL
+   */
+   PROCEDURE create_email(
+                   p_exe_trigger_name    IN   WORK_TRIGGERS.trigger_name%TYPE,
+                   p_params              IN   XMLTYPE,
+                   p_offender_book_id    IN   OFFENDER_BOOKINGS.offender_book_id%TYPE DEFAULT NULL,
+	                 p_event_date          IN   DATE DEFAULT NULL,
+                   p_key                 IN   VARCHAR2,
+                   p_open_workflow_flag  IN   VARCHAR2 DEFAULT 'N', --normally create_email should not open workflow
+                   p_persist_flag        IN   VARCHAR2 DEFAULT 'N'); --persist flag is placeholder for now, it is not implemented yet
+
+   --30 -AUG -2010
+   /*used by the listener on email queue; not recommended to be called directly*/
+   PROCEDURE generate_email ( p_message IN tag_wf_message);
+   /*used by the listener on router; not recommended to be called directly*/
+   PROCEDURE forward_email ( p_message IN tag_wf_message);
+   
+   PROCEDURE create_agency_workflow (
+      p_trigger_name        IN   WORK_TRIGGERS.trigger_name%TYPE,
+      p_agy_loc_id          IN   AGENCY_LOCATIONS.agy_loc_id%TYPE,
+      p_key                 IN   VARCHAR2 DEFAULT NULL,
+      p_context             IN   VARCHAR2 DEFAULT 'DEFAULT',
+      p_params              IN   XMLTYPE DEFAULT NULL,
+      p_offender_book_id    IN   OFFENDER_BOOKINGS.offender_book_id%TYPE
+            DEFAULT NULL,
+      p_event_date          IN   DATE DEFAULT NULL,
+      p_override_due_date   IN   DATE DEFAULT NULL,
+      p_due_date_period     IN   NUMBER DEFAULT NULL );
+      
+    --22-SEP-2020  10.2.31.1.7  V4 change --overloading method 
+    PROCEDURE reassign_to_team_member (
+        p_queue_name           IN   VARCHAR2
+       ,p_msgid                IN   VARCHAR2
+       ,p_new_team_member_id   IN   TEAM_MEMBERS.team_member_id%TYPE
+       ,p_remove_message       IN   INT DEFAULT 1);   
+
+
+    --30-NOV-2020 10.2.31.1.8  V4 change --overloading method 
+    PROCEDURE assign_to_team_member (
+        p_queue_name       IN   VARCHAR2
+       ,p_msgid            IN   VARCHAR2
+       ,p_team_member_id   IN   TEAM_MEMBERS.team_member_id%TYPE
+       ,p_remove_message   IN   INT DEFAULT 1
+    );
+      
+   --30-NOV-2020 10.2.31.1.8  V4 change --overloading method 
+   PROCEDURE reassign_to_team (
+        p_queue_name       IN   VARCHAR2
+       ,p_msgid            IN   VARCHAR2
+       ,p_new_team_id      IN   TEAM_MEMBERS.team_id%TYPE
+       ,p_remove_message   IN   INT DEFAULT 1
+    );
+
+END;
+/
+

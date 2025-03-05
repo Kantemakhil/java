@@ -1,0 +1,5 @@
+INSERT INTO MODULE_TRIGGERS(MODULE_NAME, DTO_NAME, MODULE_DESCRIPTION, TRIGGER_ID,create_user_id, create_datetime, modify_datetime) VALUES('OIDCHLOC', 'net.syscon.s4.im.beans.BedAssignmentHistories', 'Change Housing Location', '74','OMS_OWNER', current_timestamp, current_timestamp);
+INSERT INTO MODULE_TRIGGERS(MODULE_NAME, DTO_NAME, MODULE_DESCRIPTION, TRIGGER_ID,create_user_id, create_datetime, modify_datetime) VALUES('OIDCHOLO', 'net.syscon.s4.im.beans.BedAssignmentHistories', 'Change Multiple Housing Location', '75','OMS_OWNER', current_timestamp, current_timestamp);
+INSERT INTO MODULE_TRIGGERS(MODULE_NAME, DTO_NAME, MODULE_DESCRIPTION, TRIGGER_ID,create_user_id, create_datetime, modify_datetime) VALUES('OIDEHLOC', 'net.syscon.s4.common.beans.VHeaderBlock', 'Exchange Housing Location', '76','OMS_OWNER', current_timestamp, current_timestamp);
+INSERT INTO MODULE_TRIGGERS(MODULE_NAME, DTO_NAME, TRIGGER_NAME, MODULE_DESCRIPTION, TRIGGER_ID,create_user_id, create_datetime, modify_datetime) VALUES('OIDPACTI', 'net.syscon.s4.im.beans.OffenderProgramProfiles', 'Waitlist', 'Institutional Activities', '29','OMS_OWNER', current_timestamp, current_timestamp); 
+

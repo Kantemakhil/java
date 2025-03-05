@@ -1,0 +1,14 @@
+CREATE OR REPLACE VIEW v_book_admin
+AS SELECT off_name.offender_id_display,
+    off_name.offender_id,
+    off_name.root_offender_id,
+    off_name.last_name,
+    off_name.first_name,
+    off_name.middle_name,
+    off_name.suffix,
+    off_name.birth_date,
+    coalesce(off_name.seal_flag , 'N') as seal_flag 
+   FROM offenders off_name
+  WHERE (EXISTS ( SELECT NULL::text AS text
+           FROM offender_bookings off_book
+          WHERE off_book.offender_id = off_name.offender_id));

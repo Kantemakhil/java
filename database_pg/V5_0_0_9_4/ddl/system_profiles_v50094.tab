@@ -1,0 +1,1 @@
+alter table system_profiles alter column profile_value_2 type varchar(100) using profile_value_2::varchar(100);

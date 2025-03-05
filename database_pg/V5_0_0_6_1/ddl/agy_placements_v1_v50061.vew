@@ -1,0 +1,10 @@
+CREATE OR REPLACE VIEW oms_owner.agy_placements_v1
+AS SELECT d.program_code,
+    c.description,
+    count(*) AS cell
+   FROM agency_locations c
+     LEFT JOIN v_tag_header_block b ON c.agy_loc_id::text = b.agy_loc_id::text,
+    program_services d
+     LEFT JOIN offender_program_profiles a ON d.program_id = a.program_id
+  WHERE (d.program_id = ANY (ARRAY[1::bigint, 2::bigint, 3::bigint, 4::bigint, 5::bigint, 7::bigint, 8::bigint, 9::bigint, 33::bigint, 54::bigint, 53::bigint])) AND a.offender_book_id = b.offender_book_id AND (COALESCE(a.offender_end_date::text, ''::text) = ''::text OR a.offender_end_date > date_trunc('day'::text, LOCALTIMESTAMP)) AND c.agy_loc_id::text ~~ '13%'::text AND b.active_flag::text = 'Y'::text
+  GROUP BY d.program_code, c.description;

@@ -1,0 +1,19 @@
+create table stage_phones
+(    owner_class          varchar2(12)    not null
+   , offender_id_display  varchar2(10)  
+   , phone_usage          varchar2(12)
+   , phone_no             varchar2(40)
+   , extension_no         varchar2(7)
+   , invalid_reason       varchar2(256)
+   , invalid_flag         varchar2(1) 
+)
+tablespace tag_data;
+
+comment on column stage_phones.owner_class is 'Classification of the address owner. Owner class OFF - Offender. (Other phone number types currently not supported for conversion.)';
+comment on column stage_phones.offender_id_display is 'The user facing unique identifier of an offender. Required if owner_class ''OFF'', ''OFF_EDU'', or ''OFF_EMP''. If padding is turned on, the value should be ten characters long, padded left with zeroes.';
+comment on column stage_phones.phone_usage is 'A code indicating the type of phone number. E.g., Business, fax, mobile. Reference domain ( PHONE_USAGE )';
+comment on column stage_phones.phone_no is 'Phone number. (area code + prefix + number)';
+comment on column stage_phones.extension_no is 'Extension number associated with the phone number.';
+comment on column stage_phones.invalid_reason is 'The reason the record will be skipped during conversion.';
+comment on column stage_phones.invalid_flag is 'A flag to indicate whether the record should be processed. Records marked with ''N'' will be skipped during conversion.';
+comment on table stage_phones is 'Records telephone numbers associated with owners. The table holds one record for each phone owner combination. An address can be a phone owner. An offender who has a land line and a mobile would typically have the mobile associated with the offender, and the land line associated with the address.';

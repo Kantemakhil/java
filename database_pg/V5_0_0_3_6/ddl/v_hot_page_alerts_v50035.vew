@@ -1,0 +1,9 @@
+CREATE OR REPLACE VIEW oms_owner.v_hot_page_alerts
+AS SELECT alerts.offender_book_id,
+    oms_miscellaneous_getdesccode('ALERT'::character varying, alerts.alert_type) AS alert_type,
+    oms_miscellaneous_getdesccode('ALERT_CODE'::character varying, alerts.alert_code) AS alert_sub_type,
+    ''::text AS required_facilities,
+    alerts.comment_text,
+    alerts.alert_date AS effective_date
+   FROM offender_alerts alerts
+  WHERE alerts.alert_status::text = 'ACTIVE'::text AND COALESCE(alerts.expiry_date::text, ''::text) = ''::text;

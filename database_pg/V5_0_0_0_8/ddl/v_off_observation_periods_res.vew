@@ -1,0 +1,28 @@
+CREATE OR REPLACE VIEW oms_owner.v_off_observation_periods_res
+AS SELECT oop.ctid AS row_id,
+    opc.check_id,
+    vhb.offender_id_display,
+    vhb.root_offender_id,
+    vhb.offender_id,
+    vhb.offender_book_id,
+    vhb.last_name,
+    vhb.first_name,
+    vhb.birth_date,
+    vhb.agy_loc_id,
+    substr(vhb.living_unit_description, 1, "position"(vhb.living_unit_description, ';'::text) - 1) AS living_unit_description,
+    vhb.liv_unit_desc,
+    vhb.active_flag,
+    vhb.living_unit_id,
+    oop.obs_period_id,
+    oop.observation_type,
+    oms_miscellaneous_getdesccode('OO_OBS_TYP'::character varying, oop.observation_type) AS observation_type_desc,
+    oop.frequency,
+    opc.schedule_date
+   FROM v_header_block vhb,
+    off_observation_periods oop,
+    off_obs_period_checks opc
+  WHERE vhb.offender_book_id = oop.offender_book_id AND vhb.active_flag::text = 'Y'::text AND oop.offender_book_id = opc.offender_book_id AND oop.obs_period_id = opc.obs_period_id AND oop.obs_period_id = (( SELECT max(oop1.obs_period_id) AS max
+           FROM off_observation_periods oop1
+          WHERE oop1.offender_book_id = oop.offender_book_id AND oop1.status_code::text = 'A'::text)) AND opc.check_id = (( SELECT max(obch.check_id) AS max
+           FROM off_obs_period_checks obch
+          WHERE obch.offender_book_id = oop.offender_book_id AND obch.obs_period_id = oop.obs_period_id));

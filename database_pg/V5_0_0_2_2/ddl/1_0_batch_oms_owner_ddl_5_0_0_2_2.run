@@ -1,0 +1,66 @@
+--echo everything (this eliminates the need to call psql -a)
+\set ECHO all
+
+--set the message level sent to client
+SET client_min_messages = warning;
+
+--print connection information
+\echo 'Database Information:'
+\conninfo
+
+--set client session behaviour
+\set AUTOCOMMIT on
+\timing on
+\set footer on
+\x auto
+\pset null <NULL>
+\set VERBOSITY verbose
+\pset pager off
+
+show search_path;
+
+select current_timestamp;
+
+--record scripts version
+call log_db_version_control('5', 'initial PostgreSql Elite db version ');
+call log_db_version_control_patches('5', '5_0_0_2_2', 'ddl set 1_0 of patch 5_0_0_2_2', '1_0_batch_oms_owner_ddl_5_0_0_2_2.run');
+
+--execute sql scripts
+
+--
+\i ext_account_balance_id_v50022.seq
+--
+\i off_external_account_balances_v50022.tab  
+
+-- 
+\i staff_reports_maint_v50022.sql 
+--
+\i agency_incident_parties_v50022.tab
+\i incident_staff_reports_v50022.tab
+
+--
+\i sentence_calc_types_v50022.sql 
+\i case_note_permissions_v50022.tab 
+--
+\i offender_case_conditions_v50022.sql
+\i offender_interested_parties_v50022.tab 
+
+--
+\i tables_audit_v50022.tab
+\i elite_generic_log_v5022.tab
+\i elite_generic_log_v5022.fun
+
+--
+\i oms_modules_help_v50022.tab 
+ 
+select current_timestamp;
+
+show search_path;
+
+ 
+ 
+
+
+
+
+

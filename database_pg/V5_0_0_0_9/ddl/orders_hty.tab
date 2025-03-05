@@ -1,0 +1,43 @@
+create table orders_hty(
+order_hty_id          bigint not null,
+order_id              bigint ,
+order_type            varchar(12 ),
+issuing_agy_loc_id    varchar(6),
+requesting_officer    varchar(100),
+request_date          date,
+due_date              date,
+team_id               varchar(100),
+staff_member_id       varchar(100),
+order_status          varchar(12), 
+defence_solicitor     varchar(100),
+create_datetime       TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL ,
+create_user_id        VARCHAR(32)NOT NULL ,
+modify_datetime       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+modify_user_id        VARCHAR(32),
+seal_flag             varchar(1) 
+) tablespace tag_data;
+
+alter table orders_hty   
+  add constraint orders_hty_pk primary key (order_hty_id)
+  using index tablespace tag_indx;
+  
+alter table orders_hty 
+	add constraint ORDERS_HTY_FK1 foreign key (order_id) 
+	references orders(order_id) on delete no action not deferrable initially immediate;
+
+
+comment on column orders_hty.order_hty_id is 'The ID of  order history';
+comment on column orders_hty.order_id is 'The order ID';
+comment on column orders_hty.order_type is ' The Reference Code ( ORDER_TYPE )type of legal order - ie. Remand, Detainer,Sentence ...';
+comment on column orders_hty.issuing_agy_loc_id is 'Court issuing the legal order.';
+comment on column orders_hty.requesting_officer is 'This coulmn is used to maintain request officer';
+comment on column orders_hty.request_date is 'The request date (Reports)';
+comment on column orders_hty.due_date is 'The due date (Reports)';
+comment on column orders_hty.team_id is 'This indicates that the report assign to the particular team';
+comment on column orders_hty.staff_member_id is 'This indicates that the report assign to the particular staff member';
+comment on column orders_hty.order_status is 'Reference Code ( ORDER_STS ) THE CURRENT ORDER STATUS - ACTIVE, INACTIVE,EXPIRED..';
+comment on column orders_hty.create_user_id is 'The user who creates the record';
+comment on column orders_hty.create_datetime is 'The timestamp when the record is created';
+comment on column orders_hty.modify_user_id is 'The user who modifies the record';
+comment on column orders_hty.modify_datetime is 'The timestamp when the record is modifies';
+comment on column orders_hty.defence_solicitor is 'This coulmn is used to maintain defence solicitor';

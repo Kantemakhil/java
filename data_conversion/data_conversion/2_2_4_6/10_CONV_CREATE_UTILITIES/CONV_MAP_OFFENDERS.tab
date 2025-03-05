@@ -1,0 +1,43 @@
+-- Create table 
+REM Creating table CONV_MAP_OFFENDERS to retain mapping of generated offender_id and stored offender_id_display in application with the client data
+
+create table CONV_MAP_OFFENDERS
+(
+   offender_id                  NUMBER(10),
+   root_offender_id             NUMBER(10),
+   offender_id_display          VARCHAR2(10),
+   stage_offender_id_display    VARCHAR2(10),
+   stage_last_name              VARCHAR2(35),
+   stage_first_name             VARCHAR2(35),
+   stage_middle_name            VARCHAR2(35),
+   stage_birth_date             DATE,
+   stage_suffix                 VARCHAR2(12)
+)
+tablespace TAG_DATA  
+  pctfree 10
+  initrans 1
+  maxtrans 255
+  storage
+  (
+    initial 2M
+    next 2M
+    minextents 1
+    maxextents unlimited
+    pctincrease 0
+  )
+LOGGING 
+NOCOMPRESS 
+NOCACHE
+NOPARALLEL
+MONITORING;
+
+COMMENT ON TABLE CONV_MAP_OFFENDERS IS 'Retain mapping of generated offender_id and stored offender_id_display in application with the client data'; 
+
+CREATE UNIQUE INDEX CONV_MAP_OFFENDERS_UK1 
+    ON CONV_MAP_OFFENDERS(offender_id)
+       TABLESPACE TAG_INDX;
+
+CREATE UNIQUE INDEX CONV_MAP_OFFENDERS_UK2 
+    ON CONV_MAP_OFFENDERS(stage_offender_id_display, stage_last_name, stage_first_name, stage_middle_name, stage_birth_date, stage_suffix)
+       TABLESPACE TAG_INDX;
+

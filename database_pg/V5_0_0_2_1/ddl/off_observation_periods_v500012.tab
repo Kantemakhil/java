@@ -1,0 +1,46 @@
+-- Create table
+create table oms_owner.off_observation_periods
+(
+  obs_period_id			integer not null,
+  offender_book_id		integer not null,
+  obs_period_seq		integer not null,
+  obs_type_version_id	integer not null,
+  start_datetime		timestamp not null,
+  end_reason_code		varchar(12),
+  end_datetime			timestamp,
+  status_code			varchar(12) not null,
+  create_datetime		timestamp not null default CURRENT_TIMESTAMP,
+  create_user_id		varchar(32) not null,
+  modify_datetime		timestamp default CURRENT_TIMESTAMP,
+  modify_user_id		varchar(32),
+  seal_flag				varchar(1) 
+)
+tablespace tag_data;  
+
+alter table oms_owner.off_observation_periods
+  add constraint off_obs_periods_pk primary key (obs_period_id)
+  using index tablespace tag_indx;
+  
+alter table oms_owner.off_observation_periods
+  add constraint off_obs_periods_uk1 unique (offender_book_id, obs_period_seq)
+  using index tablespace tag_indx;
+  
+alter table oms_owner.off_observation_periods
+  add constraint off_obs_periods_fk1 foreign key (offender_book_id)
+  references oms_owner.offender_bookings (offender_book_id) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE;    
+  
+alter table oms_owner.off_observation_periods
+  add constraint off_obs_periods_fk2 foreign key (obs_type_version_id)
+  references oms_owner.offender_observation_types (obs_type_version_id) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE;
+
+  
+--
+comment on table oms_owner.off_observation_periods is 'Stores the offender observation periods (offender data)';
+comment on column oms_owner.off_observation_periods.obs_period_id is 'Surogate unique identifier for offender observation period (db seq=obs_period_id_seq)';
+comment on column oms_owner.off_observation_periods.offender_book_id is 'System identifier for offender booking.';
+comment on column oms_owner.off_observation_periods.obs_period_seq is 'Offender observation period sequence, starts at 1 for each booking';
+comment on column oms_owner.off_observation_periods.obs_type_version_id is 'Unique identifier for a specific version of an observation type';
+comment on column oms_owner.off_observation_periods.start_datetime is 'This field is used to store the observation period start datetime';
+comment on column oms_owner.off_observation_periods.end_reason_code is 'End Reason Code [ref domain=END_RSN_CODE]'; 
+comment on column oms_owner.off_observation_periods.end_datetime is 'This field is used to store the end datetime of offender observation period';
+comment on column oms_owner.off_observation_periods.status_code is 'Status of observation period, static value: ACTIVE, EXPIRED';  

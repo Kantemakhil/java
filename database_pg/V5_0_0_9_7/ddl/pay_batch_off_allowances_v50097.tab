@@ -1,0 +1,27 @@
+create table oms_owner.pay_batch_off_allowances (
+	batch_id int8 not null,
+	offender_book_id int8 not null,
+	off_allowance_id int8 not null,
+	allowance_pay_amount numeric(11,2) not null,
+	create_datetime timestamp(6) not null,
+	create_user_id varchar(32) not null,
+	modify_datetime timestamp(6) null,
+	modify_user_id varchar(32) null,
+	seal_flag varchar(1) null 
+) tablespace tag_data ;
+
+alter table oms_owner.pay_batch_off_allowances add constraint pay_batch_off_allowances_pk primary key (batch_id,offender_book_id,off_allowance_id);
+
+alter table oms_owner.pay_batch_off_allowances add constraint pay_batch_off_allowances_fk1 foreign key (batch_id) 
+  references oms_owner.prg_pay_batches (batch_id) on delete no action not deferrable initially immediate;
+alter table oms_owner.pay_batch_off_allowances add constraint pay_batch_off_allowances_fk2 foreign key (offender_book_id) 
+  references oms_owner.offender_bookings(offender_book_id) on delete no action not deferrable initially immediate;
+alter table oms_owner.pay_batch_off_allowances add constraint pay_batch_off_allowances_fk3 foreign key (off_allowance_id) 
+  references oms_owner.offender_allowances (off_allowance_id)  on delete no action not deferrable initially immediate;
+
+comment on table oms_owner.pay_batch_off_allowances is 'Offender allowances payment information (offender assigned allowance level)';
+
+comment on column oms_owner.pay_batch_off_allowances.batch_id is 'The unique batch identifier'; 
+comment on column oms_owner.pay_batch_off_allowances.offender_book_id is 'Unique identifier for the offender booking'; 
+comment on column oms_owner.pay_batch_off_allowances.off_allowance_id is 'Unique identifier for the offender assigned allowance'; 
+comment on column oms_owner.pay_batch_off_allowances.allowance_pay_amount is 'The total paid for all pay dates/days for a given offender assigned allowance that are included in the batch';

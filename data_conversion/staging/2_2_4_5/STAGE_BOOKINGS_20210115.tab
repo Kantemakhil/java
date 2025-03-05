@@ -1,0 +1,40 @@
+ALTER TABLE stage_bookings
+  ADD CONSTRAINT stage_bookings_uk UNIQUE(offender_id_display, booking_begin_date)
+      USING index tablespace TAG_INDX;
+
+ALTER TABLE stage_bookings
+ MODIFY ( invalid_reason default NULL,
+          invalid_flag default 'N'
+        );
+
+COMMENT ON COLUMN stage_bookings.booking_begin_date is 'The start date of the incarceration period. This should also correspond to an initial IN movement in stage_bookings. Combination of offender_id_display and booking_begin_date must be unique, as they together identify a booking, and are used to link to child data. If there are multiple bookings on the same date, the time must be populated to differentiate records, and that same time must be included on child records in the staging tables to link the data.';
+COMMENT ON COLUMN stage_bookings.invalid_reason IS 'The reason the record has been marked as invalid. Used for feedback purposes prior to conversion. Not used by the conversion logic.';
+COMMENT ON COLUMN stage_bookings.invalid_flag IS 'A flag to indicate whether the record is considered invalid. Marked N by default. Updated to ''Y'' to flag possible problem records. Not used by conversion logic. Its purpose is to allow feedback on problem records during pre-conversion validation checking. Conversion logic will not attempt to sidestep these records, so faulty records should be reviewed and issues resolved prior to execution of conversion.';
+COMMENT ON TABLE stage_bookings IS 'Stores one or more bookings (periods of supervision or episodes) within an offender record. Child to OFFENDERS and parent to many offender data tables, making it the key intersection point tying individual data items to the correct offender record, and to the correct incarceration period or episode. This table regulates whether an offender record is active or inactive (an active offender record has a single active open booking; inactive offender records have only closed bookings).  This table is a direct link to system security, controlling which offender records can be retrieved by a user account (an open booking must have at least one attached agency location; a user account can retrieve bookings where the attached agency location is contained within that user account''s caseload (see CASELOAD_AGENCY_LOCATIONS). This table is also used as a summary table, and so must be consistent with details stored in child records such as movements. A period of supervision is identified with the combination of an offender_id_display and a booking_begin_date. To accommodate multiple bookings on the same day, the booking_begin_date can include the time portion, and must match the date and time recorded on child records. If there are multiple bookings on the same day, the time must be different for each record.';
+
+CREATE OR REPLACE TRIGGER stage_bookings_t1
+BEFORE INSERT OR UPDATE ON stage_bookings
+REFERENCING NEW AS NEW OLD AS OLD FOR EACH ROW
+
+BEGIN
+/* 
+============================================================
+   Version Number = 1.1  Date Modified 26-JAN-2021  
+============================================================
+  MODIFICATION HISTORY                                      
+   Person       Date      version      Comments             
+-----------  ---------    -----------  -------------------------------
+   D. Roy    26/01/2021   1.1          Corrected new reference
+   D. Roy    15/01/2021   1.0          Created   
+*/
+
+
+   :NEW.booking_no := UPPER(:NEW.booking_no);
+   :NEW.offender_id_display := UPPER(:NEW.offender_id_display);
+   :NEW.agy_loc_id := UPPER(:NEW.agy_loc_id);
+   :NEW.bed_location := UPPER(:NEW.bed_location);
+   :NEW.active_flag := UPPER(:NEW.active_flag);
+   :NEW.assigned_user_id := UPPER(:NEW.assigned_user_id);
+   :NEW.create_agy_loc_id := UPPER(:NEW.create_agy_loc_id);
+END;
+/

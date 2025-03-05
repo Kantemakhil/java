@@ -1,0 +1,29 @@
+-- Create table 
+REM Creating table CONV_ENA_DIS_CONSTRAINTS to retain the enabled constraints prior to data migration activities
+
+create table CONV_ENA_DIS_CONSTRAINTS
+(
+  table_name      VARCHAR2(64), 
+  constraint_name VARCHAR2(64),
+  constraint_type VARCHAR2(4)
+)
+tablespace TAG_DATA  
+  pctfree 10
+  initrans 1
+  maxtrans 255
+  storage
+  (
+    initial 2M
+    next 2M
+    minextents 1
+    maxextents unlimited
+    pctincrease 0
+  )
+LOGGING 
+NOCOMPRESS 
+NOCACHE
+NOPARALLEL
+MONITORING;
+
+COMMENT ON TABLE CONV_ENA_DIS_CONSTRAINTS IS 'Retain the enabled constraints prior to data migration activities'; 
+

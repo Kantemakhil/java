@@ -1,0 +1,3 @@
+ALTER TABLE oms_owner.offences 
+   ADD CONSTRAINT offences_uk1 UNIQUE (statute_code, offence_code, description) 
+     using index tablespace tag_indx; 

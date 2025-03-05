@@ -1,0 +1,2 @@
+--sequence that populates offender_obs_period_checks.check_id
+create sequence oms_owner.check_id_seq start with 1 increment by 1;

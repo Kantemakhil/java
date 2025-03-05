@@ -1,0 +1,3 @@
+-- automation setup subfolder import_processes
+-- import Quick_Actions_17974_story.zip
+-- import Process_17974_story.zip

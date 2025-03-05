@@ -1,0 +1,113 @@
+ASSESSMENT_RESULTS_INSERT{
+    INSERT INTO assessment_results_jn (
+        jn_operation,
+        jn_oracle_user,
+        jn_datetime,
+        jn_notes,
+        jn_appln,
+        jn_session,
+        assessment_id,
+        supervision_level_type,
+        list_seq,
+        expiry_date,
+        update_allowed_flag,
+        active_flag,
+        cell_sharing_alert_flag,
+        create_user_id,
+        modify_user_id,
+        seal_flag
+    ) VALUES (
+        'UPD',
+        'OMS_OWNER',
+        current_timestamp,
+        NULL,
+        NULL,
+        0,
+        :old.assessment_id,
+        :old.supervision_level_type,
+        :old.list_seq,
+        :old.expiry_date,
+        :old.update_allowed_flag,
+        :old.active_flag,
+        :old.cell_sharing_alert_flag,
+        :old.create_user_id,
+        :old.modify_user_id,
+        :old.seal_flag
+    )
+}
+
+ASSESSMENT_RESULTS_UPDATE{
+    INSERT INTO assessment_results_jn (
+        jn_operation,
+        jn_oracle_user,
+        jn_datetime,
+        jn_notes,
+        jn_appln,
+        jn_session,
+        assessment_id,
+        supervision_level_type,
+        list_seq,
+        expiry_date,
+        update_allowed_flag,
+        active_flag,
+        cell_sharing_alert_flag,
+        create_user_id,
+        modify_user_id,
+        seal_flag
+    ) VALUES (
+        'UPD',
+        'OMS_OWNER',
+        current_timestamp,
+        NULL,
+        NULL,
+        0,
+        :old.assessment_id,
+        :old.supervision_level_type,
+        :old.list_seq,
+        :old.expiry_date,
+        :old.update_allowed_flag,
+        :old.active_flag,
+        :old.cell_sharing_alert_flag,
+        :old.create_user_id,
+        :old.modify_user_id,
+        :old.seal_flag
+    )
+}
+
+ASSESSMENT_RESULTS_DELETE{
+INSERT
+    INTO assessment_results_jn (
+        jn_operation,
+        jn_oracle_user,
+        jn_datetime,
+        jn_notes,
+        jn_appln,
+        jn_session,
+        assessment_id,
+        supervision_level_type,
+        list_seq,
+        expiry_date,
+        update_allowed_flag,
+        active_flag,
+        cell_sharing_alert_flag,
+        create_user_id,
+        modify_user_id,
+        seal_flag
+    )   
+VALUES (
+    'DEL',
+    'OMS_OWNER',
+    current_timestamp,
+    NULL,
+    NULL,
+    0,
+    :old.assessment_id,
+    :old.supervision_level_type,
+    :old.list_seq,
+    :old.expiry_date,
+    :old.update_allowed_flag,
+    :old.active_flag,
+    :old.cell_sharing_alert_flag,
+    :old.create_user_id,
+    :old.modify_user_id 
+}

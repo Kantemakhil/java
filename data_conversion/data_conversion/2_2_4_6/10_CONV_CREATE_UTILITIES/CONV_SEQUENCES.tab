@@ -1,0 +1,35 @@
+REM Creating table CONV_SEQUENCES 
+
+CREATE TABLE CONV_SEQUENCES ( SEQ_NAME  VARCHAR2(30) NOT NULL
+                                ,SPECIAL_FLAG VARCHAR2(1) DEFAULT 'N' NOT NULL 
+                                ,TABLE_NAME   VARCHAR2(30) NOT NULL
+                                ,COLUMN_NAME  VARCHAR2(30) NOT NULL
+                                ,CONV_PKG_NAME  VARCHAR2(30) NOT NULL 
+                                )
+TABLESPACE TAG_DATA 
+PCTUSED    0
+PCTFREE    10
+INITRANS   1
+MAXTRANS   255
+STORAGE    (
+            INITIAL          128K
+            NEXT             1M
+            MINEXTENTS       1
+            MAXEXTENTS       UNLIMITED
+            PCTINCREASE      0
+            BUFFER_POOL      DEFAULT
+           )
+LOGGING 
+NOCOMPRESS 
+NOCACHE
+NOPARALLEL
+MONITORING; 
+
+COMMENT ON TABLE CONV_SEQUENCES IS 'The table stores the oracle sequences that need to be adjusted due to data migration'; 
+
+COMMENT ON COLUMN CONV_SEQUENCES.SEQ_NAME IS 'Sequence name';
+COMMENT ON COLUMN CONV_SEQUENCES.SPECIAL_FLAG IS 'Value Y indicates a sequence that cannot be adjuted automatically by the data migration package';
+COMMENT ON COLUMN CONV_SEQUENCES.TABLE_NAME IS 'The table name using the oracle sequence';
+COMMENT ON COLUMN CONV_SEQUENCES.COLUMN_NAME IS 'The column name using the oracle sequence';
+COMMENT ON COLUMN CONV_SEQUENCES.CONV_PKG_NAME IS 'The data migration package that needs to adjust the oracle sequence';
+                        

@@ -1,0 +1,29 @@
+CREATE TABLE oms_owner.dynamic_grid_config
+	(
+	id                BIGSERIAL NOT NULL,
+	module_name       VARCHAR(20) NOT NULL,
+	config_json       BYTEA NOT NULL,
+	grid_name         VARCHAR(100) NOT NULL,
+	db_table_name     VARCHAR(50),
+    create_datetime   TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL ,
+    create_user_id    VARCHAR(32)NOT NULL ,
+    modify_datetime   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    modify_user_id    VARCHAR(32),
+    seal_flag         VARCHAR(1) 
+) tablespace tag_data;
+
+alter table oms_owner.dynamic_grid_config  
+  add constraint dynamic_grid_config_pk primary key (id)
+  using index tablespace tag_indx;
+
+comment on table oms_owner.dynamic_grid_config is 'To Maintain dynamic grids config';
+
+comment on column oms_owner.dynamic_grid_config.id  is 'To save the unique id';
+comment on column oms_owner.dynamic_grid_config.module_name  is 'To save the module name';
+comment on column oms_owner.dynamic_grid_config.config_json  is 'To save grid config json';
+comment on column oms_owner.dynamic_grid_config.grid_name  is 'To save the grid name';
+comment on column oms_owner.dynamic_grid_config.db_table_name  is 'To save the db table name';
+comment on column oms_owner.dynamic_grid_config.create_datetime  is 'To save create date and time';
+comment on column oms_owner.dynamic_grid_config.create_user_id  is 'To save create user id';
+comment on column oms_owner.dynamic_grid_config.modify_datetime  is 'To save modify date and time';
+comment on column oms_owner.dynamic_grid_config.modify_user_id  is 'To save modify user id';

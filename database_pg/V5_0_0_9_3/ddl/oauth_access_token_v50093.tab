@@ -1,0 +1,12 @@
+CREATE TABLE oauth_access_token (
+	token_id varchar(255) NOT NULL,
+	"token" bytea NOT NULL,
+	authentication_id varchar(255) NOT NULL,
+	user_name varchar(255) NOT NULL,
+	client_id varchar(255) NOT NULL,
+	authentication bytea NOT NULL,
+	refresh_token varchar(255) NULL,
+	CONSTRAINT oauth_access_token_pkey PRIMARY KEY (authentication_id)
+)
+TABLESPACE tag_data
+;

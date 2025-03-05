@@ -1,0 +1,3 @@
+create table oms_owner.agency_internal_locations_cpy_v500981 as
+select * 
+from oms_owner.agency_internal_locations;

@@ -1,0 +1,14 @@
+ALTER TABLE oms_owner.incident_offender_weapons DROP COLUMN offender_book_id;
+
+ALTER TABLE oms_owner.incident_offender_weapons 
+   ADD CONSTRAINT incident_offender_weapons_uk1 UNIQUE (agency_incident_id, party_seq, weapons_used) 
+     using index tablespace tag_indx;
+
+ALTER TABLE oms_owner.incident_offender_weapons 
+  ADD CONSTRAINT incident_offender_weapons_fk1 FOREIGN KEY (agency_incident_id,party_seq) 
+   REFERENCES oms_owner.agency_incident_parties(agency_incident_id,party_seq)  ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE;
+  
+comment on table oms_owner.incident_offender_weapons is 'Agency incidents offender weapons';
+
+comment on column oms_owner.incident_offender_weapons.weapons_used is 'Weapon use [domain=INC_OFF_WEAP]';
+comment on column oms_owner.incident_offender_weapons.weapons_detail is 'Weapon details, free text'; 

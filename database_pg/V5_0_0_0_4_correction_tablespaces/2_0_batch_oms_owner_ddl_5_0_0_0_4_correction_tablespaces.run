@@ -1,0 +1,42 @@
+--echo everything (this eliminates the need to call psql -a)
+\set ECHO all
+
+--set the message level sent to client
+SET client_min_messages = warning;
+
+--print connection information
+\echo 'Database Information:'
+\conninfo
+
+--set psql session behaviour
+\set AUTOCOMMIT on
+\timing on
+\set footer on
+\x auto
+\pset null <NULL>
+\set VERBOSITY verbose
+\pset pager off
+
+show search_path;
+
+select current_timestamp;
+
+--record scripts version
+call log_db_version_control('5', 'initial PostgreSql Elite db version ');
+call log_db_version_control_patches('5', '5_0_0_0_4', 'ddl set 2.0 correction_tablespaces', '2_0_batch_oms_owner_ddl_5_0_0_0_4_correction_tablespaces.run');
+
+--execute sql scripts
+\i table_tablespaces_changes_end_5_0_0_0_4.sql 
+\i index_tablespaces_changes_end_5_0_0_0_4.sql 
+
+select current_timestamp;
+
+show search_path;
+
+ 
+ 
+
+
+
+
+

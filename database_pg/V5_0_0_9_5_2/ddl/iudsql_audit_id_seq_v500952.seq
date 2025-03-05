@@ -1,0 +1,3 @@
+---sequence iudsql_audit_id_seq generates a unique identifier for each audit entry (insert / update/ delete application audit)
+---the sequence covers both the remote audit table and the fallback audit table
+create sequence iudsql_audit_id_seq start with ???? increment by 1;

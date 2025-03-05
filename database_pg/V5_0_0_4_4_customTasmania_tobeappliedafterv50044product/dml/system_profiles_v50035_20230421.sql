@@ -1,0 +1,3 @@
+insert into oms_owner.system_profiles (profile_type,profile_code,description,profile_value,profile_value_2,old_table_name,create_datetime,create_user_id,modify_datetime,modify_user_id, seal_flag)
+ SELECT 'SYSTEM', 'SYSTEM', 'To configure the staff id of system  user', 'SYSTEM', null, null, current_timestamp, 'OMS_OWNER', current_timestamp, 'OMS_OWNER', null 
+  WHERE NOT EXISTS (SELECT 1 FROM system_profiles WHERE profile_type = 'SYSTEM' and profile_code = 'SYSTEM');

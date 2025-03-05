@@ -1,0 +1,174 @@
+
+OIISTGMB_LIVINGUNITS_FIND_LIVING_UNITS{ 	
+SELECT LIVING_UNIT_ID, AGY_LOC_ID, LIVING_UNIT_TYPE, LIVING_UNIT_CODE, DESCRIPTION, LEVEL_1_CODE, LEVEL_2_CODE, LEVEL_3_CODE, LEVEL_4_CODE, USER_DESC, ACA_CAP_RATING, SECURITY_LEVEL_CODE, LIST_SEQ, PARENT_LIVING_UNIT_ID, HOUSING_UNIT_TYPE, ACTIVE_FLAG, CONTROL_ACTIVE_FLAG, CNA_NO, CAPACITY, OPERATION_CAPACITY, CERTIFIED_FLAG,  DEACTIVATE_DATE, REACTIVATE_DATE, DEACTIVATE_REASON_CODE, COMMENT_TEXT, LOWEST_LEVEL_FLAG, REACH_OPER_CAPACITY_FLAG, NO_OF_OCCUPANT FROM LIVING_UNITS  where AGY_LOC_ID = :AGYLOCID AND parent_living_unit_id is null order by  LIST_SEQ
+
+}
+OIISTGMB_VSTGLOCATIONMEMBERS_FIND_V_STG_LOCATION_MEMBERS {
+select
+	*
+from
+	V_STG_LOCATION_MEMBERS
+where
+	living_unit_id in (with recursive cte as (
+	select
+		liv.living_unit_id
+	from
+		living_units liv
+	where
+		liv.living_unit_id = :LIVINGUNITID
+union all
+	select
+		liv.living_unit_id
+	from
+		living_units liv
+	join cte c on
+		(c.living_unit_id = liv.parent_living_unit_id)
+)
+	select
+		*
+	from
+		cte WHERE agy_loc_id = :AGYLOCID) and STG_ID = :STGID
+order by
+        LIST_SEQ;
+}
+
+OIISTGMB_V_STG_LOCATION_MEMBERS_PREQUERY_ {
+	SELECT DISTINCT OS.OFFENDER_BOOK_ID FROM V_STG_LOCATION_MEMBERS OSA, OFFENDER_ASSESSMENTS OS WHERE OSA.OFFENDER_BOOK_ID = OS.OFFENDER_BOOK_ID AND DECODE(OS.OVERRIDED_SUP_LEVEL_TYPE,NULL,OS.CALC_SUP_LEVEL_TYPE,OS.OVERRIDED_SUP_LEVEL_TYPE)= LV_CODE AND OSA.STG_ID = :STGID AND OSA.AGY_LOC_ID = :AGYLOCID AND OS.ASSESSMENT_TYPE_ID = (SELECT MAX(ASSESSMENT_TYPE_ID) FROM V_STG_LOCATION_MEMBERS OSA2, OFFENDER_ASSESSMENTS OS2 WHERE OSA2.OFFENDER_BOOK_ID = OS2.OFFENDER_BOOK_ID AND DECODE(OS2.OVERRIDED_SUP_LEVEL_TYPE,NULL,OS2.CALC_SUP_LEVEL_TYPE,OS2.OVERRIDED_SUP_LEVEL_TYPE)= LV_CODE AND OSA2.STG_ID = :STGID AND OSA2.AGY_LOC_ID =:AGYLOCID)
+	
+
+}
+
+
+OIISTGMB_V_STG_LOCATION_MEMBERS_PREQUERY_GET_OFFENDER_ID {
+	SELECT CODE INTO LV_CODE FROM REFERENCE_CODES WHERE  DESCRIPTION = :V_STG_LOCATION_MEMBERS.NBT_STATUS AND DOMAIN = 'SUP_LVL_TYPE'
+}
+
+OIISTGMB_CREATE_FORM_GLOBALS {
+	SELECT DESCRIPTION INTO V_FORM_DESC FROM OMS_MODULES WHERE MODULE_NAME = V_FORM_NAME
+}
+
+OIISTGMB_GET_LOCATION_DESCRIPTION_ {
+	SELECT DESCRIPTION FROM AGENCY_LOCATIONS WHERE AGY_LOC_ID = :AGYLOCID
+}
+
+OIISTGMB_GET_NUMBER_OF_MEMBERS_ {
+	SELECT COUNT(*) FROM OFFENDER_STG_AFFILIATIONS OSA,V_HEADER_BLOCK_FN(:USERID) V_HEADER_BLOCK  WHERE OSA.OFFENDER_BOOK_ID = V_HEADER_BLOCK.OFFENDER_BOOK_ID AND OSA.ACTIVE_FLAG = 'Y' AND V_HEADER_BLOCK.ACTIVE_FLAG = 'Y' AND STG_ID = :STGID AND LIVING_UNIT_DESCRIPTION LIKE :DESCRIPTION || '%'
+}
+
+OIISTGMB_GET_STATUS {
+	SELECT PROFILE_VALUE FROM SYSTEM_PROFILES WHERE PROFILE_TYPE = 'CLIENT' AND PROFILE_CODE = 'MBR_ASSESS'
+}
+
+OIISTGMB_GET_STATUS_ASSESSMENTS {
+	SELECT  REQUIRE_APPROVAL_FLAG FROM    ASSESSMENTS WHERE   ASSESSMENT_CODE =:PROFILETYPE
+}
+
+OIISTGMB_GET_STATUS_OFFENDER_ASSESSMENTS {
+	select
+	case
+		when coalesce(OVERRIDED_SUP_LEVEL_TYPE::text, '') = '' then CALC_SUP_LEVEL_TYPE
+		else OVERRIDED_SUP_LEVEL_TYPE
+	end O_STATUS
+from
+	OFFENDER_ASSESSMENTS
+where
+	OFFENDER_BOOK_ID = :OFFENDERBOOKID
+	and ASSESSMENT_TYPE_ID in (
+	select
+		ASSESSMENT_ID
+		--@@Niraj HPQC#12518, Replaced = to IN, to Avoid oracle error
+	from
+		ASSESSMENTS
+	where
+		ASSESSMENT_CODE = :PROFILETYPE)
+	and ASSESSMENT_DATE = (
+	select
+		MAX(ASSESSMENT_DATE)
+	from
+		OFFENDER_ASSESSMENTS
+	where
+		OFFENDER_BOOK_ID = :OFFENDERBOOKID
+		and ASSESSMENT_TYPE_ID in (
+		select
+			ASSESSMENT_ID
+			--@@Niraj HPQC#12518, Replaced = to IN, to Avoid oracle error
+		from
+			ASSESSMENTS
+		where
+			ASSESSMENT_CODE = :PROFILETYPE))
+order by
+	assessment_seq desc
+}
+
+OIISTGMB_GET_STATUS_OFFENDER_ASSESSMENTS_DATA_ONE {
+	SELECT REVIEW_SUP_LEVEL_TYPE O_STATUS
+   FROM   OFFENDER_ASSESSMENTS
+   WHERE  OFFENDER_BOOK_ID = :OFFENDERBOOKID
+   AND    ASSESSMENT_TYPE_ID IN (SELECT ASSESSMENT_ID   
+                                FROM ASSESSMENTS
+		                            WHERE ASSESSMENT_CODE = :PROFILETYPE)
+	 AND ASSESSMENT_DATE = (SELECT MAX(ASSESSMENT_DATE)
+                          FROM OFFENDER_ASSESSMENTS
+                          WHERE OFFENDER_BOOK_ID = :OFFENDERBOOKID
+                          AND ASSESSMENT_TYPE_ID IN (SELECT ASSESSMENT_ID   
+                                                    FROM ASSESSMENTS
+                                                    WHERE ASSESSMENT_CODE = :PROFILETYPE))
+	ORDER BY ASSESSMENT_SEQ DESC
+}
+OIISTGMB_GETCOUNTOFNUMBER {
+select
+	COUNT(1)
+from
+	V_STG_LOCATION_MEMBERS_NEW
+where
+	living_unit_id in (with recursive cte as 
+    (
+	select
+		liv.internal_location_id,
+		parent_internal_location_id,
+		agy_loc_id
+	from
+		(
+		select
+			internal_location_id,
+			parent_internal_location_id,
+			agy_loc_id
+		from
+			agency_internal_locations
+		where
+			unit_type is not null) liv
+	where
+		liv.internal_location_id = :living_unit_id
+union all
+	select
+		liv.internal_location_id,
+		liv.parent_internal_location_id,
+		liv.agy_loc_id
+	from
+		(
+		select
+			internal_location_id,
+			parent_internal_location_id,
+			agy_loc_id
+		from
+			agency_internal_locations
+		where
+			unit_type is not null) liv
+	join cte c on
+		c.internal_location_id = liv.parent_internal_location_id)
+	select
+		internal_location_id
+	from
+		cte
+	where
+		agy_loc_id = :agy_loc_id)
+	and
+  stg_id = :stg_id
+}
+OIISTGMB_OMS_MISCELLANEOUS_GETDESCCODE {
+select
+	oms_miscellaneous_getdesccode('SUP_LVL_TYPE',
+	:ASSDATA)
+from
+	DUAL
+}

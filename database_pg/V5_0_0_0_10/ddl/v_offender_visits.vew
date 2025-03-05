@@ -1,0 +1,37 @@
+CREATE OR REPLACE VIEW oms_owner.v_offender_visits
+AS SELECT ov.offender_visit_id,
+    ov.offender_book_id AS visit_offender_book_id,
+    ov.comment_text,
+    ov.raised_incident_type,
+    ov.raised_incident_number,
+    ov.visit_date,
+    ov.start_time,
+    ov.end_time,
+    ov.visit_type,
+    ov.visit_status,
+    ov.visit_internal_location_id,
+    ov.agency_visit_slot_id,
+    ov.agy_loc_id,
+    ovv.offender_visit_visitor_id,
+    ovv.offender_book_id,
+    off.offender_id,
+    off.last_name AS offender_last_name,
+    off.first_name AS offender_first_name,
+    off.offender_id_display,
+        CASE
+            WHEN ovv.offender_book_id = ov.offender_book_id THEN 'Y'::text
+            ELSE 'N'::text
+        END AS visit_owner_flag,
+    ovv.event_status,
+    COALESCE(ovv.event_outcome, 'ATT'::character varying) AS event_outcome,
+    ovv.outcome_reason_code,
+    ovv.comment_text AS visitor_comment_text,
+    ovv.event_id,
+    tag_schedule_check_sum(COALESCE(GREATEST(ovv.modify_datetime, ov.modify_datetime), ovv.create_datetime)) AS check_sum,
+    ov.create_datetime,
+    ov.modify_datetime
+   FROM offender_visits ov,
+    offenders off,
+    offender_visit_visitors ovv
+     LEFT JOIN offender_bookings bkg ON ovv.offender_book_id = bkg.offender_book_id
+  WHERE ov.offender_visit_id = ovv.offender_visit_id AND bkg.offender_id = off.offender_id AND ovv.event_id > 0 AND NOT (COALESCE(ovv.offender_book_id::text, ''::text) = ''::text AND ov.visit_date IS NOT NULL AND ov.visit_date::text <> ''::text);

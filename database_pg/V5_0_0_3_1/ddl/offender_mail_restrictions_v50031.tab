@@ -1,0 +1,15 @@
+delete from oms_owner.offender_mail_restrictions;
+
+alter table oms_owner.offender_mail_restrictions add contact_type varchar(12) not null; 
+
+comment on column oms_owner.offender_mail_restrictions.contact_type is 'Identifies the contact type [domain=CONTACT_TYPE]';
+
+comment on column oms_owner.offender_mail_restrictions.restriction_type is 'Identifies the mail restriction type [domain=MAIL_RST_TYP]';
+
+alter table oms_owner.offender_mail_restrictions add comment_text varchar(4000);
+
+comment on column oms_owner.offender_mail_restrictions.comment_text is 'Captures mail restriction comment';
+
+alter table oms_owner.offender_mail_restrictions drop column no_mail_to_flag;
+
+alter table oms_owner.offender_mail_restrictions drop column no_mail_from_flag; 

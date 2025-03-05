@@ -1,0 +1,7 @@
+ALTER TABLE automation_api_query ADD category varchar(12);
+
+update  automation_api_query set category ='PRODUCT';
+
+alter table automation_api_query alter column category set not null;
+
+comment on column automation_api_query.category is 'Indicates the quick action category';

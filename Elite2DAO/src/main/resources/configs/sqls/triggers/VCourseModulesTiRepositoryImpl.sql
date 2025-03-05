@@ -1,0 +1,3 @@
+V_COURSE_MODULES_TI_COURSE_ACTIVITIES{
+ insert into COURSE_ACTIVITIES(course_class, crs_acty_id, course_activity_Type, parent_crs_acty_id, program_id, list_seq, schedule_start_date, schedule_end_date, Services_Address_ID, Internal_location_ID, comment_text, caseload_type, no_of_sessions, session_length,CREATE_DATETIME,MODIFY_DATETIME,CREATE_USER_ID) values ('CRS_MOD', :courseModuleId, COALESCE(:moduleCourseActivityType, 'PROG_SESS'), :coursePhaseId, :programModuleId, :listSeq, :scheduleStartDate, :scheduleEndDate, :servicesAddressId, :internalLocationId, :commentText, :caseloadType, :noOfSessions, :sessionLength,CURRENT_TIMESTAMP,null,:createUserId ) 
+}

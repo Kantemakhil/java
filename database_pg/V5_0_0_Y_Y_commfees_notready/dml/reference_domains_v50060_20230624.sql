@@ -1,0 +1,40 @@
+insert
+	into
+	oms_owner.reference_domains
+(domain,
+	description,
+	domain_status,
+	owner_code,
+	appln_code,
+	old_code_table,
+	parent_domain,
+	code_length,
+	create_datetime,
+	create_user_id,
+	modify_datetime,
+	modify_user_id,
+	super_set_domain,
+	seal_flag)
+select
+	'BILL_STATUS',
+	'Bill transaction status (debt aging)',
+	'ACTIVE',
+	'OMS_OWNER',
+	'OMS',
+	null,
+	null,
+	null,
+	CURRENT_TIMESTAMP,
+	'OMS_OWNER',
+	CURRENT_TIMESTAMP,
+	'OMS_OWNER',
+	null,
+	null
+where
+	not exists (
+	select
+		1
+	from
+		oms_owner.reference_domains
+	where
+		domain = 'BILL_STATUS');

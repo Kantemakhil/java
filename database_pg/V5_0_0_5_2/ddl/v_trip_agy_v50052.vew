@@ -1,0 +1,40 @@
+CREATE OR REPLACE VIEW oms_owner.v_trip_agy
+AS SELECT st.scheduled_trip_id AS trip_id,
+    rf.route_name,
+    rf.leg_id,
+    rf.leg_seq,
+    rf.agy_loc_id,
+    rf.from_ovnt_flag,
+    rf.to_dtl,
+    rf.to_agy,
+    rf.count_flag,
+    rf.ovnt_flag,
+    st.departure_date + '1 day'::interval * (( SELECT sum(
+                CASE
+                    WHEN rx.from_ovnt_flag::text = 'Y'::text THEN 1
+                    ELSE 0
+                END) AS count_ov
+           FROM v_route_flow rx
+          WHERE rx.route_name::text = rf.route_name::text AND (rx.leg_id * 1000 + rx.leg_seq) <= (rf.leg_id * 1000 + rf.leg_seq)))::double precision AS depart_date,
+    st.trip_code,
+    st.departure_date,
+        CASE
+            WHEN rf.from_ovnt_flag::text = 'Y'::text THEN rf.leg_id + 1
+            ELSE rf.leg_id::integer
+        END AS from_leg_id,
+        CASE
+            WHEN rf.from_ovnt_flag::text = 'Y'::text THEN 1
+            ELSE rf.leg_seq + 1
+        END +
+        CASE
+            WHEN
+            CASE
+                WHEN rf.from_ovnt_flag::text = 'Y'::text THEN rf.leg_id + 1
+                ELSE rf.leg_id::integer
+            END = 1 THEN '-1'::integer
+            ELSE 0
+        END AS from_leg_seq,
+    st.cancel_flag AS trip_cancel_flag
+   FROM v_route_flow rf,
+    scheduled_trips st
+  WHERE st.route_name::text = rf.route_name::text;    

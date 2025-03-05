@@ -1,0 +1,335 @@
+insert
+	into
+	OMS_MODULES (MODULE_NAME,
+	DESCRIPTION,
+	MODULE_TYPE,
+	PRINT_FORMAT_CODE,
+	PREVIEW_FLAG,
+	DEFAULT_COPY,
+	APPLN_CODE,
+	HELP_DIRECTORY,
+	CREATE_DATETIME,
+	CREATE_USER_ID,
+	MODIFY_DATETIME,
+	MODIFY_USER_ID,
+	SEAL_FLAG,
+	OUTPUT_TYPE,
+	PROCESS_WORKFLOW,
+	USER_TASK,
+	DYNAMIC_FORM,
+	INS_DASHBOARD)
+select
+	'OCDOFACC',
+	'Offender Fee Accounts',
+	'SCREEN',
+	null,
+	null,
+	null,
+	'OMS4',
+	null,
+	CURRENT_TIMESTAMP,
+	'OMS_OWNER',
+	CURRENT_TIMESTAMP,
+	'OMS_OWNER',
+	null,
+	null,
+	null,
+	null,
+	null,
+	null
+where
+	not exists (
+	select
+		1
+	from
+		OMS_MODULES
+	where
+		MODULE_NAME = 'OCDOFACC');
+
+insert
+	into
+	OMS_MODULES (MODULE_NAME,
+	DESCRIPTION,
+	MODULE_TYPE,
+	PRINT_FORMAT_CODE,
+	PREVIEW_FLAG,
+	DEFAULT_COPY,
+	APPLN_CODE,
+	HELP_DIRECTORY,
+	CREATE_DATETIME,
+	CREATE_USER_ID,
+	MODIFY_DATETIME,
+	MODIFY_USER_ID,
+	SEAL_FLAG,
+	OUTPUT_TYPE,
+	PROCESS_WORKFLOW,
+	USER_TASK,
+	DYNAMIC_FORM,
+	INS_DASHBOARD)
+select
+	'OCUFOVDT',
+	'Fee Override Details',
+	'SCREEN',
+	null,
+	null,
+	null,
+	'OMS4',
+	null,
+	CURRENT_TIMESTAMP,
+	'OMS_OWNER',
+	CURRENT_TIMESTAMP,
+	'OMS_OWNER',
+	null,
+	null,
+	null,
+	null,
+	null,
+	null
+where
+	not exists (
+	select
+		1
+	from
+		OMS_MODULES
+	where
+		MODULE_NAME = 'OCUFOVDT');
+
+insert
+	into
+	OMS_MODULES (MODULE_NAME,
+	DESCRIPTION,
+	MODULE_TYPE,
+	PRINT_FORMAT_CODE,
+	PREVIEW_FLAG,
+	DEFAULT_COPY,
+	APPLN_CODE,
+	HELP_DIRECTORY,
+	CREATE_DATETIME,
+	CREATE_USER_ID,
+	MODIFY_DATETIME,
+	MODIFY_USER_ID,
+	SEAL_FLAG,
+	OUTPUT_TYPE,
+	PROCESS_WORKFLOW,
+	USER_TASK,
+	DYNAMIC_FORM,
+	INS_DASHBOARD)
+select
+	'OCUTRDET',
+	'Account transaction Details',
+	'SCREEN',
+	null,
+	null,
+	null,
+	'OMS4',
+	null,
+	CURRENT_TIMESTAMP,
+	'OMS_OWNER',
+	CURRENT_TIMESTAMP,
+	'OMS_OWNER',
+	null,
+	null,
+	null,
+	null,
+	null,
+	null
+where
+	not exists (
+	select
+		1
+	from
+		OMS_MODULES
+	where
+		MODULE_NAME = 'OCUTRDET');
+
+insert
+	into
+	OMS_MODULES (MODULE_NAME,
+	DESCRIPTION,
+	MODULE_TYPE,
+	PRINT_FORMAT_CODE,
+	PREVIEW_FLAG,
+	DEFAULT_COPY,
+	APPLN_CODE,
+	HELP_DIRECTORY,
+	CREATE_DATETIME,
+	CREATE_USER_ID,
+	MODIFY_DATETIME,
+	MODIFY_USER_ID,
+	SEAL_FLAG,
+	OUTPUT_TYPE,
+	PROCESS_WORKFLOW,
+	USER_TASK,
+	DYNAMIC_FORM,
+	INS_DASHBOARD)
+select
+	'OCUACHIS',
+	'Account History Details',
+	'SCREEN',
+	null,
+	null,
+	null,
+	'OMS4',
+	null,
+	CURRENT_TIMESTAMP,
+	'OMS_OWNER',
+	CURRENT_TIMESTAMP,
+	'OMS_OWNER',
+	null,
+	null,
+	null,
+	null,
+	null,
+	null
+where
+	not exists (
+	select
+		1
+	from
+		OMS_MODULES
+	where
+		MODULE_NAME = 'OCUACHIS');
+
+insert
+	into
+	OMS_MODULES (MODULE_NAME,
+	DESCRIPTION,
+	MODULE_TYPE,
+	PRINT_FORMAT_CODE,
+	PREVIEW_FLAG,
+	DEFAULT_COPY,
+	APPLN_CODE,
+	HELP_DIRECTORY,
+	CREATE_DATETIME,
+	CREATE_USER_ID,
+	MODIFY_DATETIME,
+	MODIFY_USER_ID,
+	SEAL_FLAG,
+	OUTPUT_TYPE,
+	PROCESS_WORKFLOW,
+	USER_TASK,
+	DYNAMIC_FORM,
+	INS_DASHBOARD)
+select
+	'OCUBADJS',
+	'Bill Adjustments',
+	'SCREEN',
+	null,
+	null,
+	null,
+	'OMS4',
+	null,
+	CURRENT_TIMESTAMP,
+	'OMS_OWNER',
+	CURRENT_TIMESTAMP,
+	'OMS_OWNER',
+	null,
+	null,
+	null,
+	null,
+	null,
+	null
+where
+	not exists (
+	select
+		1
+	from
+		OMS_MODULES
+	where
+		MODULE_NAME = 'OCUBADJS');
+
+insert
+	into
+	OMS_MODULES (MODULE_NAME,
+	DESCRIPTION,
+	MODULE_TYPE,
+	PRINT_FORMAT_CODE,
+	PREVIEW_FLAG,
+	DEFAULT_COPY,
+	APPLN_CODE,
+	HELP_DIRECTORY,
+	CREATE_DATETIME,
+	CREATE_USER_ID,
+	MODIFY_DATETIME,
+	MODIFY_USER_ID,
+	SEAL_FLAG,
+	OUTPUT_TYPE,
+	PROCESS_WORKFLOW,
+	USER_TASK,
+	DYNAMIC_FORM,
+	INS_DASHBOARD)
+select
+	'OCDADJUS',
+	'Offender Adjustment',
+	'SCREEN',
+	null,
+	null,
+	null,
+	'OMS4',
+	null,
+	CURRENT_TIMESTAMP,
+	'OMS_OWNER',
+	CURRENT_TIMESTAMP,
+	'OMS_OWNER',
+	null,
+	null,
+	null,
+	null,
+	null,
+	null
+where
+	not exists (
+	select
+		1
+	from
+		OMS_MODULES
+	where
+		MODULE_NAME = 'OCDADJUS');
+
+insert
+	into
+	OMS_MODULES (MODULE_NAME,
+	DESCRIPTION,
+	MODULE_TYPE,
+	PRINT_FORMAT_CODE,
+	PREVIEW_FLAG,
+	DEFAULT_COPY,
+	APPLN_CODE,
+	HELP_DIRECTORY,
+	CREATE_DATETIME,
+	CREATE_USER_ID,
+	MODIFY_DATETIME,
+	MODIFY_USER_ID,
+	SEAL_FLAG,
+	OUTPUT_TYPE,
+	PROCESS_WORKFLOW,
+	USER_TASK,
+	DYNAMIC_FORM,
+	INS_DASHBOARD)
+select
+	'OCDREVER',
+	'Offender Adjustment Reversals',
+	'SCREEN',
+	null,
+	null,
+	null,
+	'OMS4',
+	null,
+	CURRENT_TIMESTAMP,
+	'OMS_OWNER',
+	CURRENT_TIMESTAMP,
+	'OMS_OWNER',
+	null,
+	null,
+	null,
+	null,
+	null,
+	null
+where
+	not exists (
+	select
+		1
+	from
+		OMS_MODULES
+	where
+		MODULE_NAME = 'OCDREVER');

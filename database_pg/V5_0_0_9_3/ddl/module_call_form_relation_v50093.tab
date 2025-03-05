@@ -1,0 +1,24 @@
+CREATE TABLE module_call_form_relation (
+call_form varchar(32) NOT NULL,
+module_name varchar(20) NOT NULL,
+create_datetime timestamp NOT NULL,
+create_user_id varchar(32) NOT NULL,
+modify_datetime timestamp NULL,
+modify_user_id varchar(32) NULL,
+seal_flag varchar(1) NULL)
+TABLESPACE tag_setup_data;
+
+
+ALTER TABLE module_call_form_relation 
+   ADD CONSTRAINT module_call_form_relation_pk PRIMARY KEY (call_form, module_name)  
+USING INDEX TABLESPACE tag_indx;
+
+ALTER TABLE module_call_form_relation 
+   ADD CONSTRAINT offender_specific_modules_fk1 FOREIGN KEY (module_name)
+   REFERENCES oms_modules(module_name) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE; 
+
+comment on table module_call_form_relation is 'Maintenance table listing the name of call form and their parent modules.';
+
+comment on column module_call_form_relation.module_name is 'The code used to uniquely identify the name of the module.';
+comment on column module_call_form_relation.call_form is 'It indicates the dialog component name.';
+

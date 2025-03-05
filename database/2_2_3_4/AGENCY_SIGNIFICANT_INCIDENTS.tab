@@ -1,0 +1,33 @@
+CREATE TABLE AGENCY_SIGNIFICANT_INCIDENTS
+(
+  agency_incident_id NUMBER(10) not null,
+  significance_type  VARCHAR2(12) not null, 
+  entry_date         DATE not null
+)
+tablespace TAG_DATA
+  pctfree 10
+  initrans 1
+  maxtrans 255
+  storage
+  (
+    initial 2M
+    next 2M
+    minextents 1
+    maxextents unlimited
+  );
+
+
+ALTER TABLE AGENCY_SIGNIFICANT_INCIDENTS
+  add constraint AGENCY_SIG_INCIDENTS_PK primary key (AGENCY_INCIDENT_ID, SIGNIFICANCE_TYPE)
+  using index 
+tablespace TAG_INDX
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 1M
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );

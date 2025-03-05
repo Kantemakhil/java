@@ -1,0 +1,2 @@
+-- Below Script are related to GET_MESSAGE_ID  qucik action which is used in PrisionerAdmission,PrisionerRelease,PrisionerTransfer,PrisionerHousing Processes which is for  s4-17096, s4-17097,s4-17098,story
+CREATE SEQUENCE external_message_id START WITH 1 minvalue 1 INCREMENT BY 1;

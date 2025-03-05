@@ -1,0 +1,20 @@
+create table INCIDENT_STAFF_REPORTS
+(
+  incident_report_id NUMBER(10) not null,
+  staff_id           NUMBER(10) not null,
+  report_date        DATE not null,
+  report_time        DATE not null,
+  report_type        VARCHAR2(4000) not null,
+  lock_flag          VARCHAR2(1) default 'N' not null,
+  create_datetime    TIMESTAMP(9) default systimestamp not null,
+  create_user_id     VARCHAR2(32) default USER not null,
+  modify_user_id     VARCHAR2(32),
+  modify_datetime    TIMESTAMP(9) default SYSTIMESTAMP,
+  agency_incident_id NUMBER(10) not null,
+  party_seq          NUMBER(6) default 1 not null,
+  seal_flag          VARCHAR2(1),
+  incident_details   VARCHAR2(4000) null
+);
+
+CREATE PUBLIC SYNONYM INCIDENT_STAFF_REPORTS FOR INCIDENT_STAFF_REPORTS;
+grant select, insert, update, delete on INCIDENT_STAFF_REPORTS to TAG_USER; 

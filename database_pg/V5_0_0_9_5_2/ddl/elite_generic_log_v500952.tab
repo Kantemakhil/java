@@ -1,0 +1,22 @@
+
+TRUNCATE TABLE oms_owner.elite_generic_log;
+
+ALTER TABLE oms_owner.elite_generic_log ADD audit_id BIGINT NOT NULL;
+
+ALTER TABLE oms_owner.elite_generic_log ADD CONSTRAINT elite_generic_log_pk PRIMARY KEY (audit_id);
+
+ALTER TABLE oms_owner.elite_generic_log ADD offender_id_display varchar(10);
+
+ALTER TABLE oms_owner.elite_generic_log ADD booking_no varchar(14);
+
+COMMENT ON TABLE oms_owner.elite_generic_log IS 'Fallback storage table for insert, update, delete audit operations used when the remote table is unavailable.';
+
+COMMENT ON COLUMN oms_owner.elite_generic_log.audit_id IS 'Unique identifier for each audit entry [db sequence=iudsql_audit_id_seq]';
+COMMENT ON COLUMN oms_owner.elite_generic_log.audittime IS 'Audit entry timestamp as received from core Elite';
+COMMENT ON COLUMN oms_owner.elite_generic_log.action IS 'Audit action type (I/U/D) timestamp as received from core Elite';
+COMMENT ON COLUMN oms_owner.elite_generic_log.username IS 'The Elite application user modifying the data in the core Elite';
+COMMENT ON COLUMN oms_owner.elite_generic_log.table_name IS 'The Elite table name being modified in the core Elite';
+COMMENT ON COLUMN oms_owner.elite_generic_log.row_data_new IS 'The new data';
+COMMENT ON COLUMN oms_owner.elite_generic_log.row_data_old IS 'The old data';
+COMMENT ON COLUMN oms_owner.elite_generic_log.offender_id_display IS 'Offender Id Display (client facing identifier)';
+COMMENT ON COLUMN oms_owner.elite_generic_log.booking_no IS 'Booking No (client facing identifier)';

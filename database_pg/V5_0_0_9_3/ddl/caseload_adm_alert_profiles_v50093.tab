@@ -1,0 +1,16 @@
+ALTER TABLE caseload_adm_alert_profiles ADD COLUMN message_text varchar(250) NULL; 
+
+Update caseload_adm_alert_profiles 
+Set  message_text = (SELECT message_text from system_messages where appln_code = caseload_adm_alert_profiles.appln_code and message_number =     caseload_adm_alert_profiles.message_number );
+
+
+Update caseload_adm_alert_profiles 
+Set  message_text = 'Please configure the appropriate message'
+WHERE TRIM(message_text)  IS NULL;
+
+ALTER TABLE caseload_adm_alert_profiles alter COLUMN message_text SET NOT NULL; 
+
+ALTER TABLE caseload_adm_alert_profiles
+DROP CONSTRAINT csld_admap_sys_msg_fk1,
+DROP COLUMN appln_code,
+DROP COLUMN message_number;

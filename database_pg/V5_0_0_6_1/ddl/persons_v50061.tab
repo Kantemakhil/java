@@ -1,0 +1,5 @@
+UPDATE persons 
+   SET notes = SUBSTR(notes, 1, 240) 
+ WHERE length(notes) > 240;
+ 
+ALTER TABLE persons ALTER COLUMN notes TYPE varchar(240);

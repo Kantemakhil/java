@@ -1,0 +1,34 @@
+create table offender_em_tag_details
+(em_tag_id                     BIGSERIAL,
+offender_book_id               BIGINT,
+em_tag_data                    VARCHAR(12) not null,
+em_tag_strap_size              VARCHAR(16) not null,
+em_daily_charging_period       VARCHAR(24),
+create_datetime                TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL ,
+create_user_id                 VARCHAR(32)NOT NULL ,
+modify_datetime                TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+modify_user_id                 VARCHAR(32),
+seal_flag                      VARCHAR(1) 
+) tablespace tag_data;
+
+alter table offender_em_tag_details   
+  add constraint offender_em_tag_details_pk primary key (em_tag_id)
+  using index tablespace tag_indx;
+  
+alter table offender_em_tag_details 
+	add constraint offender_em_tag_details_fk1 foreign key (offender_book_id) 
+	references offender_bookings(offender_book_id) on delete no action not deferrable initially immediate;
+	
+	
+comment on table offender_em_tag_details is 'This table is used to store the the Offender EM tag Datils ';
+
+comment on column offender_em_tag_details.em_tag_id is 'This field is used to store the em tag id for an offender';
+comment on column offender_em_tag_details.offender_book_id is 'This field is used to save the offender book id';
+comment on column offender_em_tag_details.em_tag_data is 'This field is used to save the Em Tag data';
+comment on column offender_em_tag_details.em_tag_strap_size is 'This Field is use to store the configuration value of em tag strap size ';
+comment on column offender_em_tag_details.em_daily_charging_period is 'This field is used to store the charging period time';
+comment on column offender_em_tag_details.create_datetime is 'This field is used to save when the activity plan is created ';
+comment on column offender_em_tag_details.create_user_id is 'This field is used to save Who the activity plan is created ';
+comment on column offender_em_tag_details.modify_datetime is 'This field is used to save when the activity plan is modified';
+comment on column offender_em_tag_details.modify_user_id is 'This field is used to save Who the activity plan is modified';
+comment on column offender_em_tag_details.seal_flag is 'This field is used to identify the seal flag';

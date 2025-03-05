@@ -1,0 +1,22 @@
+CREATE OR REPLACE VIEW oms_owner.v_route_occupancy
+AS SELECT occ.scheduled_trip_id,
+    rsd.route_name,
+    rsd.from_seq,
+    rsd.from_agy_loc_id,
+    rsd.to_agy_loc_id,
+    COALESCE(occ.occupancy, 0::bigint) AS occupancy
+   FROM v_route_locations rsd,
+    v_local_trip_occupancy occ
+  WHERE rsd.route_name::text = occ.route_name::text AND rsd.from_seq = occ.from_seq
+UNION ALL
+ SELECT st.scheduled_trip_id,
+    st.route_name,
+    rsd.from_seq,
+    rsd.from_agy_loc_id,
+    rsd.to_agy_loc_id,
+    0 AS occupancy
+   FROM v_route_locations rsd,
+    scheduled_trips st
+  WHERE st.route_name::text = rsd.route_name::text AND NOT (EXISTS ( SELECT 1
+           FROM v_local_trip_occupancy occ
+          WHERE occ.scheduled_trip_id = st.scheduled_trip_id AND occ.from_seq = rsd.from_seq));

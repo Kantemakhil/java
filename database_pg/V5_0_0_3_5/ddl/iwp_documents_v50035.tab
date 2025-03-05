@@ -1,0 +1,1 @@
+ALTER TABLE oms_owner.iwp_documents ALTER COLUMN document_name TYPE varchar(105);

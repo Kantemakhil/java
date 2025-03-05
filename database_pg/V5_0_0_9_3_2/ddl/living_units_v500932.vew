@@ -1,0 +1,41 @@
+CREATE OR REPLACE VIEW living_units
+AS SELECT ail.internal_location_id AS living_unit_id,
+    ail.agy_loc_id,
+    ail.internal_location_type AS living_unit_type,
+    ail.internal_location_code AS living_unit_code,
+    ail.description,
+    substr(tag_int_loc_level_code(ail.description, 1)::text, 1, 40) AS level_1_code,
+    substr(tag_int_loc_level_code(ail.description, 2)::text, 1, 40) AS level_2_code,
+    substr(tag_int_loc_level_code(ail.description, 3)::text, 1, 40) AS level_3_code,
+    substr(tag_int_loc_level_code(ail.description, 4)::text, 1, 40) AS level_4_code,
+    ail.user_desc,
+    ail.aca_cap_rating,
+    ail.security_level_code,
+    ail.list_seq,
+    ail.parent_internal_location_id AS parent_living_unit_id,
+    ail.unit_type AS housing_unit_type,
+    ail.active_flag,
+    substr(tag_int_loc_active_flag(ail.internal_location_id)::text, 1, 1) AS control_active_flag,
+    ail.cna_no,
+    ail.capacity,
+    ail.operation_capacity,
+    ail.certified_flag,
+    ail.deactivate_date,
+    ail.reactivate_date,
+    ail.deactivate_reason_code,
+    ail.comment_text,
+    ( SELECT
+                CASE
+                    WHEN count(*) = 0 THEN 'Y'::text
+                    ELSE 'N'::text
+                END AS "case"
+           FROM agency_internal_locations ail2
+          WHERE ail2.parent_internal_location_id = ail.internal_location_id) AS lowest_level_flag,
+    substr(tag_int_loc_operation_flag(ail.internal_location_id)::text, 1, 1) AS reach_oper_capacity_flag,
+    ail.no_of_occupant,
+    ail.create_user_id,
+    ail.create_datetime,
+    ail.modify_datetime,
+    ail.modify_user_id
+   FROM agency_internal_locations ail
+  WHERE ail.unit_type IS NOT NULL AND ail.unit_type::text <> ''::text;

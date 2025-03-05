@@ -1,0 +1,61 @@
+CREATE OR REPLACE VIEW oms_owner.v_off_sch_overview
+AS SELECT omd.offender_book_id,
+    omd.movement_seq AS move_seq,
+    'EXTERNAL'::text AS int_ext,
+    omd.status_code,
+    omd.txn_status,
+    'PROPOSED'::text AS tstatus,
+    opm.event_date,
+        CASE
+            WHEN opm.event_date::date = opm.event_date THEN NULL::text
+            ELSE to_char(opm.event_date, 'HH24:MI'::text)
+        END AS event_time,
+    opm.movement_type,
+    tag_utils_get_ref_descp('MOVE_TYPE'::character varying, opm.movement_type) AS type_descp,
+    opm.movement_reason,
+    tag_utils_get_ref_descp('MOVE_RSN'::character varying, opm.movement_reason) AS rsn_descp
+   FROM offender_movement_details omd,
+    offender_proposed_mvmnts opm
+  WHERE omd.offender_book_id = opm.offender_book_id AND omd.movement_seq = opm.movement_seq AND omd.detail_seq = (( SELECT max(omd2.detail_seq) AS max
+           FROM offender_movement_details omd2
+          WHERE omd2.offender_book_id = omd.offender_book_id AND omd2.movement_seq = omd.movement_seq AND omd2.txn_status::text <> 'CREQ'::text)) AND (omd.status_code::text = ANY (ARRAY['APP'::character varying, 'NEW'::character varying, 'PEN'::character varying]::text[])) AND omd.txn_status::text = 'PEN'::text
+UNION
+ SELECT ocld.offender_book_id,
+    ocld.location_seq AS move_seq,
+    'INTERNAL'::text AS int_ext,
+    ocld.status_code,
+    ocld.txn_status,
+    'PROPOSED'::text AS tstatus,
+    NULL::timestamp without time zone AS event_date,
+    NULL::text AS event_time,
+    opi.movement_type,
+    tag_utils_get_ref_descp('INT_SCH_TYPE'::character varying, opi.movement_type) AS type_descp,
+    opi.movement_reason,
+    tag_utils_get_ref_descp('INT_SCH_RSN'::character varying, opi.movement_reason) AS rsn_descp
+   FROM offender_loc_chng_dtls ocld,
+    offender_proposed_intlocs opi
+  WHERE ocld.offender_book_id = opi.offender_book_id AND ocld.location_seq = opi.location_seq AND (ocld.detail_seq IN ( SELECT max(ocld2.detail_seq) AS max
+           FROM offender_loc_chng_dtls ocld2
+          WHERE ocld2.offender_book_id = ocld.offender_book_id AND ocld2.location_seq = ocld.location_seq AND ocld2.txn_status::text <> 'CREQ'::text)) AND (ocld.status_code::text = ANY (ARRAY['APP'::character varying, 'NEW'::character varying, 'PEN'::character varying]::text[])) AND ocld.txn_status::text = 'PEN'::text
+UNION
+ SELECT oas2.offender_book_id,
+    oas2.proposed_mvmnt_seq AS move_seq,
+        CASE
+            WHEN oas2.event_class::text = 'INT_MOV'::text THEN 'INTERNAL'::character varying
+            WHEN oas2.event_class::text = 'EXT_MOV'::text THEN 'EXTERNAL'::character varying
+            ELSE oas2.event_class
+        END AS int_ext,
+    'APP'::character varying AS status_code,
+    'SCHED'::character varying AS txn_status,
+    'SCHEDULED'::text AS tstatus,
+    oas2.event_date,
+        CASE
+            WHEN oas2.start_time::date = oas2.start_time THEN NULL::text
+            ELSE to_char(oas2.start_time, 'HH24:MI'::text)
+        END AS event_time,
+    oas2.event_type AS movement_type,
+    substr(tag_schedule_event_type_desc(oas2.event_class, oas2.event_type)::text, 1, 40) AS type_descp,
+    oas2.event_sub_type AS movement_reason,
+    substr(tag_schedule_event_sub_type_desc(oas2.event_class, oas2.event_type, oas2.event_sub_type)::text, 1, 40) AS rsn_descp
+   FROM v_offender_all_schedules_2 oas2
+  WHERE oas2.event_date >= CURRENT_TIMESTAMP::date AND oas2.event_class::text <> 'COMM'::text AND (oas2.event_status::text <> ALL (ARRAY['CANC'::character varying, 'COMP'::character varying, 'EXP'::character varying]::text[]));

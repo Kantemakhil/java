@@ -1,0 +1,9 @@
+drop view v_offender_all_schedules_new;
+drop view v_assign_offender_trips;
+drop view v_local_trip_offenders;
+drop view v_route_occupancy;
+drop view v_local_trip_occupancy;
+drop view v_offender_scheduled_trips;
+drop view v_transfer_waiting_lists;
+drop view v_offender_all_schedules;
+drop view v_offender_all_schedules_2;

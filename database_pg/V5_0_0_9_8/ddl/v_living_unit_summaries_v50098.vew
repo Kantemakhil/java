@@ -1,0 +1,29 @@
+CREATE OR REPLACE VIEW oms_owner.v_living_unit_summaries
+AS SELECT lu.agy_loc_id,
+    lu.living_unit_id,
+    lu.parent_living_unit_id,
+    lu.description AS living_unit_desc,
+    lu.user_desc,
+    lu.level_1_code,
+    lu.level_2_code,
+    lu.level_3_code,
+    lu.level_4_code,
+    lu.capacity,
+    lu.list_seq,
+    lu.active_flag,
+    lu.deactivate_date,
+    lu.living_unit_type,
+    substr(oms_miscellaneous_getdesccode('LIVING_UNIT'::character varying, lu.living_unit_type)::text, 1, 40) AS living_unit_type_desc,
+    vr.allocated,
+    vr.in_living_units,
+    vr.out_of_living_units,
+    vr.out_of_agy,
+    vr.reserved_beds,
+    lu.capacity - vr.allocated AS vacancy,
+        CASE
+            WHEN GREATEST(lu.capacity - vr.allocated, 0::bigint) = 0 THEN 'Y'::text
+            ELSE 'N'::text
+        END AS filled_flag
+   FROM living_units lu,
+    v_living_unit_rolls vr
+  WHERE lu.living_unit_id = vr.living_unit_id;

@@ -1,0 +1,34 @@
+CREATE OR REPLACE VIEW oms_owner.v_local_trip_occupancy
+AS SELECT st.scheduled_trip_id,
+    v.route_name,
+    v.from_seq,
+    v.to_seq,
+    v.from_agy_loc_id,
+    v.to_agy_loc_id,
+    v.segment_length,
+    count(*) AS occupancy
+   FROM v_route_locations v,
+    ( SELECT v_offender_all_schedules.scheduled_trip_id,
+            v_offender_all_schedules.agy_loc_id,
+            v_offender_all_schedules.to_agy_loc_id
+           FROM v_offender_all_schedules
+          WHERE (v_offender_all_schedules.record_source = ANY (ARRAY['SCH'::text, 'COURT'::text])) AND (v_offender_all_schedules.event_status::text = ANY (ARRAY['SCH'::character varying::text, 'PEN'::character varying::text])) AND v_offender_all_schedules.scheduled_trip_id IS NOT NULL AND v_offender_all_schedules.scheduled_trip_id::text <> ''::text
+        UNION ALL
+         SELECT non_admitted_inmate_mvmts.scheduled_trip_id,
+            non_admitted_inmate_mvmts.from_agy_loc_id,
+            non_admitted_inmate_mvmts.to_agy_loc_id
+           FROM non_admitted_inmate_mvmts
+          WHERE non_admitted_inmate_mvmts.scheduled_trip_id IS NOT NULL AND non_admitted_inmate_mvmts.scheduled_trip_id::text <> ''::text) sch,
+    scheduled_trips st
+  WHERE st.scheduled_trip_id = sch.scheduled_trip_id AND st.route_name::text = v.route_name::text AND v.from_seq >= (( SELECT max(lpad(rsd.leg_id::character varying::text, 4, '0'::text) || lpad(rsd.leg_seq::character varying::text, 4, '0'::text)) AS max
+           FROM route_stop_details rsd
+          WHERE rsd.agy_loc_id::text = sch.agy_loc_id::text AND rsd.route_name::text = v.route_name::text AND rsd.active_flag::text = 'Y'::text AND (lpad(rsd.leg_id::character varying::text, 4, '0'::text) || lpad(rsd.leg_seq::character varying::text, 4, '0'::text)) < (( SELECT max(lpad(rsdx.leg_id::character varying::text, 4, '0'::text) || lpad(rsdx.leg_seq::character varying::text, 4, '0'::text)) AS max
+                   FROM route_stop_details rsdx
+                  WHERE rsdx.route_name::text = v.route_name::text AND rsdx.agy_loc_id::text = sch.to_agy_loc_id::text AND rsdx.active_flag::text = 'Y'::text)))) AND v.from_seq < (( SELECT min(lpad(rsd.leg_id::character varying::text, 4, '0'::text) || lpad(rsd.leg_seq::character varying::text, 4, '0'::text)) AS min
+           FROM route_stop_details rsd
+          WHERE rsd.agy_loc_id::text = sch.to_agy_loc_id::text AND rsd.route_name::text = v.route_name::text AND rsd.active_flag::text = 'Y'::text AND (lpad(rsd.leg_id::character varying::text, 4, '0'::text) || lpad(rsd.leg_seq::character varying::text, 4, '0'::text)) > (( SELECT max(lpad(rsd2.leg_id::character varying::text, 4, '0'::text) || lpad(rsd2.leg_seq::character varying::text, 4, '0'::text)) AS max
+                   FROM route_stop_details rsd2
+                  WHERE rsd2.agy_loc_id::text = sch.agy_loc_id::text AND rsd2.route_name::text = v.route_name::text AND rsd2.active_flag::text = 'Y'::text AND (lpad(rsd2.leg_id::character varying::text, 4, '0'::text) || lpad(rsd2.leg_seq::character varying::text, 4, '0'::text)) < (( SELECT max(lpad(rsdx.leg_id::character varying::text, 4, '0'::text) || lpad(rsdx.leg_seq::character varying::text, 4, '0'::text)) AS max
+                           FROM route_stop_details rsdx
+                          WHERE rsdx.route_name::text = v.route_name::text AND rsdx.agy_loc_id::text = sch.to_agy_loc_id::text AND rsdx.active_flag::text = 'Y'::text))))))
+  GROUP BY st.scheduled_trip_id, v.route_name, v.from_seq, v.to_seq, v.from_agy_loc_id, v.to_agy_loc_id, v.segment_length;

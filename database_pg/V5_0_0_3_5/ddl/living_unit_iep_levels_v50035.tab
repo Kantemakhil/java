@@ -1,0 +1,26 @@
+CREATE table oms_owner.living_unit_iep_levels (
+    internal_location_id int8 NOT NULL,
+    iep_level_code varchar(12) NOT NULL,
+    create_datetime timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    create_user_id varchar(32) NOT NULL,
+    modify_datetime timestamp(6) NULL,
+    modify_user_id varchar(32) NULL,
+    seal_flag varchar(1) NULL 
+    ) tablespace tag_data;
+	
+ALTER TABLE oms_owner.living_unit_iep_levels 
+   ADD CONSTRAINT living_unit_iep_levels_uk1 UNIQUE (internal_location_id) 
+     using index tablespace tag_indx; 
+ 
+ALTER TABLE oms_owner.living_unit_iep_levels  
+  ADD CONSTRAINT living_unit_iep_levels_fk1 FOREIGN KEY (internal_location_id) 
+   REFERENCES agency_internal_locations(internal_location_id)  ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE; 
+   
+ALTER TABLE oms_owner.living_unit_iep_levels  
+  ADD CONSTRAINT living_unit_iep_levels_fk2 FOREIGN KEY (iep_level_code) 
+   REFERENCES incentives_earn_privs(iep_level_code) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE;   	
+
+comment on table oms_owner.living_unit_iep_levels is 'Stores the IEP levels for housing locations';
+
+comment on column oms_owner.living_unit_iep_levels.internal_location_id is 'The internal location id key of the housing location';
+comment on column oms_owner.living_unit_iep_levels.iep_level_code is 'The IEP level assigned to the housing location';

@@ -1,0 +1,39 @@
+
+select count(*) from dynamic_grid_config; 
+
+select module_name, grid_name, db_table_name, count(*) 
+  from dynamic_grid_config 
+ group by module_name, grid_name, db_table_name 
+  having count(*) > 1; 
+ 
+select id, module_name, grid_name, db_table_name, MAX(id) OVER (PARTITION BY module_name, grid_name, db_table_name) as max_id
+   from dynamic_grid_config 
+  where (module_name, grid_name, db_table_name) IN ( select module_name, grid_name, db_table_name 
+                                                       from (select module_name, grid_name, db_table_name, count(*) 
+                                                               from dynamic_grid_config 
+                                                              group by module_name, grid_name, db_table_name 
+                                                             having count(*) > 1) as dynamic_grid_config_duplicates1
+                                                   );  
+ 
+delete from dynamic_grid_config 
+ where id IN (select id                                                   
+               from ( select id, module_name, grid_name, db_table_name, MAX(id) OVER (PARTITION BY module_name, grid_name, db_table_name) as max_id
+                        from dynamic_grid_config 
+                       where (module_name, grid_name, db_table_name) IN ( select module_name, grid_name, db_table_name 
+                                                                            from (select module_name, grid_name, db_table_name, count(*) 
+                                                                                    from dynamic_grid_config 
+                                                                                   group by module_name, grid_name, db_table_name 
+                                                                                   having count(*) > 1) as dynamic_grid_config_duplicates1
+                                                                         )
+                     ) as  dynamic_grid_config_duplicates2
+  where id <> max_id);
+ 
+select count(*) from dynamic_grid_config; 
+
+select module_name, grid_name, db_table_name, count(*) 
+  from dynamic_grid_config 
+ group by module_name, grid_name, db_table_name 
+  having count(*) > 1;  
+
+
+ALTER TABLE dynamic_grid_config ADD CONSTRAINT dynamic_grid_config_uk1 UNIQUE (module_name,grid_name,db_table_name);

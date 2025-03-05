@@ -1,0 +1,1 @@
+ALTER TABLE agency_visit_times ALTER COLUMN time_slot_seq TYPE varchar(40) USING time_slot_seq::varchar(40);

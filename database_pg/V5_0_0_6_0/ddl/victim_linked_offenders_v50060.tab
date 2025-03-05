@@ -1,0 +1,3 @@
+update victim_linked_offenders set associated_legal_case=null;
+ALTER TABLE victim_linked_offenders ALTER COLUMN associated_legal_case TYPE bytea USING associated_legal_case::bytea;
+comment on column victim_linked_offenders.associated_legal_case is 'The most recently linked custodial or non-custodial order ex.{"offenderBookId":2930,"orderType":"CUST","displayNo":"C_1","orderNo":1}'; 

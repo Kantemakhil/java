@@ -1,0 +1,1 @@
+refer to https://syscon.atlassian.net/wiki/spaces/EF/pages/2387869781/Audit+-+data+storage

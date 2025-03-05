@@ -1,0 +1,3 @@
+create sequence correlation_id start with 1 increment by 1;
+
+comment on column oms_owner.external_system_response.int_correlation_id is 'Unique record identifier across the table [db sequence= correlation_id]';

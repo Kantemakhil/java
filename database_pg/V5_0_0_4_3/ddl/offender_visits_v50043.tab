@@ -1,0 +1,1 @@
+ALTER TABLE offender_visits DROP COLUMN visit_config_type;

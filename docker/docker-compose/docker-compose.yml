@@ -1,0 +1,68 @@
+version: '3.6'
+services:
+  elite_s5:
+    image: sysconjusticesystems/s4elite:v5_release_1010
+    container_name: v5_tasmqa
+    hostname: v5.prodqa
+    shm_size: '512m'
+    networks:
+      elite_net:
+        ipv4_address: 172.18.0.209
+    ports:
+      - "7000:8080"
+    volumes:
+      - ./:/configs
+    env_file:
+      - .env
+  automation-service:
+    image: sysconjusticesystems/automation:1.0
+    container_name: automation_v5_tasmqa
+    hostname: automationapp.syscon.ca
+    shm_size: '512m'
+    networks:
+      elite_net:
+        ipv4_address: 172.18.0.210
+    env_file:
+      - .env
+    ports:
+      - "7001:8080"
+  sentence-calc-service:
+    image: sentence_calculator
+    container_name: sentence_calc_v5_tasmqa
+    hostname: automationapp.syscon.ca
+    shm_size: '512m'
+    networks:
+      elite_net:
+        ipv4_address: 172.18.0.211
+    ports:
+      - "7002:3000"
+  message-integrator-soau-service:
+    image: sysconjusticesystems/integrator:1.0
+    container_name: message_integrator_v5_tasmqa
+    hostname: msgintegrator.syscon.ca
+    shm_size: '512m'
+    networks:
+      elite_net:
+        ipv4_address: 172.18.0.212
+    env_file:
+      - .env
+    ports:
+      - "7003:9090"
+  onlinehelp-service:
+    image: sysconjusticesystems/online_help:1.1
+    container_name: online_help_v5
+    hostname: onlinehelp.syscon.ca
+    shm_size: '512m'
+    networks:
+      elite_net:
+        ipv4_address: 172.18.0.250
+    ports:
+      - "4900:8080"    
+networks:
+  elite_net:
+    name: elitenet
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.18.0.1/24

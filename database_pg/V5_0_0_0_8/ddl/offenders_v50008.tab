@@ -1,0 +1,5 @@
+ALTER TABLE oms_owner.offenders ADD gender_code VARCHAR(12);
+
+comment on column oms_owner.offenders.gender_code is 'Reference Code ( GENDER).  The Socially defined gender of the offender.';
+
+comment on column oms_owner.offenders.sex_code is 'Reference Code ( SEX).  The actual gender of the offender.';

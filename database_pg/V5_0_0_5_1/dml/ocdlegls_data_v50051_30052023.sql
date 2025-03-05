@@ -1,0 +1,1 @@
+delete from ocdlegls_data where form_info_json = '';

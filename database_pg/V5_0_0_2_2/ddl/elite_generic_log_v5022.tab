@@ -1,0 +1,9 @@
+CREATE TABLE oms_owner.elite_generic_log (
+audittime     TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP NOT NULL ,
+action        bpchar(1) NOT NULL,
+username      text NOT NULL,
+table_name    text NOT NULL,
+row_data_new  jsonb NULL,
+row_data_old  jsonb NULL,
+CONSTRAINT elite_generic_log_action_chk1 CHECK ((action = ANY (ARRAY['I'::bpchar, 'U'::bpchar, 'D'::bpchar])))
+);

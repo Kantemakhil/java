@@ -1,0 +1,123 @@
+
+ OUMTAGRE_FIND_RGMODULENAME {
+ 	SELECT OMS_MOD.MODULE_NAME CODE ,OMS_MOD.DESCRIPTION   FROM   OMS_MODULES OMS_MOD order by OMS_MOD.MODULE_NAME
+}
+
+ OUMTAGRE_FIND_RGOBJECTNAME {
+SELECT upper(TABLE_NAME) AS CODE, upper(TABLE_NAME) DESCRIPTION FROM ( SELECT DISTINCT V_TAG.TABLE_NAME FROM V_TAG_TAB_COLUMNS V_TAG )AS A
+   
+}
+
+OUMTAGRE_FIND_RGCOLUMNNAME {
+ select upper(column_name) as DESCRIPTION, upper(column_name) as CODE, ACTIVE_FLAG from ( select distinct v_tag.column_name, 'Y' as active_flag from v_tag_tab_columns v_tag where upper(v_tag.table_name) =:objectName union select COLUMN_NAME, 'N' as active_flag from MODULE_TAB_COLUMNS where module_tab_id =:modTabId::bigint order by column_name ) as a  
+}
+
+OUMTAGRE_FIND_RGSETUPMODULE {
+ 	SELECT MODULE_NAME DESCRIPTION, MODULE_NAME CODE, DESCRIPTION as MODULE_TYPE FROM OMS_MODULES ORDER BY MODULE_NAME
+}
+
+OUMTAGRE_RLEINARC_FIND_OMS_MODULES {
+ 	SELECT OMS_MOD.MODULE_NAME ,OMS_MOD.DESCRIPTION   FROM   OMS_MODULES OMS_MOD order by OMS_MOD.MODULE_NAME
+}
+OUMTAGRE_MODULETABLES_FIND_MODULE_TABLES {
+ select * from (select mt.CREATE_DATETIME, mt.CREATE_USER_ID, mt.MODIFY_DATETIME, mt.MODIFY_USER_ID, mt.MODULE_NAME, mt.MODULE_TAB_ID, upper(mt.OBJECT_NAME) OBJECT_NAME, ta.AUDIT_FLAG,
+mt.SEAL_FLAG from MODULE_TABLES mt left outer join TABLES_AUDIT ta on  mt.object_name =ta.object_name )a where a.module_name = :moduleName
+ }
+ 
+OUMTAGRE_MODULETABLES_INSERT_MODULE_TABLES {
+  insert into MODULE_TABLES(CREATE_DATETIME, CREATE_USER_ID, MODIFY_DATETIME, MODULE_NAME, MODULE_TAB_ID, OBJECT_NAME, SEAL_FLAG,MODIFY_USER_ID) values(current_timestamp, :createUserId, NULL, :moduleName, :moduleTabId, :objectName, :sealFlag,NULL)
+}
+
+OUMTAGRE_MODULETABLES_UPDATE_MODULE_TABLES {
+ update MODULE_TABLES set MODIFY_DATETIME = current_timestamp, MODIFY_USER_ID = :modifyUserId where MODULE_TAB_ID = :moduleTabId 
+}
+
+OUMTAGRE_MODULETABLES_DELETE_MODULE_TABLES { 
+	DELETE FROM MODULE_TABLES where MODULE_TAB_ID = :moduleTabId
+}
+
+OUMTAGRE_MODULETABCOLUMNS_FIND_MODULE_TAB_COLUMNS {
+ 	SELECT COLUMN_NAME, CREATE_DATETIME, CREATE_USER_ID, DOMAIN, LOV_ITEM_NAME, MODIFY_DATETIME, MODIFY_USER_ID, MODULE_TAB_ID, MODULE_TAB_SEQ, REF_TABLES, SEAL_FLAG, SETUP_MODULE FROM MODULE_TAB_COLUMNS where module_tab_id = :moduleTabId
+}
+OUMTAGRE_MODULETABCOLUMNS_INSERT_MODULE_TAB_COLUMNS {
+insert into MODULE_TAB_COLUMNS(COLUMN_NAME, CREATE_DATETIME, CREATE_USER_ID, domain, LOV_ITEM_NAME, MODIFY_DATETIME, MODULE_TAB_ID, MODULE_TAB_SEQ, REF_TABLES, SEAL_FLAG, SETUP_MODULE, MODIFY_USER_ID) values(:columnName, current_timestamp, :createUserId, :domain, :lovItemName, NULL, :moduleTabId, :moduleTabSeq, :refTables, :sealFlag, :setupModule, NULL)
+}
+
+OUMTAGRE_MODULETABCOLUMNS_UPDATE_MODULE_TAB_COLUMNS {
+ update MODULE_TAB_COLUMNS set COLUMN_NAME = :columnName , domain = :domain , LOV_ITEM_NAME = :lovItemName , MODIFY_DATETIME = current_timestamp , MODIFY_USER_ID = :modifyUserId , MODULE_TAB_ID = :moduleTabId, MODULE_TAB_SEQ = :moduleTabSeq, REF_TABLES = :refTables, SEAL_FLAG = :sealFlag, SETUP_MODULE = :setupModule where MODULE_TAB_ID = :moduleTabId and MODULE_TAB_SEQ = :moduleTabSeq 
+}
+
+OUMTAGRE_MODULETABCOLUMNS_DELETE_MODULE_TAB_COLUMNS { 
+	DELETE FROM MODULE_TAB_COLUMNS where MODULE_TAB_ID = :moduleTabId and MODULE_TAB_SEQ = :moduleTabSeq
+}
+
+
+OUMTAGRE_RLE_INARC_ONCHECKDELETEMASTER_ {
+	SELECT 1 FROM MODULE_TABLES M WHERE M.MODULE_NAME = :MODULENAME
+}
+
+OUMTAGRE_MODULE_TABLES_ONCHECKDELETEMASTER_ {
+	SELECT 1 FROM MODULE_TAB_COLUMNS M WHERE M.MODULE_TAB_ID = :MODULETABID
+}
+
+OUMTAGRE_OUMTAGRE_PREFORM_ {
+select current_timestamp, user
+}
+
+OUMTAGRE_MODULE_TAB_COLUMNS_PREINSERT {
+	SELECT COALESCE(MAX(MODULE_TAB_SEQ),0)+1 FROM MODULE_TAB_COLUMNS WHERE MODULE_TAB_ID = :moduleTabId
+
+}
+
+OUMTAGRE_MODULE_TAB_PREINSERT {
+ 	 select nextval('MODULE_TAB_ID') 
+
+}
+
+OUMTAGRE_CREATE_FORM_GLOBALSCREATE_FORM_GLOBALS {
+	SELECT DESCRIPTION FROM OMS_MODULES WHERE MODULE_NAME = :V_FORM_NAME
+}
+
+OUMTAGRE_CGFKCHK_RLE_INARC_RLE_INARC_O_ {
+	SELECT OMS_MOD.DESCRIPTION FROM   OMS_MODULES OMS_MOD WHERE  OMS_MOD.MODULE_NAME = :MODULENAME
+}
+
+VALIDATE_TRIGGER_EXIST { 
+SELECT COUNT(*)
+FROM  information_schema.triggers
+WHERE event_object_table = LOWER(:tableName) and trigger_name ='log_elite_generic_trigger';
+
+}
+
+GET_AUDIT_TABLES_DATA{ 
+ select OBJECT_NAME,AUDIT_FLAG,CREATE_DATETIME, CREATE_USER_ID from TABLES_AUDIT
+}
+
+MAINTAIN_TABLE_AUDIT { 
+ insert into TABLES_AUDIT(OBJECT_NAME,AUDIT_FLAG,CREATE_DATETIME, CREATE_USER_ID) values(:objectName, :auditFlag,current_timestamp, :createUserId)
+}
+
+UPDATE_TABLE_AUDIT { 
+ update  TABLES_AUDIT SET AUDIT_FLAG=:auditFlag,MODIFY_DATETIME= current_timestamp , MODIFY_USER_ID = :modifyUserId  where OBJECT_NAME=:objectName
+
+}
+VALIDATE_TABLE_ASSOCIATION { 
+select MODULE_NAME FROM MODULE_TABLES WHERE OBJECT_NAME=:tableName
+}
+GET_AUDIT_TABLES_RECORD_COUNT{ 
+  SELECT COUNT(*) from TABLES_AUDIT where OBJECT_NAME=:tableName
+}
+GET_TABLE_COMMENTS{ 
+SELECT upper(t.table_name) object_name, pg_catalog.obj_description(pgc.oid, 'pg_class') table_description
+FROM information_schema.tables t
+INNER JOIN pg_catalog.pg_class pgc
+ON t.table_name = pgc.relname 
+WHERE t.table_type='BASE TABLE'
+AND t.table_schema='oms_owner'
+}
+OUMTAGRE_GET_MODULE_VIEW_AUDIT_FLAG {
+select view_audit_flag from oms_modules where view_audit_flag = 'Y' and module_name = :moduleName
+}
+OUMTAGRE_UPDATE_OMS_MODULES_VIEW_AUDIT_FLAG {
+update oms_modules set view_audit_flag =:viewAuditFlag, modify_datetime = current_timestamp , modify_user_id = :createUserId where module_name =:moduleName
+}

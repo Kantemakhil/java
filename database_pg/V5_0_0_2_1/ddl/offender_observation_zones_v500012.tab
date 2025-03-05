@@ -1,0 +1,33 @@
+-- Create table
+create table oms_owner.offender_observation_zones
+(
+  agy_loc_id      varchar(10) not null,
+  zone_code       varchar(12) not null,
+  list_seq        integer not null,
+  active_flag     varchar(1) not null default 'Y',
+  expiry_date     timestamp,
+  create_datetime timestamp not null default CURRENT_TIMESTAMP,
+  create_user_id  varchar(32) not null,
+  modify_datetime timestamp default CURRENT_TIMESTAMP,
+  modify_user_id  varchar(32),
+  seal_flag       varchar(1)
+)
+tablespace tag_data;
+  
+-- Create/Recreate primary, unique and foreign key constraints 
+alter table oms_owner.offender_observation_zones
+  add constraint offender_obs_zones_pk primary key (agy_loc_id, zone_code)
+  using index tablespace tag_indx;
+  
+alter table oms_owner.offender_observation_zones
+  add constraint offender_obs_zones_fk1 foreign key (agy_loc_id)
+  references oms_owner.agency_locations (agy_loc_id) ON DELETE NO ACTION NOT DEFERRABLE INITIALLY IMMEDIATE;
+  
+--
+comment on table oms_owner.offender_observation_zones is 'Stores the offender observation zones (maintenance table)';
+comment on column oms_owner.offender_observation_zones.agy_loc_id is 'The agency location of the zone';
+comment on column oms_owner.offender_observation_zones.zone_code is 'The zone code [ref domain=OBSRVTN_ZONE]';
+comment on column oms_owner.offender_observation_zones.list_seq is 'The zone sequence';
+comment on column oms_owner.offender_observation_zones.active_flag is 'Indicates if the configured zone is active (Y/N)';
+comment on column oms_owner.offender_observation_zones.expiry_date is 'The zone expiry datetime';
+  
