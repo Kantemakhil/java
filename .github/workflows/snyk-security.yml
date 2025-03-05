@@ -20,6 +20,6 @@ jobs:
       - name: Run Snyk to check for vulnerabilities
         run: snyk test --maven
         working-directory: Elite2Common
-        continue-on-error: true
+        # continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
